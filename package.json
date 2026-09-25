@@ -17,7 +17,8 @@
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "server-only": "latest"
+    "server-only": "latest",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/node": "latest",

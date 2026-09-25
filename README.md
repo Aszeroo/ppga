@@ -86,3 +86,46 @@ runnable, and lint-checked locally.
 `.github/workflows/ci.yml` runs `typecheck + lint` and `tests` on every push.
 No secrets are committed; real-database tests are guarded by the presence of
 `SUP_*` environment variables so the pipeline passes without credentials.
+
+## Ticket #3 — Auth, roles & profiles
+
+Authentication against the role model: Learners log in with provisioned
+student-ID credentials, change their password, and log out. Roles (Learner /
+Teacher / Admin) live on the profile (`ppg_profiles`) and are enforced by RLS
+from day one; the first Admin is seeded by a migration, not hand-created in the
+dashboard.
+
+Routes:
+
+- `/login` — student-ID handle + password (JSON POST to `/api/auth/login`)
+- `/api/auth/login` — sign-in against the real Supabase Auth service; the token
+  bundle lands in `httpOnly`, `SameSite=cuda` cookies on `/`.
+- `/api/auth/logout` + `/logout` — the refresh token is revoked at the service
+  and both session cookies are cleared.
+- `/api/auth/change-password` + `/change-password` — PUT to the service; the
+  weak-password / reauthentication / same-password gate renders verbatim.
+- `/profile` — name + role only (Level/XP arrive later); the row is read from
+  Postgres with the user's own JWT so RLS decides what the user may see.
+- `middleware.ts` guards `/profile`, `/change-password`, `/logout`: an
+  unsigned request redirects to `/login` (the unauthorized state), never a
+  blank screen.
+
+### Seeded credentials (documented, NOT real secrets)
+
+`20260925000110_seeds.sql` inserts these rows into `auth.users` (the trigger
+materialises each `ppg_profiles` row; role and student-ID come from
+`raw_user_meta_data`). Use them only against `supabase start`'s local instance.
+
+| Handle (login identifier) | Password (local-only) | Role |
+|---|---|---|
+| `admin` | `ppga-test-2026` | admin |
+| `teacher` | `ppga-test-2026` | teacher |
+| `64110001` | `ppga-test-2026` | learner |
+| `64110002` | `ppga-test-2026` | learner |
+| `64110003` | `ppga-test-2026` | teacher |
+
+The handle maps to a synthetic email `<handle>@ppga.local` — Supabase Auth
+treats the student-ID as the login identifier without requiring a real email.
+No `signup` route, page or API exists: self-registration is blocked by RLS's
+insert policy (`admin` only) and by the absence of any self-registration
+surface.
