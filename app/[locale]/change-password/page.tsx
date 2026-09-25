@@ -6,12 +6,21 @@ import { useCallback, useState } from 'react'
 
 import { z } from 'zod'
 
+import { useTranslations } from 'next-intl'
+import { Link } from '../../../lib/i18n/routing'
+
 /**
  * Ticket #3 change-password page: the signed-in user sends their current and
  * new password. Zod validates before the POST; the API route re-validates and
  * calls the Supabase Auth service. Every outcome is an observable state — the
  * service's message (weak password / needs reauthentication / same password)
  * renders verbatim, never as a blank screen. `force-dynamic`.
+ *
+ * Ticket #4: the copy moves into messages (`changePassword.intro`,
+ * `changePassword.currentPassword`, `changePassword.newPassword`,
+ * `changePassword.submit`, `changePassword.busy`, `changePassword.afterSuccess`,
+ * `changePassword.fallbackSuspense`) so the Thai default and the English
+ * switch both speak it; the missing-key fallback chain speaks first.
  */
 export const dynamic = 'force-dynamic'
 
@@ -23,6 +32,7 @@ const formSchema = z
   .strict()
 
 export default function ChangePasswordPage() {
+  const t = useTranslations('changePassword')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -70,11 +80,11 @@ export default function ChangePasswordPage() {
   )
 
   return (
-    <Suspense fallback={<div>Preparing the password form…</div>}>
+    <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <section>
-        <p>Change the password you signed in with.</p>
+        <p>{t('intro')}</p>
         <form onSubmit={handleSubmit}>
-          <label htmlFor="currentPassword">Current password</label>
+          <label htmlFor="currentPassword">{t('currentPassword')}</label>
           <input
             id="currentPassword"
             name="currentPassword"
@@ -83,7 +93,7 @@ export default function ChangePasswordPage() {
             minLength={8}
             maxLength={72}
           />
-          <label htmlFor="newPassword">New password</label>
+          <label htmlFor="newPassword">{t('newPassword')}</label>
           <input
             id="newPassword"
             name="newPassword"
@@ -92,12 +102,12 @@ export default function ChangePasswordPage() {
             minLength={8}
             maxLength={72}
           />
-          <button type="submit">Change password</button>
+          <button type="submit">{t('submit')}</button>
         </form>
-        {busy ? <p>Updating…</p> : null}
+        {busy ? <p>{t('busy')}</p> : null}
         {message ? <p>{message}</p> : null}
         <p>
-          <a href="/profile">Profile</a> — the change lands here on success.
+          <Link href="/profile">{t('intro')}</Link> — {t('afterSuccess')}
         </p>
       </section>
     </Suspense>

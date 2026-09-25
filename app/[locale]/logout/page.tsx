@@ -4,14 +4,23 @@ import { Suspense } from 'react'
 
 import { useCallback, useState } from 'react'
 
+import { useTranslations } from 'next-intl'
+import { Link } from '../../../lib/i18n/routing'
+
 /**
  * Ticket #3 logout page: one button that clears the httpOnly session cookies
  * and revokes the refresh token at the service. Both outcomes render as text —
  * "signed out" or the service message — never a blank screen. `force-dynamic`.
+ *
+ * Ticket #4: the copy moves into messages (`logout.intro`, `logout.submit`,
+ * `logout.busy`, `logout.fallbackSuspense`) — and the language the learner
+ * chose (the `ppga-locale` cookie + the profile row) survives this logout:
+ * the next visit speaks the remembered language again after re-login.
  */
 export const dynamic = 'force-dynamic'
 
 export default function LogoutPage() {
+  const t = useTranslations('logout')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -38,17 +47,17 @@ export default function LogoutPage() {
   )
 
   return (
-    <Suspense fallback={<div>Preparing the logout button…</div>}>
+    <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <section>
-        <p>Sign out of PPGA — your session cookies are cleared and the</p>
-        <p>refresh token is revoked at the service.</p>
+        <p>{t('intro')}</p>
         <button type="button" onClick={handleClick}>
-          Logout
+          {t('submit')}
         </button>
-        {busy ? <p>Signing out…</p> : null}
+        {busy ? <p>{t('busy')}</p> : null}
         {message ? <p>{message}</p> : null}
         <p>
-          <a href="/profile">Profile</a> · <a href="/login">Login</a>
+          <Link href="/profile">{t('intro')}</Link> ·{' '}
+          <Link href="/login">{t('intro')}</Link>
         </p>
       </section>
     </Suspense>
