@@ -1,0 +1,80 @@
+{
+  "nav": {
+    "home": "หน้าแรก",
+    "login": "ลงชื่อ",
+    "logout": "ออกชื่อ",
+    "profile": "โปรไฟล์",
+    "changePassword": "เปลี่ยนรหัส",
+    "health": "สารภาพ"
+  },
+  "login": {
+    "intro": "ลงชื่อด้วยร.บกะนักเรียนและรหัสที่ได้นัด",
+    "identifier": "ร.บกะนักเรียน",
+    "password": "รหัส",
+    "submit": "ลงชื่อ",
+    "busy": "กำลังลงชื่อ…",
+    "afterSuccess": "เมื่อลงชื่อได้ คุณไปที่หน้าโปรไฟล์",
+    "fallbackSuspense": "กำลังเตรียมแบบฟอร์ม..."
+  },
+  "changePassword": {
+    "intro": "เปลี่ยนรหัสที่ลงชื่อ",
+    "currentPassword": "รหัสปัจจุบัน",
+    "newPassword": "รหัสใหม่",
+    "submit": "เปลี่ยนรหัส",
+    "busy": "กำลังเปลี่ยน…",
+    "afterSuccess": "เมื่อเปลี่ยนได้ คุณไปที่หน้าโปรไฟล์",
+    "fallbackSuspense": "กำลังเตรียมแบบฟอร์ม..."
+  },
+  "profile": {
+    "heading": "โปรไฟล์",
+    "states": {
+      "ok": "โปรไฟล์ของ",
+      "empty": "ไม่มีโปรไฟล์",
+      "error": "ความผิด",
+      "unauthorized": "ลงชื่อ",
+      "notConfigured": "บริการไม่ได้"
+    },
+    "links": "ลิงกค์",
+    "fallbackSuspense": "กำลังอ่านโปรไฟล์..."
+  },
+  "logout": {
+    "intro": "ออกชื่อจาก P PGA —คุกกี้ชสชันและรีเฟรสโทเกน",
+    "submit": "ออกชื่อ",
+    "busy": "กำลังออกชื่อ...",
+    "fallbackSuspense": "กำลังเตรียม..."
+  },
+  "health": {
+    "connectivity": "สารภาพกับฐานข้อมูล",
+    "detail": "ความผิด:",
+    "fallbackSuspense": "กำลังสอฐานข้อมูล..."
+  },
+  "home": {
+    "scaffold": " P PGA พร้อม",
+    "healthLink": "สารภาพ",
+    "fallbackSuspense": "กำลังโหลด..."
+  },
+  "unauthorized": {
+    "title": "ต้องลงชื่อ",
+    "body": "หน้านี้มีนกับคนทีลงชื่อแล้ว"
+  },
+  "selector": {
+    "label": "ภาษา",
+    "current": "ภาษาปัจจุบัน: {language}",
+    "option": {
+      "th": "ไทย (ภาษาไทย)",
+      "en": "English"
+    },
+    "switchHint": "เลือกภาษา การเลือกจะจาจำหลังทีเปลี่ยนหน้า โหลดออกชื่อและลงชื่อ"
+  },
+  "glossary": {
+    "slide": "สไลด",
+    "textBox": "กลองข้อน",
+    "transition": "ทรานซิชัน",
+    "slideDesign": "แบบสไลด",
+    "textFormatting": "แบบอักษร"
+  },
+  "language": {
+    "th": "ไทย",
+    "en": "English"
+  }
+}

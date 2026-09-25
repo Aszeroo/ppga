@@ -33,7 +33,9 @@
   "include": [
     "next-env.d.ts",
     "app/**/*",
+    "components/**/*",
     "lib/**/*",
+    "messages/**/*",
     "test/**/*",
     "middleware.ts",
     "next.config.ts",

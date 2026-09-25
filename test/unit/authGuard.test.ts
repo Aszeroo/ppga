@@ -37,15 +37,14 @@ test('auth API routes re-validate forms with Zod and stay cookie-safe', () => {
 
 test('middleware guards role routes with an unauthorized redirect', () => {
   const mw = read('middleware.ts')
-  console.log('DEBUG includes URL literal:', mw.includes("new URL('/login', req.url)"))
   expect(mw.includes('protectedRoutes')).toBe(true)
   expect(mw.includes('ppga_session')).toBe(true)
   expect(mw.includes('NextResponse.redirect')).toBe(true)
-  expect(mw.includes("new URL('/login', req.url)")).toBe(true)
+  expect(mw.includes('NextResponse.redirect(new URL(`/${locale}/login`, req.url))')).toBe(true)
 })
 
 test('no self-registration path exists anywhere in the app or the API', () => {
-  const pages = ['app/login/page.tsx', 'app/change-password/page.tsx', 'app/profile/page.tsx', 'app/logout/page.tsx']
+  const pages = ['app/[locale]/login/page.tsx', 'app/[locale]/change-password/page.tsx', 'app/[locale]/profile/page.tsx', 'app/[locale]/logout/page.tsx']
   for (const page of pages) {
     const source = read(page)
     expect(!source.includes('signUp') && !source.includes('signup')).toBe(true)

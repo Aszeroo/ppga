@@ -17,6 +17,7 @@ export interface ProfileRow {
   student_id: string
   full_name: string
   role: 'learner' | 'teacher' | 'admin'
+  locale: 'th' | 'en'
 }
 
 export interface ProfileState {
@@ -58,7 +59,7 @@ export async function readOwnProfile(): Promise<ProfileState> {
 
   const { data, error } = await sup
     .from('ppg_profiles')
-    .select('id, student_id, full_name, role')
+    .select('id, student_id, full_name, role, locale')
     .limit(1)
 
   if (error) return { status: 'error', detail: error.message }
@@ -66,4 +67,34 @@ export async function readOwnProfile(): Promise<ProfileState> {
     return { status: 'empty', detail: 'RLS denied the profile (or no rows)' }
 
   return { status: 'ok', row: data[0] as ProfileRow }
+}
+
+/**
+ * Ticket #4 locale persistence: a learner (or a teacher/admin for their own
+ * row) updates the `locale` column on their own profile only — Ticket #3's
+ * `ppg_profiles_update` policy is the authority, the CHECK never lets a
+ * learner change their role. The route carries the user's JWT (the anon key
+ * is what PostgREST speaks with) so the update is RLS-gated, never service-
+ * role.
+ */
+export interface LocaleUpdateResult {
+  ok: boolean
+  detail?: string
+}
+
+export async function updateOwnLocale(
+  sup: ReturnType<typeof createClient>,
+  locale: 'th' | 'en',
+): Promise<LocaleUpdateResult> {
+  const { data: session } = await sup.auth.getSession()
+  if (!session || !session.session) return { ok: false, detail: 'no session' }
+
+  const { error } = await sup
+    .from('ppg_profiles')
+    .update({ locale } as never)
+    .eq('id', session.session.user.id)
+
+  if (error) return { ok: false, detail: error.message }
+
+  return { ok: true, detail: 'locale stored on profile' }
 }

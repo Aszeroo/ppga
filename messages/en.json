@@ -1,0 +1,80 @@
+{
+  "nav": {
+    "home": "Home",
+    "login": "Login",
+    "logout": "Logout",
+    "profile": "Profile",
+    "changePassword": "Change password",
+    "health": "Health"
+  },
+  "login": {
+    "intro": "Login with your provisioned student-ID and password.",
+    "identifier": "Student ID",
+    "password": "Password",
+    "submit": "Sign in",
+    "busy": "Signing in…",
+    "afterSuccess": "after a successful login you land on /profile.",
+    "fallbackSuspense": "Preparing the login form…"
+  },
+  "changePassword": {
+    "intro": "Change the password you signed in with.",
+    "currentPassword": "Current password",
+    "newPassword": "New password",
+    "submit": "Change password",
+    "busy": "Updating…",
+    "afterSuccess": "the change lands here on success.",
+    "fallbackSuspense": "Preparing the password form…"
+  },
+  "profile": {
+    "heading": "/profile",
+    "states": {
+      "ok": "Your profile",
+      "empty": "No profile row:",
+      "error": "Error:",
+      "unauthorized": "Sign in first:",
+      "notConfigured": "Service not configured:"
+    },
+    "links": "Links",
+    "fallbackSuspense": "Reading your profile…"
+  },
+  "logout": {
+    "intro": "Sign out of PPGA — your session cookies are cleared and the refresh token is revoked at the service.",
+    "submit": "Logout",
+    "busy": "Signing out…",
+    "fallbackSuspense": "Preparing the logout button…"
+  },
+  "health": {
+    "connectivity": "Database connectivity:",
+    "detail": "Detail:",
+    "fallbackSuspense": "Checking Supabase Postgres…"
+  },
+  "home": {
+    "scaffold": "PPGA scaffold is up.",
+    "healthLink": "Health page",
+    "fallbackSuspense": "Loading…"
+  },
+  "unauthorized": {
+    "title": "You must sign in first.",
+    "body": "The page you asked for is only for a signed-in learner, teacher or admin."
+  },
+  "selector": {
+    "label": "Language",
+    "current": "Current language: {language}",
+    "option": {
+      "th": "ไทย (ภาษาไทย)",
+      "en": "English"
+    },
+    "switchHint": "Choose your language. The choice is remembered after you navigate, refresh, log out, and log back in."
+  },
+  "glossary": {
+    "slide": "Slide",
+    "textBox": "Text Box",
+    "transition": "Transition",
+    "slideDesign": "Slide Design",
+    "textFormatting": "Text Formatting"
+  },
+  "language": {
+    "th": "Thai",
+    "en": "English"
+  }
+}
