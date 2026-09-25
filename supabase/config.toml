@@ -1,0 +1,3 @@
+# Local Supabase configuration for the PPGA project.
+# Generated workflow: `supabase init` created this file; run `supabase start` for the local stack.
+project_id = "ppga"

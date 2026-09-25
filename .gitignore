@@ -1,0 +1,15 @@
+# build artifacts and tool state
+node_modules/
+.next/
+coverage/
+test-results/
+playwright/
+dist/
+.vercel/
+tsconfig.tsbuildinfo
+# environment secrets — NEVER committed
+.env*
+!/.env.example
+!/.gitignore
+supabase/.branches/
+supabase/.temp/
