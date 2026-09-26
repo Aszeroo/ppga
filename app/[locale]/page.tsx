@@ -32,7 +32,7 @@ async function NextAction() {
       {state.status === 'ok' && state.consent && !state.submitted && !state.override ? <p>{t('states.consentNoSubmit')} {state.detail}</p> : null}
       {state.status === 'ok' && state.consent && !state.submitted && !state.override ? <p><Link href="/pre-test">{t('linkPreTest')}</Link></p> : null}
       {state.status === 'ok' && (state.submitted || state.override) ? <p>{t('states.gateOpen')} {state.detail}</p> : null}
-      {state.status === 'ok' && (state.submitted || state.override) ? <p><Link href="/content">{t('linkContentLocked')}</Link></p> : null}
+      {state.status === 'ok' && (state.submitted || state.override) ? <p><Link href="/course">{t('linkCourse')}</Link></p> : null}
       {state.status === 'error' ? <p>{t('states.error')} {state.detail}</p> : null}
       {state.status === 'denied' ? <p>{t('states.denied')} {state.detail}</p> : null}
       {state.status === 'unauthorized' ? <p>{t('states.unauthorized')} {state.detail}</p> : null}
