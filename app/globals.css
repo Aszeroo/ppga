@@ -1,0 +1,133 @@
+/*
+ * Ticket #5 design tokens — declared once, consumed by every pixel component.
+ * No ad-hoc colors anywhere: a component may only use `var(--ppg-…)`.
+ *
+ * Pastel pink/blue 8-bit pastel game world. The 8-bit rules: 1px "pixel"
+ * borders, stepped pixel shadows, no smoothing, and a visible focus ring that
+ * never relies on colour alone.
+ */
+/*
+ * The `--font-ta16bit` / `--font-mitr` variables come from
+ * `next/font/local` + `next/font/google` in `app/layout.tsx`. Do NOT hardcode
+ * `TA16BIT-Regular` in a component — that breaks the single-token swap point
+ * (see `app/fonts/LICENSE-TA16BIT.md`).
+ *
+ * Thai fallback rides the family stack itself (`--font-ta16bit, --font-mitr`):
+ * TA16BIT's `cmap`/`glyf` (per `app/fonts/LICENSE-TA16BIT.md`) is Latin+digits
+ * only, so a missing Thai glyph falls to the next family natively in the
+ * browser. No extra `@font-face` is needed here — a documented no-op face only
+ * confuses the parser, so the fallback note lives in the comment alone.
+ */
+:root {
+  /* ── palette: pastel pink/blue ────────────────────────────────────────── */
+  --ppg-pink-100: #fff4e3;
+  --ppg-pink-200: #fde6ce;
+  --ppg-pink-300: #d7b6bc;
+  --ppg-pink-500: #b3836f;
+  --ppg-blue-100: #e8e9f1;
+  --ppg-blue-200: #d7d5e2;
+  --ppg-blue-300: #b9a2bd;
+  --ppg-blue-500: #57426b;
+  --ppg-pink-accent: #f472b4;
+  --ppg-blue-accent: #6b9ec9;
+
+  /* surfaces */
+  --ppg-bg-body: var(--ppg-pink-100);
+  --ppg-bg-surface: var(--ppg-blue-100);
+  --ppg-fg-heading: var(--ppg-blue-500);
+  --ppg-fg-body: var(--ppg-blue-500);
+
+  /* ── spacing scale (8px base — the pixel unit) ─────────────────────────
+   *─ */
+  --ppg-space-1: 4px;
+  --ppg-space-2: 8px;
+  --ppg-space-3: 16px;
+  --ppg-space-4: 24px;
+  --ppg-space-5: 32px;
+
+  /* ── borders / pixel shadows ──────────────────────────────────────────
+   *─ */
+  --ppg-border-1: 1px;
+  --ppg-border-2: 2px;
+  --ppg-border-3: 4px;
+  --ppg-shadow-pixel-1: 2px 2px 0 var(--ppg-blue-300);
+  --ppg-shadow-pixel-2: 4px 4px 0 var(--ppg-blue-300);
+  --ppg-shadow-pixel-3: 6px 6px 0 var(--ppg-blue-500);
+
+  /* ── focus ring (never colour alone: + a border-thickened) ─────────────────
+   *─ */
+  --ppg-focus-visible: 1;
+  --ppg-focus-ring: 4px solid var(--ppg-blue-accent);
+  --ppg-focus-offset: 2px;
+
+  /* ── status colours (success / warning / error / locked) ─────────────────
+   *─ */
+  --ppg-status-success: #6ec06e;
+  --ppg-status-warning: #f4c941;
+  --ppg-status-error: #b3366f;
+  --ppg-status-locked: #57426b;
+
+  /* ── component state surfaces (locked / available) ──────────────────
+   *─ */
+  --ppg-state-locked-bg: var(--ppg-blue-200);
+  --ppg-state-locked-fg: var(--ppg-status-locked);
+  --ppg-state-locked-stripe: repeating-linear-gradient(
+    45deg,
+    var(--ppg-blue-200) 0,
+    var(--ppg-status-locked) 2px,
+    var(--ppg-blue-200) 4px
+  );
+  --ppg-state-available-bg: var(--ppg-pink-200);
+  --ppg-state-available-fg: var(--ppg-blue-500);
+}
+
+/* Body role — Mitr for long-form Thai readability. */
+body {
+  font-family: var(--font-mitr);
+}
+
+/*
+ * Heading / button / badge / XP-numeral role — TA16BIT first, Mitr next.
+ * TA16BIT is Latin+digits-only, so a Thai heading falls to Mitr per glyph
+ * (the browser's family fallback chain). The stack is the single-token swap
+ * point: changing `--font-ta16bit` (see `app/layout.tsx` +
+ * `app/fonts/LICENSE-TA16BIT.md`) re-tunes every heading at once.
+ */
+:where(.ppg-heading, .ppg-heading-text, .ppg-button-label, .ppg-badge-text, .ppg-xp-numeral) {
+  font-family: var(--font-ta16bit), var(--font-mitr);
+}
+
+:where(.ppg-card-text, .ppg-progress-text, .ppg-status-pill-text) {
+  font-family: var(--font-mitr);
+}
+
+/*
+ * State never conveyed by colour alone (accessibility): each state carries a
+ * text/icon label + the `aria-*` roles too — the `[data-status="locked"]`
+ * stripes below are a visual *secondary* cue, the locked state is announced
+ * with `aria-disabled/ aria-label` and an `“Locked”` text prefix.
+ */
+.ppg-state-locked {
+  border-style: solid;
+  background-image: var(--ppg-state-locked-stripe);
+}
+
+/* Visible focus: a thickened border + ring (never hue-shifted only). */
+:where(.ppg-button, .ppg-card, .ppg-badge, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar) {
+  --ppg-focus-visible: var(--ppg-focus-ring);
+  --ppg-focus-thickness: var(--ppg-border-2);
+}
+
+:where(.ppg-button, .ppg-card, .ppg-badge, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar):focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+  border-width: var(--ppg-border-2);
+}
+
+/* Respect the reduced-motion signal: no stepped shadow animation, no bar easing. */
+@media (prefers-reduced-motion: reduce) {
+  :where(.ppg-button, .ppg-card, .ppg-badge, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar) {
+    animation-duration: 0s;
+    transition-duration: 0s;
+  }
+}
