@@ -65,6 +65,9 @@ async function RoleChangeControl() {
       <p>
         <Link href="/admin/audit">{t('users.linkAudit')}</Link>
       </p>
+      <p>
+        <Link href="/admin/provisioning">{t('provisioning.linkProvision')}</Link>
+      </p>
     </section>
   )
 }

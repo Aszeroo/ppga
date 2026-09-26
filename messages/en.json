@@ -7,7 +7,8 @@
     "changePassword": "Change password",
     "health": "Health",
     "adminUsers": "User list",
-    "adminAudit": "Audit stream"
+    "adminAudit": "Audit stream",
+    "adminProvisioning": "Provision roster"
   },
   "admin": {
     "heading": "Admin console",
@@ -26,6 +27,32 @@
     "audit": {
       "stream": "Audit stream",
       "linkUsers": "User list"
+    },
+    "provisioning": {
+      "intro": "Paste the roster (one learner per line: student ID + name) — accounts are bulk-created with student-ID logins and one-time temporary passwords to hand out on paper; the single-add form is the fallback.",
+      "paste": "Roster (student ID + name, one per line)",
+      "placeholder": "64110001 Lew A. Boonthi\n64110002 Sam B. Boonthee",
+      "single": "Single-add (fallback)",
+      "submit": "Provision",
+      "busy": "Provisioning…",
+      "report": "Provisioning report",
+      "ok": "created",
+      "line": {
+        "created": "created",
+        "duplicate": "duplicate — rejected",
+        "malformed": "malformed — rejected"
+      },
+      "handout": "Credential handout (print on paper)",
+      "handoutHint": "each created line: student ID + the one-time password; the first login forces a password change",
+      "linkUsers": "User list",
+      "linkProvision": "Provision roster",
+      "states": {
+        "empty": "empty paste",
+        "error": "error",
+        "denied": "denied — provisioning is admin/teacher-only",
+        "unauthorized": "unauthorized — sign in first",
+        "notConfigured": "not-configured"
+      }
     },
     "states": {
       "ok": "ok",
