@@ -136,6 +136,7 @@
     "linkContent": "ขั้ทกัาน์",
     "linkContentLocked": "ขั้ทกัาน์",
     "linkCourse": "แผนที่หน่วนเรียน",
+    "linkLeaderboard": "ชื่ิง-XP",
     "states": {
       "noConsent": "ลงชื่อ",
       "consentNoSubmit": "ลงชื่อ",
@@ -379,6 +380,24 @@
       "denied": "ไม่คก",
       "unauthorized": "ไม่อ้อนาญ",
       "notConfigured": "ไม่ไม่ต"
+    }
+  },
+  "leaderboard": {
+    "tableLabel": "ชื่ิง-XP",
+    "rank": "ลำดู",
+    "level": "ขั้",
+    "xp": "XP",
+    "yourRow": "ลำของคณุ",
+    "topNote": "ไม่-ใคร-บนคณุ — คณุ-ลำ-บน-สุด",
+    "gap": "{n} XP เ-กั-บ-ลำ-{r} (ลำ-บน-คณุ)",
+    "linkDashboard": "ห้น-หลัก",
+    "fallbackSuspense": "กม-ชื่ิง",
+    "states": {
+      "empty": "มชัา (ไม่-ลำ-นเรียน)",
+      "error": "ความผิด",
+      "denied": "ไม่คก",
+      "unauthorized": "ไม่อ้อนาญ",
+      "notConfigured": "ไม่่ตตั้"
     }
   },
   "language": {

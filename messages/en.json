@@ -136,6 +136,7 @@
     "linkContent": "Course content",
     "linkContentLocked": "Course content (locked until the Pre-Test)",
     "linkCourse": "Course map (Powerpoint Presentation Creation)",
+    "linkLeaderboard": "XP Leaderboard",
     "states": {
       "noConsent": "no consent — the explanation is the next action",
       "consentNoSubmit": "consented, un-submitted — the Pre-Test is the only screen",
@@ -373,6 +374,24 @@
     "states": {
       "ok": "ok",
       "empty": "empty (no badge rows server-side)",
+      "error": "error",
+      "denied": "denied",
+      "unauthorized": "unauthorized",
+      "notConfigured": "not-configured"
+    }
+  },
+  "leaderboard": {
+    "tableLabel": "XP leaderboard",
+    "rank": "Rank",
+    "level": "Level",
+    "xp": "XP",
+    "yourRow": "Your row",
+    "topNote": "No one above you — you are the top rank",
+    "gap": "{n} XP to take #r — the rank above you",
+    "linkDashboard": "Dashboard",
+    "fallbackSuspense": "Loading the leaderboard…",
+    "states": {
+      "empty": "empty (no learner rows server-side)",
       "error": "error",
       "denied": "denied",
       "unauthorized": "unauthorized",
