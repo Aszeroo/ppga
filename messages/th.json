@@ -203,6 +203,7 @@
     "title": "ส้างสไลด PowerPoint",
     "linkDashboard": "หน้าหลัก",
     "linkPreTest": "เข้า Pre-Test",
+    "linkBadges": "ช่อ-กิ่",
     "fallbackSuspense": "กำลลังโหลด…",
     "states": {
       "open": "เปิด — จบ มิชชัน ก่อนหน้า",
@@ -222,8 +223,9 @@
     "whyHeading": "ส้างเปราะ",
     "bodyHeading": "ส้างเรียน",
     "nextHeading": "ส้างต่อไป",
-    "linkMap": "แผนที่หน่วนเรียน",
-    "linkModule": "หน่วนเรียนนี้",
+    "linkMap": "แผนท่ี่-หนว่ย",
+    "linkModule": "หนว่ย-นี้",
+    "linkMission": "ภารกจิ-ควารู้-หนว่ย-นี้",
     "fallbackSuspense": "กำลลังโหลด…",
     "states": {
       "ok": "ได้สาย",
@@ -333,6 +335,50 @@
       "denied": "ไม่คก",
       "unauthorized": "ไม่อ้อนาญ",
       "notConfigured": "ไม่ไม่่งตั้"
+    }
+  },
+  "mission": {
+    "section": "ภารกิจ-ความรู้",
+    "instructionsHeading": "คำสั่่ง-ภารกิจ",
+    "submitLabel": "ผิดคอย (ไม่มถก)",
+    "retryHint": "ผิดอีกไม่มถก — คอย 70% ผ่าน; คอย-ประวัตคก",
+    "passState": "ผ่าน 70% (+100 XP — ครั้แรกคก",
+    "badgeNote": "กิ่-ภารกิจคั้แรก; คก-ภารกิจจะเปิด-มชถัดไป",
+    "failNote": "ไม่ 70% — ผิดอีก; คอยละ-คอย คอย-ขวา/ซ้าย, คอย-เปลด, คอย-อะไร",
+    "historySection": "คอย-ประวัต (-append-only)",
+    "historyAttempt": "ครังที่",
+    "historyScore": "คอย %",
+    "historyOutcome": "ผล",
+    "linkModule": "มชนี้",
+    "linkMap": "แผนผัง",
+    "fallbackSuspense": "กม-ภารกิจ",
+    "states": {
+      "ok": "ปกติ",
+      "empty": "มชััา (ไม่คอย",
+      "error": "ความผิด",
+      "denied": "ไม่คก",
+      "unauthorized": "ไม่อ้อนาญ",
+      "notConfigured": "ไม่ไม่่ตตั้",
+      "historyEmpty": "ไม่ประวัตคร (ยังไม่อมถก)"
+    }
+  },
+  "badge": {
+    "title": "ช่ออ-กิ่",
+    "intro": "กิ่-จากเหตุ-จริง — กิ่คก/กิ่ยังไม่คก คอยกั่",
+    "criteria": "กั่",
+    "earned": "กิ่คก — จากเหตุ-จริง",
+    "locked": "กิ่ยังไม่คก (คอยกั่)",
+    "earnedBadge": "กิ่คก",
+    "lockedBadge": "กิ่ยังไม่คก",
+    "linkMap": "แผนผัง",
+    "fallbackSuspense": "กม-กิ่",
+    "states": {
+      "ok": "ปกต",
+      "empty": "มชัา (ไม่กิ",
+      "error": "ความผิด",
+      "denied": "ไม่คก",
+      "unauthorized": "ไม่อ้อนาญ",
+      "notConfigured": "ไม่ไม่ต"
     }
   },
   "language": {
