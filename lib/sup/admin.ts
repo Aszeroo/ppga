@@ -182,3 +182,61 @@ export async function readAuditViaTable(
 
   return { status: 'ok', events: data as AuditState['events'] }
 }
+
+/** The admin-only consent RPC — one call, one UPDATE + exactly one audit
+ * INSERT (action `consent`, details old/new consent). The function's gate
+ * reads the request's JWT so a learner/teacher smuggle the call as
+ * `permission_denied`, never a silently-0-row UPDATE of someone else's
+ * consent flag. */
+export async function setConsentViaRpc(
+  targetId: string,
+  consent: boolean,
+): Promise<RoleChangeResult> {
+  const sup = await createSupaSessionClient()
+  if (!sup) return { ok: false, detail: 'not-configured' }
+
+  const { data: session } = await sup.auth.getSession()
+  if (!session || !session.session) return { ok: false, detail: 'no session' }
+
+  const { error } = await sup.rpc(
+    'ppg_set_consent',
+    {
+      p_target_id: targetId,
+      p_consent: consent,
+    } as never,
+  )
+
+  if (error) {
+    if (error.message.toLowerCase().includes('permission_denied'))
+      return { ok: false, detail: `permission_denied: ${error.message}` }
+    return { ok: false, detail: error.message }
+  }
+  return { ok: true, detail: 'consent stored; one audit event written' }
+}
+
+/** The admin-only unlock-override RPC — one call, one UPDATE + exactly one
+ * audit INSERT (action `prettest_unlock_override`, details old/new
+ * override). Every override is audited (ADR-0002). The gate function
+ * speaks the new flag; the learner may now read gated content at the RLS
+ * level (the placeholder's own policy). */
+export async function unlockOverrideViaRpc(
+  targetId: string,
+): Promise<RoleChangeResult> {
+  const sup = await createSupaSessionClient()
+  if (!sup) return { ok: false, detail: 'not-configured' }
+
+  const { data: session } = await sup.auth.getSession()
+  if (!session || !session.session) return { ok: false, detail: 'no session' }
+
+  const { error } = await sup.rpc(
+    'ppg_prettest_unlock_override',
+    { p_target_id: targetId } as never,
+  )
+
+  if (error) {
+    if (error.message.toLowerCase().includes('permission_denied'))
+      return { ok: false, detail: `permission_denied: ${error.message}` }
+    return { ok: false, detail: error.message }
+  }
+  return { ok: true, detail: 'override stored; one audit event written' }
+}

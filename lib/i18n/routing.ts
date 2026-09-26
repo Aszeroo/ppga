@@ -30,6 +30,8 @@ export const routing = defineRouting({
     '/admin/users': '/admin/users',
     '/admin/audit': '/admin/audit',
     '/admin/provisioning': '/admin/provisioning',
+    '/pre-test': '/pre-test',
+    '/content': '/content',
   },
 })
 

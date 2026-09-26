@@ -22,7 +22,12 @@
       "newRole": "New role",
       "submit": "Change",
       "linkAudit": "Audit stream",
-      "targetRequired": "a UUID target is required"
+      "targetRequired": "a UUID target is required",
+      "setConsent": "Set consent",
+      "consentFlag": "Consent (paper consent offline)",
+      "unlockOverride": "Unlock past the gate",
+      "unlockSubmit": "Unlock",
+      "linkAuditOverride": "Audit stream (override)"
     },
     "audit": {
       "stream": "Audit stream",
@@ -61,6 +66,8 @@
       "denied": "denied",
       "unauthorized": "unauthorized",
       "notConfigured": "not-configured",
+      "consentTrue": "true (paper consent landed)",
+      "consentFalse": "false (no consent)",
       "fallbackSuspense": "Preparing the console…"
     },
     "roles": {
@@ -113,7 +120,70 @@
   "home": {
     "scaffold": "PPGA scaffold is up.",
     "healthLink": "Health page",
-    "fallbackSuspense": "Loading…"
+    "nextAction": "Next action",
+    "nextActionExplanation": "Consent explanation (respectful, bilingual)",
+    "linkPreTest": "Take the Pre-Test",
+    "linkContent": "Course content",
+    "linkContentLocked": "Course content (locked until the Pre-Test)",
+    "states": {
+      "noConsent": "no consent — the explanation is the next action",
+      "consentNoSubmit": "consented, un-submitted — the Pre-Test is the only screen",
+      "gateOpen": "gate opened — content is server-side readable",
+      "score": "score recorded with instrument version + language",
+      "empty": "empty",
+      "error": "error",
+      "denied": "denied",
+      "unauthorized": "unauthorized",
+      "notConfigured": "not-configured",
+      "ok": "ok",
+      "fallbackSuspense": "Loading…"
+    }
+  },
+  "pretest": {
+    "gateLabel": "Pre-Test gate",
+    "itemsLabel": "Pre-Test items",
+    "answerLabel": "Answer",
+    "autosaveLabel": "Autosave",
+    "submitLabel": "Submit once",
+    "linkContent": "Course content",
+    "linkDashboard": "Dashboard",
+    "fallbackSuspense": "Loading…",
+    "states": {
+      "noConsent": "no consent — the explanation is the next action",
+      "consentNoSubmit": "consented, un-submitted — the Pre-Test is the only screen",
+      "gateOpen": "gate opened — content is server-side readable",
+      "score": "score recorded with instrument version + language",
+      "submittedOnce": "submitted once (single attempt; immutable after the submit)",
+      "autosave": "autosave (resumable after an interrupted session)",
+      "itemsEmpty": "no instrument (read granted, table empty)",
+      "itemsError": "error",
+      "empty": "empty",
+      "error": "error",
+      "denied": "denied",
+      "unauthorized": "unauthorized",
+      "notConfigured": "not-configured",
+      "ok": "ok",
+      "fallbackSuspense": "Loading…"
+    }
+  },
+  "content": {
+    "gateLabel": "Content gate",
+    "locked": "Course content is server-side locked until the Pre-Test is submitted",
+    "linkPreTest": "Take the Pre-Test",
+    "linkDashboard": "Dashboard",
+    "fallbackSuspense": "Loading…",
+    "states": {
+      "noConsent": "no consent — the explanation is the next action",
+      "locked": "content locked (inaccessible before the gate opens)",
+      "unlocked": "content unlocked (the gate opened server-side)",
+      "empty": "empty",
+      "error": "error",
+      "denied": "denied",
+      "unauthorized": "unauthorized",
+      "notConfigured": "not-configured",
+      "ok": "ok",
+      "fallbackSuspense": "Loading…"
+    }
   },
   "unauthorized": {
     "title": "You must sign in first.",
