@@ -361,6 +361,35 @@
       "historyEmpty": "no attempt rows yet (you never submits this Mission)"
     }
   },
+  "practical": {
+    "section": "Practical Mission",
+    "scenarioHeading": "The scenario",
+    "requirementsHeading": "The requirements",
+    "expectedHeading": "The expected output",
+    "lessonsFlowNote": "The instructions flow from your lessons:",
+    "uploadLabel": "Upload my .pptx/.ppt file + a short reflection",
+    "reflectionPlaceholder": "A short reflection on what you learned",
+    "submittedState": "Submitted — a Teacher reviews it (#14 awards +150 XP on approval)",
+    "xpSeamNote": "The +150 XP seam on approval is ticket #14's job — this page states it, never awards now",
+    "historySection": "Your submission history (append-only, version-preserving)",
+    "historyRound": "Round",
+    "historyStatus": "Status",
+    "historyDownload": "Download my file (a short-lived signed URL)",
+    "linkModule": "This module",
+    "linkMap": "Course map",
+    "fallbackSuspense": "Loading the practical Mission…",
+    "states": {
+      "ok": "ok",
+      "empty": "empty (no see-able practical Mission server-side)",
+      "error": "error",
+      "denied": "denied",
+      "unauthorized": "unauthorized",
+      "notConfigured": "not-configured",
+      "historyEmpty": "no submission rows yet (you never submits this Mission)",
+      "typeWrong": "wrong type: the file signature NEVER is .pptx/.ppt — pick a .pptx or .ppt file",
+      "oversize": "too large: 25 MB max — trim your deck before you upload"
+    }
+  },
   "badge": {
     "title": "Badge gallery",
     "intro": "Criteria-based awards from real events — earned and locked states with the criteria shown in your language.",
