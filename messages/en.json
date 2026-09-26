@@ -59,6 +59,16 @@
         "notConfigured": "not-configured"
       }
     },
+    "publication": {
+      "list": "Publication states (modules)",
+      "toggle": "Toggle a module/lesson publication state",
+      "targetKey": "Target key (module-NN / module-NN-lesson-NN)",
+      "newState": "New publication state",
+      "draft": "draft (invisible to Learners)",
+      "published": "published (visible per the lock rule)",
+      "archived": "archived (invisible to Learners)",
+      "linkAudit": "Audit log (publication events)"
+    },
     "states": {
       "ok": "ok",
       "empty": "empty",
@@ -125,6 +135,7 @@
     "linkPreTest": "Take the Pre-Test",
     "linkContent": "Course content",
     "linkContentLocked": "Course content (locked until the Pre-Test)",
+    "linkCourse": "Course map (Powerpoint Presentation Creation)",
     "states": {
       "noConsent": "no consent — the explanation is the next action",
       "consentNoSubmit": "consented, un-submitted — the Pre-Test is the only screen",
@@ -183,6 +194,42 @@
       "notConfigured": "not-configured",
       "ok": "ok",
       "fallbackSuspense": "Loading…"
+    }
+  },
+  "course": {
+    "mapLabel": "Course map",
+    "title": "PowerPoint Presentation Creation",
+    "linkDashboard": "Dashboard",
+    "linkPreTest": "Take the Pre-Test",
+    "fallbackSuspense": "Loading the map…",
+    "states": {
+      "open": "open — the previous Mission is complete",
+      "locked": "locked — the previous Mission is incomplete",
+      "empty": "empty (no see-able modules server-side)",
+      "error": "error",
+      "denied": "denied",
+      "unauthorized": "unauthorized",
+      "notConfigured": "not-configured",
+      "ok": "ok"
+    }
+  },
+  "lesson": {
+    "list": "Lessons",
+    "viewTitle": "Lesson",
+    "whatHeading": "What you will learn",
+    "whyHeading": "Why it matters",
+    "bodyHeading": "The study material",
+    "nextHeading": "What next",
+    "linkMap": "Course map",
+    "linkModule": "This module",
+    "fallbackSuspense": "Loading the lessons…",
+    "states": {
+      "ok": "ok",
+      "empty": "empty (no lesson rows server-side)",
+      "error": "error",
+      "denied": "denied",
+      "unauthorized": "unauthorized",
+      "notConfigured": "not-configured"
     }
   },
   "unauthorized": {

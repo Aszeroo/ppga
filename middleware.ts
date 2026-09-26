@@ -18,7 +18,7 @@ import { routing } from './lib/i18n/routing'
  *
  * `middleware.ts` is live by definition; Next never pre-renders it.
  */
-const protectedRoutes = ['/profile', '/change-password', '/logout', '/admin/users', '/admin/audit', '/admin/provisioning', '/pre-test', '/content']
+const protectedRoutes = ['/profile', '/change-password', '/logout', '/admin/users', '/admin/audit', '/admin/provisioning', '/pre-test', '/course', '/admin/publication', '/content']
 const sessionCookie = 'ppga_session'
 const mustChangeCookie = 'ppga_must_change_password'
 const consentCookie = 'ppga_consent'
@@ -78,7 +78,7 @@ export default function middleware(req: NextRequest) {
     if (!consent && !pathname.startsWith(`/${locale}/login`) && !pathname.startsWith(`/${locale}/logout`) && pathname !== `/${locale}`) {
       return NextResponse.redirect(new URL(`/${locale}`, req.url))
     }
-    if (consent && !unlockedGateOpen && pathname.startsWith(`/${locale}/content`)) {
+    if (consent && !unlockedGateOpen && (pathname.startsWith(`/${locale}/content`) || pathname.startsWith(`/${locale}/course`))) {
       return NextResponse.redirect(new URL(`/${locale}/pre-test`, req.url))
     }
   }

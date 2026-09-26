@@ -59,6 +59,16 @@
         "notConfigured": "บริการไม่มี"
       }
     },
+    "publication": {
+      "list": "สถานะ publish (หน่วนเรียน)",
+      "toggle": "เปลี่ยนสถานะ publish",
+      "targetKey": " мишен key (module-NN / module-NN-lesson-NN)",
+      "newState": "สถานะใหม่",
+      "draft": "draft (invisible  learner)",
+      "published": "published (visible ตาม lock)",
+      "archived": "archived (invisible  learner)",
+      "linkAudit": "audit log (publish)"
+    },
     "states": {
       "ok": "ได้าสาย",
       "empty": "สายวา่ง",
@@ -125,6 +135,7 @@
     "linkPreTest": "ขั้ทกัาน์",
     "linkContent": "ขั้ทกัาน์",
     "linkContentLocked": "ขั้ทกัาน์",
+    "linkCourse": "แผนที่หน่วนเรียน",
     "states": {
       "noConsent": "ลงชื่อ",
       "consentNoSubmit": "ลงชื่อ",
@@ -185,6 +196,42 @@
       "ok": "ได้าสาย",
       "scaffold": " P PGA พร้อม",
       "fallbackSuspense": "กำลังโหลด..."
+    }
+  },
+  "course": {
+    "mapLabel": "แผนที่หน่วนเรียน",
+    "title": "ส้างสไลด PowerPoint",
+    "linkDashboard": "หน้าหลัก",
+    "linkPreTest": "เข้า Pre-Test",
+    "fallbackSuspense": "กำลลังโหลด…",
+    "states": {
+      "open": "เปิด — จบ มิชชัน ก่อนหน้า",
+      "locked": "ถกัก — ยัง ไม่ จบ มิชชัน ก่อนหน้า",
+      "empty": "ว่า่ง (ไม่มีหน่วนเรียนที่เห็นได้)",
+      "error": "กำลัอง",
+      "denied": "ปฏฏิลทู่",
+      "unauthorized": "ต้องลงชื่อก่อน",
+      "notConfigured": "ยังไม่ได้ configuring",
+      "ok": "ได้สาย"
+    }
+  },
+  "lesson": {
+    "list": "หน่วนย่อย",
+    "viewTitle": "หน่วนย่อย",
+    "whatHeading": "ส้างเรรียน",
+    "whyHeading": "ส้างเปราะ",
+    "bodyHeading": "ส้างเรียน",
+    "nextHeading": "ส้างต่อไป",
+    "linkMap": "แผนที่หน่วนเรียน",
+    "linkModule": "หน่วนเรียนนี้",
+    "fallbackSuspense": "กำลลังโหลด…",
+    "states": {
+      "ok": "ได้สาย",
+      "empty": "ว่า่ง (ไม่มีหน่วนย่อย)",
+      "error": "กำลัอง",
+      "denied": "ปฏฏิลทู่",
+      "unauthorized": "ต้องลงชื่อก่อน",
+      "notConfigured": "ยังไม่得 configuring"
     }
   },
   "unauthorized": {
