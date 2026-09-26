@@ -18,7 +18,7 @@ import { routing } from './lib/i18n/routing'
  *
  * `middleware.ts` is live by definition; Next never pre-renders it.
  */
-const protectedRoutes = ['/profile', '/change-password', '/logout']
+const protectedRoutes = ['/profile', '/change-password', '/logout', '/admin/users', '/admin/audit']
 const sessionCookie = 'ppga_session'
 
 export default function middleware(req: NextRequest) {

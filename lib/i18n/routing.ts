@@ -27,6 +27,8 @@ export const routing = defineRouting({
     '/change-password': '/change-password',
     '/profile': '/profile',
     '/health': '/health',
+    '/admin/users': '/admin/users',
+    '/admin/audit': '/admin/audit',
   },
 })
 

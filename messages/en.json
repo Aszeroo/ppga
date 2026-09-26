@@ -5,7 +5,42 @@
     "logout": "Logout",
     "profile": "Profile",
     "changePassword": "Change password",
-    "health": "Health"
+    "health": "Health",
+    "adminUsers": "User list",
+    "adminAudit": "Audit stream"
+  },
+  "admin": {
+    "heading": "Admin console",
+    "users": {
+      "list": "User list",
+      "studentId": "Student ID",
+      "fullName": "Full name",
+      "role": "Role",
+      "changeRole": "Change role",
+      "target": "Target user",
+      "newRole": "New role",
+      "submit": "Change",
+      "linkAudit": "Audit stream",
+      "targetRequired": "a UUID target is required"
+    },
+    "audit": {
+      "stream": "Audit stream",
+      "linkUsers": "User list"
+    },
+    "states": {
+      "ok": "ok",
+      "empty": "empty",
+      "error": "error",
+      "denied": "denied",
+      "unauthorized": "unauthorized",
+      "notConfigured": "not-configured",
+      "fallbackSuspense": "Preparing the console…"
+    },
+    "roles": {
+      "learner": "Learner",
+      "teacher": "Teacher",
+      "admin": "Admin"
+    }
   },
   "login": {
     "intro": "Login with your provisioned student-ID and password.",

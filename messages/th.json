@@ -5,7 +5,42 @@
     "logout": "ออกชื่อ",
     "profile": "โปรไฟล์",
     "changePassword": "เปลี่ยนรหัส",
-    "health": "สารภาพ"
+    "health": "สารภาพ",
+    "adminUsers": "ผู่้่ผู้ใชั้",
+    "adminAudit": "สารชู่้"
+  },
+  "admin": {
+    "heading": "ผู่้่ผู้ใชั้",
+    "users": {
+      "list": "รายชื่่อผู้ใชั้",
+      "studentId": "ร.บกะนักเรียน",
+      "fullName": "ชื่่อสับสบ",
+      "role": "บทบาท",
+      "changeRole": "เปลี่ยนบทบาท",
+      "target": "ผู้ใชั้ที่ตี่งสับ",
+      "newRole": "บทบาทใหม่",
+      "submit": "เปลี่ยน",
+      "linkAudit": "สารชื่่อ",
+      "targetRequired": "ตี่งกรออทที่ดที่อยู่"
+    },
+    "audit": {
+      "stream": "สายชื่่อ",
+      "linkUsers": "รายชื่่อผู้ใชั้"
+    },
+    "states": {
+      "ok": "ได้าสาย",
+      "empty": "สายวา่ง",
+      "error": "กำลัง",
+      "denied": "ปฏฏิลทู่",
+      "unauthorized": "เมิลทู่",
+      "notConfigured": "ลาท์ก่กำล่ง",
+      "fallbackSuspense": "กำลังเตรียมแบบฟอร์ม..."
+    },
+    "roles": {
+      "learner": "นัักเรียน",
+      "teacher": "อาจาร์ย์ย",
+      "admin": "นัักกะก่า"
+    }
   },
   "login": {
     "intro": "ลงชื่อด้วยร.บกะนักเรียนและรหัสที่ได้นัด",
