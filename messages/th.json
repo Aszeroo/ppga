@@ -306,6 +306,35 @@
       "neutral": "กลาง"
     }
   },
+  "header": {
+    "label": "ขึ้ลกับ-XP",
+    "level": "ขึ้ล",
+    "progress": "ขึ้้ล่ไปสู่ขึ้ลต่อไป",
+    "badge": "กิ่",
+    "states": {
+      "ok": "ปกติ",
+      "error": "ความผิด",
+      "unauthorized": "ไม่อ้อนาญ — เปิกงานก่่อน",
+      "notConfigured": "ไม่ไม่่งตั้"
+    }
+  },
+  "selfcheck": {
+    "section": "Self-Check",
+    "optionLabel": "คอย",
+    "submitLabel": "ผิดคอย (ไม่มถก)",
+    "retryHint": "ผิดอีกไม่มถก — ผ่านจะมถก-งิ่ชั, ไม่คคอย",
+    "passState": "ผ่าน (+50 XP — ครั้แรก, ครั้แรกคก",
+    "badgeNote": "กิ่-กั้แรกแห่งทุกทักษะ",
+    "failNote": "ยัง — ไม่คอย (ไม่ผิด)",
+    "states": {
+      "ok": "ปกติ",
+      "empty": "มชััา (ไม่คอย",
+      "error": "ความผิด",
+      "denied": "ไม่คก",
+      "unauthorized": "ไม่อ้อนาญ",
+      "notConfigured": "ไม่ไม่่งตั้"
+    }
+  },
   "language": {
     "th": "ไทย",
     "en": "English"

@@ -148,7 +148,7 @@ export async function readLessonsViaRpc(moduleKey: string): Promise<LessonsState
   const { data: session } = await sup.auth.getSession()
   if (!session || !session.session) return { status: 'unauthorized', detail: 'no session' }
 
-  if (!contentKeySchema.safeTest(moduleKey))
+  if (!contentKeySchema.safeParse(moduleKey).success)
     return { status: 'denied', detail: 'module key not in the seeded shape (module-NN)' }
 
   const { data, error } = await sup.rpc(
@@ -186,7 +186,7 @@ export async function togglePublicationViaRpc(
   const { data: session } = await sup.auth.getSession()
   if (!session || !session.session) return { ok: false, detail: 'no session' }
 
-  if (!contentKeySchema.safeTest(targetKey))
+  if (!contentKeySchema.safeParse(targetKey).success)
     return { ok: false, detail: 'target key not in the seeded shape (module-NN / module-NN-lesson-NN)' }
 
   const { error } = await sup.rpc(
