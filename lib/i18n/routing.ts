@@ -37,6 +37,7 @@ export const routing = defineRouting({
     '/course/[moduleKey]/[lessonKey]': '/course/[moduleKey]/[lessonKey]',
     '/course/[moduleKey]/mission': '/course/[moduleKey]/mission',
     '/badges': '/badges',
+    '/leaderboard': '/leaderboard',
     '/admin/publication': '/admin/publication',
   },
 })

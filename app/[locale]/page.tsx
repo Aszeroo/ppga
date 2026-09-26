@@ -50,6 +50,9 @@ export default function HomePage() {
         <section>
           <Link href="/health">{t('healthLink')}</Link>
         </section>
+        <section aria-label={t('linkLeaderboard')}>
+          <Link href="/leaderboard">{t('linkLeaderboard')}</Link>
+        </section>
       </main>
     </Suspense>
   )
