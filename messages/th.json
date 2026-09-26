@@ -363,6 +363,35 @@
       "historyEmpty": "ไม่ประวัตคร (ยังไม่อมถก)"
     }
   },
+  "practical": {
+    "section": "ภารกิจ-ปฏิบัต",
+    "scenarioHeading": "เรท-เรย",
+    "requirementsHeading": "ไป-เรย",
+    "expectedHeading": "เรย-ไป-เรย",
+    "lessonsFlowNote": "คำสั่่ง-จาก-บทเรย:",
+    "uploadLabel": "อัป-ไฟ-เรย(.pptx/.ppt) + คอย-คอย-คอย",
+    "reflectionPlaceholder": "คอย-คอย-เรย-สึด",
+    "submittedState": "ไป-เรย — ครู-ไป-เรย (#14 ไป XP-150 คก",
+    "xpSeamNote": "XP-150 คก-เรย คก #14 (หน-หน; หน-หน)",
+    "historySection": "ประวัต-ไป-เรย (-append-only)",
+    "historyRound": "ครัง",
+    "historyStatus": "เรท",
+    "historyDownload": "โหลด-เรย(-URL)",
+    "linkModule": "มชนี้",
+    "linkMap": "แผนผัง",
+    "fallbackSuspense": "กม-ภารกิจ",
+    "states": {
+      "ok": "ปกต",
+      "empty": "มชัา (ไม่ไม่",
+      "error": "ความผิด",
+      "denied": "ไม่คก",
+      "unauthorized": "ไม่อ้อนาญ",
+      "notConfigured": "ไม่ไม่ต",
+      "historyEmpty": "ไม่ประวัตคร (ยังไม่อมถก)",
+      "typeWrong": "เรท-เรย: เรย-เรย-ไฟ-เรย .pptx/.ppt (มช)",
+      "oversize": "ไม่(ไป-เรย): 25 MB (ปม-ไม)"
+    }
+  },
   "badge": {
     "title": "ช่ออ-กิ่",
     "intro": "กิ่-จากเหตุ-จริง — กิ่คก/กิ่ยังไม่คก คอยกั่",
