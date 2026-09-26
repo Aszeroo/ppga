@@ -45,5 +45,9 @@ export async function POST(req: NextRequest) {
   // supa-js's own storage key is cleared too so a stale bundle can never be
   // restored server-side on a later request.
   res.cookies.set('supabasejs', '', { path: '/', maxAge: 0 })
+  // Ticket #7: the must-change flag cookie is cleared on the same path so a
+  // logout's next login speaks its own flag read verbatim (no stale `1`
+  // redirecting a new sign-in before anything else).
+  res.cookies.set('ppga_must_change_password', '', { path: '/', maxAge: 0 })
   return res
 }
