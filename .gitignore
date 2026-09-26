@@ -13,3 +13,8 @@ tsconfig.tsbuildinfo
 !/.gitignore
 supabase/.branches/
 supabase/.temp/
+# ticket #5 source asset — the zip stays out of the repo; the sanctioned .ttf
+# ships in `app/fonts/` instead
+TA-16-Bit.zip
+TA-16-Bit.zip:Zone.Identifier
+*.zip:Zone.Identifier

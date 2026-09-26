@@ -73,6 +73,58 @@
     "slideDesign": "Slide Design",
     "textFormatting": "Text Formatting"
   },
+  "gallery": {
+    "title": "Component gallery",
+    "intro": "The 8-bit pastel design system — every pixel primitive demoed live in your language. State is announced by text + the aria-disabled/aria-label, never by the colour alone.",
+    "healthLink": "Health page",
+    "fallbackSuspense": "Loading the gallery…",
+    "button": {
+      "available": "Available lesson",
+      "locked": "Locked lesson",
+      "warning": "Warning lesson",
+      "error": "Error lesson"
+    },
+    "card": {
+      "heading": "Pastel card",
+      "body": "A slide lives on this surface.",
+      "lockedHeading": "Locked card",
+      "lockedBody": "This surface is locked — a stripe + the “Locked” text announce the state, not a colour only."
+    },
+    "badge": {
+      "success": "Success badge",
+      "warning": "Warning badge",
+      "error": "Error badge",
+      "locked": "Locked badge",
+      "neutral": "Neutral badge"
+    },
+    "pill": {
+      "success": "Success",
+      "warning": "Warning",
+      "error": "Error",
+      "locked": "Locked"
+    },
+    "progress": {
+      "label": "Lesson progress",
+      "value": "Progress"
+    },
+    "xp": {
+      "label": "XP meter",
+      "value": "XP"
+    },
+    "states": {
+      "available": "Available",
+      "locked": "Locked",
+      "warning": "Warning",
+      "error": "Error"
+    },
+    "tones": {
+      "success": "Success",
+      "warning": "Warning",
+      "error": "Error",
+      "locked": "Locked",
+      "neutral": "Neutral"
+    }
+  },
   "language": {
     "th": "Thai",
     "en": "English"

@@ -73,6 +73,58 @@
     "slideDesign": "แบบสไลด",
     "textFormatting": "แบบอักษร"
   },
+  "gallery": {
+    "title": "กลาลังแบบฟอร์ม",
+    "intro": "การบิระบบ 8-bit นุม pastel —ทุกถ่วนท่ีแบบฟอร์มเปสสในภาษาของของคัณ.การตองจะเจเจโดยอาารยะ",
+    "healthLink": "สารภาพ",
+    "fallbackSuspense": "กำลังโหลด...",
+    "button": {
+      "available": "ชัันเรียน",
+      "locked": "ชัันถก",
+      "warning": "ชัันตดใจ",
+      "error": "ชัันตวอความผิด"
+    },
+    "card": {
+      "heading": "การบิ",
+      "body": "ถ่วนท่ีจะเจในพืชนี้",
+      "lockedHeading": "การบิตด",
+      "lockedBody": "ถ่วนท่ีจะเจโดยอาารยะ"
+    },
+    "badge": {
+      "success": "เบดความท่ี",
+      "warning": "เบดตดใจ",
+      "error": "เบดความผิด",
+      "locked": "เบด",
+      "neutral": "เบดกลาง"
+    },
+    "pill": {
+      "success": "ท่ี",
+      "warning": "ตดใจ",
+      "error": "ความผิด",
+      "locked": "ถก"
+    },
+    "progress": {
+      "label": "คาวหน้าชััน",
+      "value": "คาวหน้า"
+    },
+    "xp": {
+      "label": "นังกะXP",
+      "value": "XP"
+    },
+    "states": {
+      "available": "มมีชััน",
+      "locked": "มถก",
+      "warning": "ตดใจ",
+      "error": "ความผิด"
+    },
+    "tones": {
+      "success": "ท่ี",
+      "warning": "ตดใจ",
+      "error": "ความผิด",
+      "locked": "มถก",
+      "neutral": "กลาง"
+    }
+  },
   "language": {
     "th": "ไทย",
     "en": "English"
