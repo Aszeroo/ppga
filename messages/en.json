@@ -304,6 +304,35 @@
       "neutral": "Neutral"
     }
   },
+  "header": {
+    "label": "Level & XP",
+    "level": "Level",
+    "progress": "Progress to next Level",
+    "badge": "Badge",
+    "states": {
+      "ok": "ok",
+      "error": "error",
+      "unauthorized": "unauthorized — sign in first",
+      "notConfigured": "not-configured"
+    }
+  },
+  "selfcheck": {
+    "section": "Self-Check",
+    "optionLabel": "Answer",
+    "submitLabel": "Check my answers (unlimited retries)",
+    "retryHint": "Retry freely — the pass gates the Mission, no grade is ever recorded.",
+    "passState": "Pass (+50 XP — granted exactly once, the first pass only)",
+    "badgeNote": "First Steps badge awarded on the first pass",
+    "failNote": "Not yet — some answers are off (retry freely)",
+    "states": {
+      "ok": "ok",
+      "empty": "empty (no see-able questions server-side)",
+      "error": "error",
+      "denied": "denied",
+      "unauthorized": "unauthorized",
+      "notConfigured": "not-configured"
+    }
+  },
   "language": {
     "th": "Thai",
     "en": "English"

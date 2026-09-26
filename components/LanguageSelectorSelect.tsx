@@ -39,7 +39,7 @@ export function LanguageSelectorSelect({ labels }: Props) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ locale: next }),
         })
-        router.replace(pathname, { locale: next })
+        router.replace(pathname as Parameters<typeof router.replace>[0], { locale: next })
       }
     },
     [locale, pathname, router],
