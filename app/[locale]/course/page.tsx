@@ -53,6 +53,9 @@ async function CourseMap() {
       <p>
         <Link href="/pre-test">{t('linkPreTest')}</Link>
       </p>
+      <p>
+        <Link href="/badges">{t('linkBadges')}</Link>
+      </p>
     </section>
   )
 }

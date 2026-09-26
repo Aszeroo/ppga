@@ -42,6 +42,9 @@ async function LessonsList({ moduleKey }: { moduleKey: string }) {
       {state.status === 'unauthorized' ? <p>{t('states.unauthorized')} {state.detail}</p> : null}
       {state.status === 'not-configured' ? <p>{t('states.notConfigured')} {state.detail}</p> : null}
       <p>
+        <Link href={{ pathname: '/course/[moduleKey]/mission', params: { moduleKey } }}>{t('linkMission')}</Link>
+      </p>
+      <p>
         <Link href="/course">{t('linkMap')}</Link>
       </p>
     </section>

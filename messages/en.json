@@ -201,6 +201,7 @@
     "title": "PowerPoint Presentation Creation",
     "linkDashboard": "Dashboard",
     "linkPreTest": "Take the Pre-Test",
+    "linkBadges": "Badge gallery",
     "fallbackSuspense": "Loading the map…",
     "states": {
       "open": "open — the previous Mission is complete",
@@ -222,6 +223,7 @@
     "nextHeading": "What next",
     "linkMap": "Course map",
     "linkModule": "This module",
+    "linkMission": "This module's Knowledge Mission",
     "fallbackSuspense": "Loading the lessons…",
     "states": {
       "ok": "ok",
@@ -327,6 +329,50 @@
     "states": {
       "ok": "ok",
       "empty": "empty (no see-able questions server-side)",
+      "error": "error",
+      "denied": "denied",
+      "unauthorized": "unauthorized",
+      "notConfigured": "not-configured"
+    }
+  },
+  "mission": {
+    "section": "Knowledge Mission",
+    "instructionsHeading": "The Mission instructions",
+    "submitLabel": "Submit my answers (unlimited retries)",
+    "retryHint": "Retry freely below the 70% threshold — your score history is retained.",
+    "passState": "Pass at 70% (+100 XP — granted exactly once, the first pass only)",
+    "badgeNote": "Module badge awarded on the first pass; the completion unlocks the next Module",
+    "failNote": "Below 70% — retry freely; the feedback per question says what was right, what was wrong, why, what to review",
+    "historySection": "Your score history (append-only, retained)",
+    "historyAttempt": "Attempt",
+    "historyScore": "Score %",
+    "historyOutcome": "Outcome",
+    "linkModule": "This module",
+    "linkMap": "Course map",
+    "fallbackSuspense": "Loading the Mission…",
+    "states": {
+      "ok": "ok",
+      "empty": "empty (no see-able Mission server-side)",
+      "error": "error",
+      "denied": "denied",
+      "unauthorized": "unauthorized",
+      "notConfigured": "not-configured",
+      "historyEmpty": "no attempt rows yet (you never submits this Mission)"
+    }
+  },
+  "badge": {
+    "title": "Badge gallery",
+    "intro": "Criteria-based awards from real events — earned and locked states with the criteria shown in your language.",
+    "criteria": "Criteria",
+    "earned": "Earned — a real achievement's record",
+    "locked": "Locked — no award yet (the criteria stay visible)",
+    "earnedBadge": "Earned badge",
+    "lockedBadge": "Locked badge",
+    "linkMap": "Course map",
+    "fallbackSuspense": "Loading the badges…",
+    "states": {
+      "ok": "ok",
+      "empty": "empty (no badge rows server-side)",
       "error": "error",
       "denied": "denied",
       "unauthorized": "unauthorized",
