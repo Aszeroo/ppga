@@ -68,6 +68,47 @@ async function RoleChangeControl() {
       <p>
         <Link href="/admin/provisioning">{t('provisioning.linkProvision')}</Link>
       </p>
+      {/* Ticket #8 consent: the admin sets the paper-consent flag offline (no
+        in-app consent flow exists anywhere) — the same native-form pattern
+        the role-change's control rides so the keyboard reaches it. The
+        RPC's gate + profiles' RLS speak: a learner/teacher smuggle the
+        POST as `permission_denied`, never a silently-0-row UPDATE of
+        someone else's consent flag. One call = one UPDATE + one audit
+        INSERT (action `consent`, details old/new consent). */}
+      <form
+        data-ppg-admin-form="consent"
+        aria-label={t('users.setConsent')}
+        method="POST"
+        action="/api/admin/consent"
+      >
+        <label htmlFor="admin_consent_target_id">{t('users.target')}</label>
+        <input id="admin_consent_target_id" name="target_id" required pattern="^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{32}$" />
+        <label htmlFor="admin_consent_flag">{t('users.consentFlag')}</label>
+        <select id="admin_consent_flag" name="consent" required>
+          <option value="true">{t('states.consentTrue')}</option>
+          <option value="false">{t('states.consentFalse')}</option>
+        </select>
+        <button type="submit">{t('users.submit')}</button>
+      </form>
+      {/* Ticket #8 unlock-override: the admin unlocks ONE learner past the
+        gate for an exception — every override is audited (ADR-0002). The
+        RPC's gate + the audit's append-only policies speak: a learner/
+        teacher smuggle the POST as `permission_denied`, never a silent
+        write. One call = one UPDATE + one audit INSERT (action
+        `prettest_unlock_override`, details old/new override). */}
+      <form
+        data-ppg-admin-form="override"
+        aria-label={t('users.unlockOverride')}
+        method="POST"
+        action="/api/admin/override"
+      >
+        <label htmlFor="admin_override_target_id">{t('users.target')}</label>
+        <input id="admin_override_target_id" name="target_id" required pattern="^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{32}$" />
+        <button type="submit">{t('users.unlockSubmit')}</button>
+      </form>
+      <p>
+        <Link href="/admin/audit">{t('users.linkAuditOverride')}</Link>
+      </p>
     </section>
   )
 }

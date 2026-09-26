@@ -18,9 +18,12 @@ import { routing } from './lib/i18n/routing'
  *
  * `middleware.ts` is live by definition; Next never pre-renders it.
  */
-const protectedRoutes = ['/profile', '/change-password', '/logout', '/admin/users', '/admin/audit', '/admin/provisioning']
+const protectedRoutes = ['/profile', '/change-password', '/logout', '/admin/users', '/admin/audit', '/admin/provisioning', '/pre-test', '/content']
 const sessionCookie = 'ppga_session'
 const mustChangeCookie = 'ppga_must_change_password'
+const consentCookie = 'ppga_consent'
+const unlockedCookie = 'ppga_pretest_unlocked'
+const submittedCookie = 'ppga_pretest_submitted'
 
 // fallow-ignore-next-line complexity
 export default function middleware(req: NextRequest) {
@@ -49,6 +52,35 @@ export default function middleware(req: NextRequest) {
   // password's own pathname is the allowlist).
   if (hasSession && mustChange && !pathname.startsWith(`/${locale}/change-password`) && !pathname.startsWith(`/${locale}/logout`) && pathname !== `/${locale}`) {
     return NextResponse.redirect(new URL(`/${locale}/change-password`, req.url))
+  }
+
+  // Ticket #8 gate guard, in one with the #3 guard + #7 force-change: the
+  // gate flags ride httpOnly cookies the login route set from the DATABASE's
+  // own flags under the CALLER's own JWT + RLS (a client script can never
+  // clear or smuggle them; the login route's read of the DATABASE already
+  // spoke). A signed-in Learner without consent sees the dashboard's
+  // respectful explanation and no access to the Pre-Test — any other
+  // pathname goes back to `/<locale>` (the no-consent state). A consenting
+  // un-submitted Learner reaches ONLY the Pre-Test pathname (or logout/
+  // change-password/profile the allowlist the #3 guard carries): the
+  // content pathname goes back to `/<locale>/pre-test` until the response
+  // is submitted — content is INACCESSIBLE server-side before the gate
+  // opens (the DATABASE's own policy denies the read at the row level;
+  // the redirect here is the UI's state, never a hidden UI that the
+  // smuggle could pass). An audited override (`ppga_pretest_unlocked`)
+  // bypasses the gate to the locked-content placeholder for that
+  // Learner alone — the override is what opened the gate, not a submit.
+  const consent = Boolean(req.cookies.get(consentCookie)?.value)
+  const unlocked = Boolean(req.cookies.get(unlockedCookie)?.value)
+  const submitted = Boolean(req.cookies.get(submittedCookie)?.value)
+  const unlockedGateOpen = unlocked || submitted
+  if (hasSession && !mustChange) {
+    if (!consent && !pathname.startsWith(`/${locale}/login`) && !pathname.startsWith(`/${locale}/logout`) && pathname !== `/${locale}`) {
+      return NextResponse.redirect(new URL(`/${locale}`, req.url))
+    }
+    if (consent && !unlockedGateOpen && pathname.startsWith(`/${locale}/content`)) {
+      return NextResponse.redirect(new URL(`/${locale}/pre-test`, req.url))
+    }
   }
 
   const response = createMiddleware(routing)(req)

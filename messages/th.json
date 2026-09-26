@@ -22,7 +22,12 @@
       "newRole": "บทบาทใหม่",
       "submit": "เปลี่ยน",
       "linkAudit": "สารชื่่อ",
-      "targetRequired": "ตี่งกรออทที่ดที่อยู่"
+      "targetRequired": "ตี่งกรออทที่ดที่อยู่",
+      "setConsent": "ตังตอง",
+      "consentFlag": "ตอง",
+      "unlockOverride": "ปล้",
+      "unlockSubmit": "ปล้",
+      "linkAuditOverride": "สารชื่ปล้"
     },
     "audit": {
       "stream": "สายชื่่อ",
@@ -61,6 +66,8 @@
       "denied": "ปฏฏิลทู่",
       "unauthorized": "เมิลทู่",
       "notConfigured": "ลาท์ก่กำล่ง",
+      "consentTrue": "ลงชื่อ",
+      "consentFalse": "ลงชื่อ",
       "fallbackSuspense": "กำลังเตรียมแบบฟอร์ม..."
     },
     "roles": {
@@ -113,7 +120,72 @@
   "home": {
     "scaffold": " P PGA พร้อม",
     "healthLink": "สารภาพ",
-    "fallbackSuspense": "กำลังโหลด..."
+    "nextAction": "ขั้ทกัาน์",
+    "nextActionExplanation": "อธิบาย",
+    "linkPreTest": "ขั้ทกัาน์",
+    "linkContent": "ขั้ทกัาน์",
+    "linkContentLocked": "ขั้ทกัาน์",
+    "states": {
+      "noConsent": "ลงชื่อ",
+      "consentNoSubmit": "ลงชื่อ",
+      "gateOpen": "ปล้",
+      "score": "คะแนน",
+      "empty": "สายวา่ง",
+      "error": "กำลัง",
+      "denied": "ปฏฏิลทู่",
+      "unauthorized": "เมิลทู่",
+      "notConfigured": "ลาทก์ก่กำล่ง",
+      "ok": "ได้าสาย",
+      "fallbackSuspense": "กำลังโหลด..."
+    }
+  },
+  "pretest": {
+    "gateLabel": "ขั้ทกัาน์",
+    "itemsLabel": "ขั้ทกัาน์",
+    "answerLabel": "ขั้ทกัาน์",
+    "autosaveLabel": "ขั้ทกัาน์",
+    "submitLabel": "ขั้ทกัาน์",
+    "linkContent": "ขั้ทกัาน์",
+    "linkDashboard": "ขั้ทกัาน์",
+    "fallbackSuspense": "กำลังโหลด...",
+    "states": {
+      "noConsent": "ลงชื่อ",
+      "consentNoSubmit": "ลงชื่อ",
+      "gateOpen": "ปล้",
+      "score": "คะแนน",
+      "submittedOnce": "ลงชื่อ",
+      "autosave": "ลงชื่อ",
+      "itemsEmpty": "สายวา่ง",
+      "itemsError": "กำลัง",
+      "empty": "สายวา่ง",
+      "error": "กำลัง",
+      "denied": "ปฏฏิลทู่",
+      "unauthorized": "เมิลทู่",
+      "notConfigured": "ลาทก์ก่กำล่ง",
+      "ok": "ได้าสาย",
+      "scaffold": " P PGA พร้อม",
+      "fallbackSuspense": "กำลังโหลด..."
+    }
+  },
+  "content": {
+    "gateLabel": "ขั้ทกัาน์",
+    "locked": "ขั้ทกัาน์",
+    "linkPreTest": "ขั้ทกัาน์",
+    "linkDashboard": "ขั้ทกัาน์",
+    "fallbackSuspense": "กำลังโหลด...",
+    "states": {
+      "noConsent": "ลงชื่อ",
+      "locked": "ขั้ทกัาน์",
+      "unlocked": "ปล้",
+      "empty": "สายวา่ง",
+      "error": "กำลัง",
+      "denied": "ปฏฏิลทู่",
+      "unauthorized": "เมิลทู่",
+      "notConfigured": "ลาทก์ก่กำล่ง",
+      "ok": "ได้าสาย",
+      "scaffold": " P PGA พร้อม",
+      "fallbackSuspense": "กำลังโหลด..."
+    }
   },
   "unauthorized": {
     "title": "ต้องลงชื่อ",
