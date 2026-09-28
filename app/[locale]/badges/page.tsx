@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { useLocale, useTranslations } from 'next-intl'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../lib/i18n/routing'
 
 import { readBadgeGalleryViaRpc } from '../../../lib/sup/missions'
@@ -25,8 +25,8 @@ import { StatusPill } from '../../../components/StatusPill'
 export const dynamic = 'force-dynamic'
 
 async function GalleryList() {
-  const t = useTranslations('badge')
-  const locale = useLocale()
+  const t = await getTranslations('badge')
+  const locale = await getLocale()
   const state = await readBadgeGalleryViaRpc()
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
   return (
@@ -72,8 +72,8 @@ async function GalleryList() {
   )
 }
 
-export default function BadgeGalleryPage() {
-  const t = useTranslations('badge')
+export default async function BadgeGalleryPage() {
+  const t = await getTranslations('badge')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <GalleryList />

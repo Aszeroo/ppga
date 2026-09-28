@@ -104,6 +104,7 @@ export async function POST(req: NextRequest) {
       // stream proves every attempt) — the finalize RPC's null-target UPDATE is
       // a harmless 0-row UPDATE (no target given; gotrue never created anyone).
       const audit = await provisionFinalizeViaRpc(null, line.student_id, line.full_name, verdict)
+      void audit
       results.push({
         student_id: line.student_id,
         full_name: line.full_name,

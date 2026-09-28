@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { useLocale, useTranslations } from 'next-intl'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../../lib/i18n/routing'
 
 import { readCourseMapViaRpc } from '../../../../lib/sup/curriculum'
@@ -19,8 +19,8 @@ import { readCourseMapViaRpc } from '../../../../lib/sup/curriculum'
 export const dynamic = 'force-dynamic'
 
 async function PublicationList() {
-  const t = useTranslations('admin')
-  const locale = useLocale()
+  const t = await getTranslations('admin')
+  const locale = await getLocale()
   const state = await readCourseMapViaRpc()
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
   return (
@@ -44,7 +44,7 @@ async function PublicationList() {
 }
 
 async function PublicationToggleControl() {
-  const t = useTranslations('admin')
+  const t = await getTranslations('admin')
   return (
     <section>
       {/* Ticket #9 publication toggle: the ADMIN's only authoring surface in
@@ -82,8 +82,8 @@ async function PublicationToggleControl() {
   )
 }
 
-export default function AdminPublicationPage() {
-  const t = useTranslations('admin')
+export default async function AdminPublicationPage() {
+  const t = await getTranslations('admin')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <PublicationList />

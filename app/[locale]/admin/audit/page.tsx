@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import { Link } from '../../../../lib/i18n/routing'
 
 import { readAuditViaTable, type AuditState } from '../../../../lib/sup/admin'
@@ -24,7 +24,7 @@ import { readAuditViaTable, type AuditState } from '../../../../lib/sup/admin'
 export const dynamic = 'force-dynamic'
 
 async function AuditStream() {
-  const t = useTranslations('admin')
+  const t = await getTranslations('admin')
   const state = await readAuditViaTable(50)
   return (
     <section aria-label={t('audit.stream')}>
@@ -49,8 +49,8 @@ async function AuditStream() {
   )
 }
 
-export default function AdminAuditPage() {
-  const t = useTranslations('admin')
+export default async function AdminAuditPage() {
+  const t = await getTranslations('admin')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <AuditStream />

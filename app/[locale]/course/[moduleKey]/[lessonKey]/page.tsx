@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { useLocale, useTranslations } from 'next-intl'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../../../lib/i18n/routing'
 
 import { readLessonsViaRpc } from '../../../../../lib/sup/curriculum'
@@ -30,9 +30,9 @@ import { StatusPill } from '../../../../../components/StatusPill'
 export const dynamic = 'force-dynamic'
 
 async function LessonView({ moduleKey, lessonKey }: { moduleKey: string; lessonKey: string }) {
-  const t = useTranslations('lesson')
-  const tS = useTranslations('selfcheck')
-  const locale = useLocale()
+  const t = await getTranslations('lesson')
+  const tS = await getTranslations('selfcheck')
+  const locale = await getLocale()
   const state = await readLessonsViaRpc(moduleKey)
   const row = state.lessons?.find((l) => l.lesson_key === lessonKey)
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
@@ -93,8 +93,8 @@ async function LessonView({ moduleKey, lessonKey }: { moduleKey: string; lessonK
   )
 }
 
-export default function LessonPage({ params }: { params: { moduleKey: string; lessonKey: string } }) {
-  const t = useTranslations('lesson')
+export default async function LessonPage({ params }: { params: { moduleKey: string; lessonKey: string } }) {
+  const t = await getTranslations('lesson')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <LessonView moduleKey={params.moduleKey} lessonKey={params.lessonKey} />

@@ -48,8 +48,8 @@ export async function readOwnProfile(): Promise<ProfileState> {
       storage: {
         isServer: true as const,
         getItem: (key: string) => jar.get(key)?.value ?? null,
-        setItem: (key: string, value: string) => undefined,
-        removeItem: (key: string) => undefined,
+        setItem: () => undefined,
+        removeItem: () => undefined,
       },
     },
   })
