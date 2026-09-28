@@ -1,4 +1,4 @@
-import { getLocale, getTranslations } from 'next-intl/server'
+import { getTranslations } from 'next-intl/server'
 
 import { LanguageSelectorSelect } from './LanguageSelectorSelect'
 
@@ -19,7 +19,6 @@ import { LanguageSelectorSelect } from './LanguageSelectorSelect'
  * so the learner's profile row also remembers it (across logout and re-login).
  */
 export async function LanguageSelector() {
-  const locale = await getLocale()
   const t = await getTranslations('selector')
 
   return (

@@ -9,12 +9,17 @@ import createNextIntlPlugin from 'next-intl/plugin'
  * scaffold config is empty so the plugin wraps it untouched.
  */
 const nextConfig: NextConfig = {
-  // The #10 worktree's build runs with the repo's shared `node_modules`
-  // symlinked in (the filesystem root = the repo, not the worktree — the
-  // Turbopack `symlink out-of-root` error otherwise panics the build).
-  turbopack: {
-    root: '/home/wasu/ai_nti/projects/ppga',
-  },
+  // NO `turbopack.root`: the #10-era hardcoded absolute path exists only in
+  // one developer's filesystem, so Vercel/CI `next build` panicked with
+  // `failed to canonicalize path`. An explicit root cannot be made portable:
+  // verified empirically that ANY value breaks some real environment —
+  // root pointing at another checkout panics `Invalid distDirRoot: ".next"`
+  // (the dist dir lies outside the root), and a symlinked `node_modules`
+  // panics `Symlink [project]/node_modules is invalid, it points out of the
+  // filesystem root` no matter what root is set. Next.js infers the project
+  // root from cwd, which is correct for the primary checkout, for Vercel,
+  // and for issue worktrees that install a REAL node_modules (`npm ci` —
+  // never symlink the primary checkout's node_modules into a worktree).
 }
 
 const withNextIntl = createNextIntlPlugin('./lib/i18n/request.ts')

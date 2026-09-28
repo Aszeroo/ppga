@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { useLocale, useTranslations } from 'next-intl'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../../../lib/i18n/routing'
 
 import {
@@ -31,8 +31,8 @@ import { StatusPill } from '../../../../../components/StatusPill'
 export const dynamic = 'force-dynamic'
 
 async function PracticalAttempt({ moduleKey }: { moduleKey: string }) {
-  const t = useTranslations('practical')
-  const locale = useLocale()
+  const t = await getTranslations('practical')
+  const locale = await getLocale()
   const state = await readPracticalMissionViaRpc(moduleKey)
   const history = await readSubmissionHistoryViaRpc(moduleKey)
   const lessons = await readLessonsViaRpc(moduleKey)
@@ -115,8 +115,8 @@ async function PracticalAttempt({ moduleKey }: { moduleKey: string }) {
   )
 }
 
-export default function PracticalPage({ params }: { params: { moduleKey: string } }) {
-  const t = useTranslations('practical')
+export default async function PracticalPage({ params }: { params: { moduleKey: string } }) {
+  const t = await getTranslations('practical')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <PracticalAttempt moduleKey={params.moduleKey} />

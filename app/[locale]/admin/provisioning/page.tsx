@@ -107,7 +107,7 @@ export default function ProvisioningPage() {
         })
         .catch(() => setMessage('network error'))
     },
-    [],
+    [t],
   )
 
   return (

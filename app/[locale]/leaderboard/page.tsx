@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import { Link } from '../../../lib/i18n/routing'
 
 import { readLeaderboardViaRpc } from '../../../lib/sup/leaderboard'
@@ -29,7 +29,7 @@ import { Badge } from '../../../components/Badge'
 export const dynamic = 'force-dynamic'
 
 async function LeaderTable() {
-  const t = useTranslations('leaderboard')
+  const t = await getTranslations('leaderboard')
   const state = await readLeaderboardViaRpc()
 
   return (
@@ -69,8 +69,8 @@ async function LeaderTable() {
   )
 }
 
-export default function LeaderboardPage() {
-  const t = useTranslations('leaderboard')
+export default async function LeaderboardPage() {
+  const t = await getTranslations('leaderboard')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <LeaderTable />

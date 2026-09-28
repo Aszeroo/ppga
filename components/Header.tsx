@@ -1,6 +1,6 @@
-import { readXpSummaryViaRpc, type XpSummaryState } from '../lib/sup/xp'
+import { readXpSummaryViaRpc } from '../lib/sup/xp'
 
-import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 
 import { XPBar } from './XPBar'
 import { ProgressBar } from './ProgressBar'
@@ -22,7 +22,7 @@ import { Badge } from './Badge'
  * single-token swap re-tunes the digits once.
  */
 export async function Header() {
-  const t = useTranslations('header')
+  const t = await getTranslations('header')
   const summary = await readXpSummaryViaRpc()
   const xp = summary.totalXp ?? 0
   const level = summary.level ?? 1

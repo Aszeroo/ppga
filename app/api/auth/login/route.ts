@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
   // new password BEFORE anything else — the redirect below speaks `/
   // change-password` first, and the httpOnly cookie carries the flag to the
   // middleware (the deeper redirect on any other pathname).
-  const { data: flagRows, error: flagError } = await sup
+  const { data: flagRows } = await sup
     .from('ppg_profiles')
     .select('must_change_password, consent, prettest_unlocked_override')
     // The caller's own row only: a teacher/admin sees EVERY profile row under

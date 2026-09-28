@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import { Link } from '../../../lib/i18n/routing'
 
 import { readOwnProfile } from '../../../lib/sup/profile'
@@ -23,7 +23,7 @@ import { readOwnProfile } from '../../../lib/sup/profile'
 export const dynamic = 'force-dynamic'
 
 async function ProfileContent() {
-  const t = useTranslations('profile')
+  const t = await getTranslations('profile')
   const state = await readOwnProfile()
   return (
     <section>
@@ -45,8 +45,8 @@ async function ProfileContent() {
   )
 }
 
-export default function ProfilePage() {
-  const t = useTranslations('profile')
+export default async function ProfilePage() {
+  const t = await getTranslations('profile')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <ProfileContent />

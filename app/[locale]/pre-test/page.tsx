@@ -1,9 +1,9 @@
 import { Suspense } from 'react'
 
-import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import { Link } from '../../../lib/i18n/routing'
 
-import { readGateViaTable, readItemsViaTable, submitViaRpc, upsupertAutosaveViaRpc, type GateState } from '../../../lib/sup/prettest'
+import { readGateViaTable, readItemsViaTable } from '../../../lib/sup/prettest'
 
 /**
  * Ticket #8 Pre-Test: the only accessible screen on a consenting
@@ -30,7 +30,7 @@ import { readGateViaTable, readItemsViaTable, submitViaRpc, upsupertAutosaveViaR
 export const dynamic = 'force-dynamic'
 
 async function GateStatus() {
-  const t = useTranslations('pretest')
+  const t = await getTranslations('pretest')
   const state = await readGateViaTable()
   return (
     <section aria-label={t('gateLabel')}>
@@ -47,7 +47,7 @@ async function GateStatus() {
 }
 
 async function Items() {
-  const t = useTranslations('pretest')
+  const t = await getTranslations('pretest')
   const state = await readItemsViaTable()
   return (
     <section aria-label={t('itemsLabel')}>
@@ -67,19 +67,18 @@ async function Items() {
   )
 }
 
-function PreTestForm() {
-  const t = useTranslations('pretest')
+async function PreTestForm() {
+  const t = await getTranslations('pretest')
   return (
     <section>
       {/* The autosave + the single submit ride the forms' native elements so
-        the keyboard reaches the control (login page's pattern); the
-        debounced save calls the upsupert RPC on every keystroke (the
-        `data-ppg-autosave` attr marks the save-call target); the single
+        the keyboard reaches the control (login page's pattern). The single
         submit button posts the `ppg_prettest_submit` RPC once (the
         `data-ppg-pretest-submit` attr marks the submit-call target; a
         second submit reaches `already_submitted`, never a silent
-        overwrite). */}
-      <div data-ppg-autosave="true" aria-label={t('autosaveLabel')} data-ppg-autosave-calls={upsupertAutosaveViaRpc({ item_1: 'A' } as never).then((r: Awaited<ReturnType<typeof upsupertAutosaveViaRpc>>) => r.detail)} />
+        overwrite). A real debounced autosave that persists on an
+        interrupted session is ticket #8 scope and does not exist yet —
+        this screen carries no fake save marker. */}
       <form
         data-ppg-pretest-form="prettest"
         data-ppg-pretest-submit="true"
@@ -101,8 +100,8 @@ function PreTestForm() {
   )
 }
 
-export default function PreTestPage() {
-  const t = useTranslations('pretest')
+export default async function PreTestPage() {
+  const t = await getTranslations('pretest')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <GateStatus />

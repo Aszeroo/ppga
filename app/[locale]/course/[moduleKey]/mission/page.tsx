@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { useLocale, useTranslations } from 'next-intl'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../../../lib/i18n/routing'
 
 import { readMissionViaRpc, readMissionHistoryViaRpc } from '../../../../../lib/sup/missions'
@@ -29,8 +29,8 @@ import { StatusPill } from '../../../../../components/StatusPill'
 export const dynamic = 'force-dynamic'
 
 async function MissionAttempt({ moduleKey }: { moduleKey: string }) {
-  const t = useTranslations('mission')
-  const locale = useLocale()
+  const t = await getTranslations('mission')
+  const locale = await getLocale()
   const state = await readMissionViaRpc(moduleKey)
   const history = await readMissionHistoryViaRpc(moduleKey)
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
@@ -113,8 +113,8 @@ async function MissionAttempt({ moduleKey }: { moduleKey: string }) {
   )
 }
 
-export default function MissionPage({ params }: { params: { moduleKey: string } }) {
-  const t = useTranslations('mission')
+export default async function MissionPage({ params }: { params: { moduleKey: string } }) {
+  const t = await getTranslations('mission')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <MissionAttempt moduleKey={params.moduleKey} />
