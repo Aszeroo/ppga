@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
 
-import { useTranslations } from 'next-intl'
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../../../lib/i18n/routing'
 
@@ -95,11 +94,12 @@ async function LearnerReviewResult({ moduleKey }: { moduleKey: string }) {
   )
 }
 
-export default function ReviewPage({ params }: { params: { moduleKey: string } }) {
-  const t = useTranslations('review')
+export default async function ReviewPage({ params }: { params: Promise<{ moduleKey: string }> }) {
+  const t = await getTranslations('review')
+  const { moduleKey } = await params
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <LearnerReviewResult moduleKey={params.moduleKey} />
+      <LearnerReviewResult moduleKey={moduleKey} />
     </Suspense>
   )
 }

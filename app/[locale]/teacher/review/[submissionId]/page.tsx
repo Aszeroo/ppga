@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
 
-import { useTranslations } from 'next-intl'
 import { getTranslations } from 'next-intl/server'
 import { Link } from '../../../../../lib/i18n/routing'
 
@@ -40,10 +39,14 @@ async function ReviewForm({
 }) {
   const t = await getTranslations('review')
 
-  // `submissionId` rides `module-08/2` (mission/round; the queue's link form)
-  const slash = submissionId.indexOf('/')
-  const moduleKey = decodeURIComponent(submissionId.slice(0, slash))
-  const submissionSeq = Number(decodeURIComponent(submissionId.slice(slash + 1)))
+  // `submissionId` rides `module-08/2` (mission/round; the queue's link form).
+  // The segment arrives PERCENT-ENCODED (`module-08%2F2` — the link encodes
+  // the slash; the router NEVER hands a decoded `%2F`), so the DECODE rides
+  // first; a raw two-segment URL can never reach this page at all.
+  const raw = decodeURIComponent(submissionId)
+  const slash = raw.indexOf('/')
+  const moduleKey = slash === -1 ? raw : raw.slice(0, slash)
+  const submissionSeq = slash === -1 ? Number.NaN : Number(raw.slice(slash + 1))
 
   const criteria = await readRubricCriteriaViaRpc()
 
@@ -133,15 +136,16 @@ async function ReviewForm({
   )
 }
 
-export default function TeacherReviewSubmissionPage({
+export default async function TeacherReviewSubmissionPage({
   params,
 }: {
-  params: { submissionId: string }
+  params: Promise<{ submissionId: string }>
 }) {
-  const t = useTranslations('review')
+  const t = await getTranslations('review')
+  const { submissionId } = await params
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <ReviewForm submissionId={params.submissionId} />
+      <ReviewForm submissionId={submissionId} />
     </Suspense>
   )
 }

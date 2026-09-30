@@ -51,7 +51,9 @@ export async function readReviewQueueViaRpc(
   const { data, error } = await sup.rpc('ppg_review_queue', { p_mission_id: moduleKey } as never)
 
   if (error) {
-    if (error.message.toLowerCase().includes('permission_denied'))
+    if (
+      /permission_denied|denied_role|denied_caller/.test(error.message.toLowerCase())
+    )
       return { status: 'denied', detail: error.message }
     return { status: 'error', detail: error.message }
   }
@@ -137,7 +139,9 @@ export async function submitReviewViaRpc(
   } as never)
 
   if (error) {
-    if (error.message.toLowerCase().includes('permission_denied'))
+    if (
+      /permission_denied|denied_role|denied_caller/.test(error.message.toLowerCase())
+    )
       return { status: 'denied', detail: error.message }
     return { status: 'error', detail: error.message }
   }
@@ -228,7 +232,9 @@ export async function readReviewHistoryViaRpc(
   const { data, error } = await sup.rpc('ppg_review_history', { p_mission_id: moduleKey } as never)
 
   if (error) {
-    if (error.message.toLowerCase().includes('permission_denied'))
+    if (
+      /permission_denied|denied_role|denied_caller/.test(error.message.toLowerCase())
+    )
       return { status: 'denied', detail: error.message }
     return { status: 'error', detail: error.message }
   }
@@ -242,7 +248,7 @@ export async function readReviewHistoryViaRpc(
         text_formatting: number
         images_visual: number
         slide_design: number
-        tool_usage: number
+        powerpoint_tool_usage: number
         creativity: number
         completeness: number
       }
@@ -267,7 +273,7 @@ export async function readReviewHistoryViaRpc(
         text_formatting: row.scores.text_formatting,
         images_visual: row.scores.images_visual,
         slide_design: row.scores.slide_design,
-        tool_usage: row.scores.tool_usage,
+        tool_usage: row.scores.powerpoint_tool_usage,
         creativity: row.scores.creativity,
         completeness: row.scores.completeness,
       },
@@ -298,7 +304,9 @@ export async function readLatestReviewViaRpc(
   const { data, error } = await sup.rpc('ppg_read_latest_review', { p_mission_id: moduleKey } as never)
 
   if (error) {
-    if (error.message.toLowerCase().includes('permission_denied'))
+    if (
+      /permission_denied|denied_role|denied_caller/.test(error.message.toLowerCase())
+    )
       return { status: 'denied', detail: error.message }
     return { status: 'error', detail: error.message }
   }
@@ -311,7 +319,7 @@ export async function readLatestReviewViaRpc(
         text_formatting: number
         images_visual: number
         slide_design: number
-        tool_usage: number
+        powerpoint_tool_usage: number
         creativity: number
         completeness: number
       }
@@ -328,7 +336,7 @@ export async function readLatestReviewViaRpc(
         text_formatting: number
         images_visual: number
         slide_design: number
-        tool_usage: number
+        powerpoint_tool_usage: number
         creativity: number
         completeness: number
       }
@@ -352,7 +360,7 @@ export async function readLatestReviewViaRpc(
         text_formatting: result.latest.scores.text_formatting,
         images_visual: result.latest.scores.images_visual,
         slide_design: result.latest.scores.slide_design,
-        tool_usage: result.latest.scores.tool_usage,
+        tool_usage: result.latest.scores.powerpoint_tool_usage,
         creativity: result.latest.scores.creativity,
         completeness: result.latest.scores.completeness,
       },
@@ -369,7 +377,7 @@ export async function readLatestReviewViaRpc(
         text_formatting: row.scores.text_formatting,
         images_visual: row.scores.images_visual,
         slide_design: row.scores.slide_design,
-        tool_usage: row.scores.tool_usage,
+        tool_usage: row.scores.powerpoint_tool_usage,
         creativity: row.scores.creativity,
         completeness: row.scores.completeness,
       },
