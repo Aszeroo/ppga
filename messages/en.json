@@ -83,6 +83,7 @@
       "downloadCsv": "Download CSV",
       "downloadXlsx": "Download XLSX",
       "downloadSql": "Download SQL",
+      "downloadPdf": "Download PDF summary report",
       "emptyCohort": "Empty cohort: no learner rows yet — the downloads still work (header-only files) and every run is still audit-logged.",
       "linkUsers": "User list",
       "linkExport": "Research export"

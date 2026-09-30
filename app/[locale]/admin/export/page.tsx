@@ -73,6 +73,14 @@ async function ExportControls() {
         {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
         <a href="/api/export/research?format=sql">{t('export.downloadSql')}</a>
       </p>
+      <p>
+        {/* The #17 PDF summary report — the audited bilingual document (the
+          extract of statistics + the audit INSERT again ride ONE database
+          call, `ppg_pdf_summary`). Same rule as above: a plain link, never
+          `next/link` (prefetch would run the audited call). */}
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        <a href="/api/export/pdf">{t('export.downloadPdf')}</a>
+      </p>
       <p>{t('export.auditNote')}</p>
       <p>
         <Link href="/admin/users">{t('export.linkUsers')}</Link>
