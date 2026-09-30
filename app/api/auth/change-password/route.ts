@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
       // teacher's own-row), so an unfiltered UPDATE here would clear the
       // one-time-flag on every provisioned learner still awaiting their
       // first-login change. The filter narrows to `id = auth.uid()`.
-      .filter('id', 'id', session.session.user.id)
+      .eq('id', session.session.user.id)
     // A clear-read failure (RLS deny / a PostgREST error) never reverses the
     // PUT's success (the password IS the new one now) — the flag waits for the
     // next attempt; the next login's flag read below re-sends the redirect.

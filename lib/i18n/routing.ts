@@ -31,6 +31,8 @@ export const routing = defineRouting({
     '/admin/audit': '/admin/audit',
     '/admin/provisioning': '/admin/provisioning',
     '/pre-test': '/pre-test',
+    '/post-test': '/post-test',
+    '/survey': '/survey',
     '/content': '/content',
     '/course': '/course',
     '/course/[moduleKey]': '/course/[moduleKey]',

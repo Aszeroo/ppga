@@ -137,11 +137,16 @@
     "linkContentLocked": "ขั้ทกัาน์",
     "linkCourse": "แผนที่หน่วนเรียน",
     "linkLeaderboard": "ชื่ิง-XP",
+    "closeLabel": "ปปิดหลกัสูตร (วิจยั)",
+    "linkPostTest": "ทำ Post-Test (เปิดเมื่อาจารยย์อมรบั Final Project)",
+    "linkSurvey": "ทำแบบสำารวจความพงึพอใจ (เปิดหลังหวัง Post-Test)",
     "states": {
       "noConsent": "ลงชื่อ",
       "consentNoSubmit": "ลงชื่อ",
       "gateOpen": "ปล้",
       "score": "คะแนน",
+      "closeLocked": "ปปิดวิจยัยงัปิิด — Post-Test จะเปิดเมื่อาจารยย์อมรบั Final Project",
+      "closeDone": "ปปิดวิจยัครบแล้ว — ส่ง Post-Test + แบบสำารวจแล้ว (ไม่ีมุ่ลได้าตามแบบ)",
       "empty": "สายวา่ง",
       "error": "กำลัง",
       "denied": "ปฏฏิลทู่",
@@ -179,6 +184,60 @@
       "fallbackSuspense": "กำลังโหลด..."
     }
   },
+  "posttest": {
+    "gateLabel": "สถานะเปิด Post-Test",
+    "itemsLabel": "ข้อคำถาม Post-Test",
+    "answerLabel": "คำตอบ",
+    "autosaveLabel": "ออโต้เซฟ",
+    "submitLabel": "ส่งครั้เดียว",
+    "linkSurvey": "แบบสำารวจความพงึพอใจ (หลังหวัง Post-Test)",
+    "linkCourse": "แผนที่หน่วนเรียน",
+    "linkDashboard": "หน้าแรก",
+    "fallbackSuspense": "กำลงโหลด...",
+    "states": {
+      "locked": "Post-Test ยงัปิด — การยอมรบ Final Project ของอาจารยจ์ะเปิดในระดบัฐานข้อมูล",
+      "unlocked": "ยอมรบ Final Project แล้ว — Post-Test เปิด (สaingเดียว)",
+      "score": "บันทกึคะแนนพร้อม version เครื่องมือ + ภาษา (ไมี่ XP ไมี่ badge — วิจัยไมี่ให้อะไร)",
+      "submittedOnce": "ส่งแล้วครั้เดียว (single attempt; แกไຂไมไ่ด้าหลังส่ง)",
+      "autosave": "ออโตเซฟ (ตอได้าหลังทบาวสญหาย)",
+      "itemsEmpty": "ไมี่เครื่องมือ (อานได้า, ตารางวาง)",
+      "itemsError": "error",
+      "empty": "วาง",
+      "error": "error",
+      "denied": "ปฏเสธ",
+      "unauthorized": "ไมี่สทิธิ",
+      "notConfigured": "ยงัมได้าตังคา",
+      "ok": "ok",
+      "fallbackSuspense": "กำลงโหลด..."
+    }
+  },
+  "survey": {
+    "gateLabel": "สถานะเปิดแบบสำารวจ",
+    "itemsLabel": "ข้อคำถามแบบสำารวจ",
+    "answerLabel": "เลอก",
+    "autosaveLabel": "ออโตเซฟ",
+    "submitLabel": "ส่งครั้เดียว",
+    "linkPostTest": "Post-Test",
+    "linkCourse": "แผนท่ีหนวายเรียน",
+    "linkDashboard": "หนาแรก",
+    "fallbackSuspense": "กำลังโหลด...",
+    "states": {
+      "locked": "แบบสำารวยยงัปิด — จะเปิดหลังส่ง Post-Test",
+      "unlocked": "ส่ง Post-Test แล้ว — แบบสำารวจความพงึพอใจเปิด (สaingเดียว)",
+      "submittedOnce": "ส่งแล้วครั้เดียว (single attempt; ไมี่คะแนน ไมี่รางวล — ความพงึพอใจไมไชการประเมิน)",
+      "autosave": "ออโตเซฟ (ตอได้าหลังทบาบสญหาย)",
+      "itemsEmpty": "ไมี่เครื่องมือ (อานได้า, ตารางวาง)",
+      "itemsError": "error",
+      "empty": "วาง",
+      "error": "error",
+      "denied": "ปฏเสธ",
+      "unauthorized": "ไมี่สิทธิ์",
+      "notConfigured": "ยงัมได้าตั้่งคา",
+      "ok": "ok",
+      "fallbackSuspense": "กำลังโหลด..."
+    }
+  },
+
   "content": {
     "gateLabel": "ขั้ทกัาน์",
     "locked": "ขั้ทกัาน์",

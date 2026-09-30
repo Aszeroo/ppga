@@ -16,10 +16,6 @@ import { z } from 'zod'
  * `already_submitted`, never a silently-overwritten row. Missing environment
  * yields `not-configured` so the app shows the state, never crashes.
  */
-export const uuidSchema = z
-  .string()
-  .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{32}$/i)
-
 export const prettestFormSchema = z
   .object({
     answers: z
@@ -31,8 +27,6 @@ export const prettestFormSchema = z
       .transform((v) => JSON.stringify(v)),
   })
   .strict()
-
-export const languageSchema = z.enum(['th', 'en'])
 
 export interface GateState {
   status:
@@ -112,7 +106,7 @@ export async function readGateViaTable(): Promise<GateState> {
   const { data: gateRows, error: gateError } = await sup
     .from('ppg_profiles')
     .select('consent, prettest_unlocked_override')
-    .filter('id', 'id', session.session.user.id)
+    .eq('id', session.session.user.id)
     .limit(1)
 
   // The submission state rides the response's own row (the single-attempt
@@ -121,7 +115,7 @@ export async function readGateViaTable(): Promise<GateState> {
   const { data: resRows, error: resError } = await sup
     .from('ppg_pretest_responses')
     .select('submitted_at, instrument_version, language, score')
-    .filter('learner_id', 'learner_id', session.session.user.id)
+    .eq('learner_id', session.session.user.id)
     .limit(1)
 
   if (gateError || resError)

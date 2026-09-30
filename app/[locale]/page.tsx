@@ -4,6 +4,8 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '../../lib/i18n/routing'
 
 import { readGateViaTable } from '../../lib/sup/prettest'
+import { readPosttestState } from '../../lib/sup/posttest'
+import { readSurveyState } from '../../lib/sup/survey'
 
 /**
  * Ticket #8 dashboard (the home): the next action per state, always shown
@@ -41,12 +43,45 @@ async function NextAction() {
   )
 }
 
+/**
+ * Ticket #15 research close (the dashboard's next action after the Course):
+ * the Post-Test unlocks on the Final Project's ACCEPTANCE, the Survey follows
+ * the Post-Test — the unlocks ride the DATABASE's own gate functions (the
+ * completion the Teacher's approval writes; the learner's own submitted
+ * Post-Test stamp), never a browser-smuggled flag. Nothing here grants a
+ * reward: the close instruments are research, not currency (ADR-0001).
+ */
+async function CloseChain() {
+  const t = await getTranslations('home')
+  const posttest = await readPosttestState()
+  const survey = await readSurveyState()
+  const ready = posttest.status === 'ok' && survey.status === 'ok'
+  return (
+    <section aria-label={t('closeLabel')}>
+      {ready && !posttest.unlocked ? <p>{t('states.closeLocked')}</p> : null}
+      {ready && posttest.unlocked && !posttest.submitted ? (
+        <p>
+          <Link href="/post-test">{t('linkPostTest')}</Link>
+        </p>
+      ) : null}
+      {ready && survey.unlocked && !survey.submitted ? (
+        <p>
+          <Link href="/survey">{t('linkSurvey')}</Link>
+        </p>
+      ) : null}
+      {ready && survey.submitted ? <p>{t('states.closeDone')}</p> : null}
+      {posttest.status === 'error' || survey.status === 'error' ? <p>{t('states.error')} {posttest.detail ?? survey.detail}</p> : null}
+    </section>
+  )
+}
+
 export default async function HomePage() {
   const t = await getTranslations('home')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <main>
         <NextAction />
+        <CloseChain />
         <section>
           <Link href="/health">{t('healthLink')}</Link>
         </section>

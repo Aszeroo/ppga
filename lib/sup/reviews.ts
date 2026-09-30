@@ -46,7 +46,7 @@ export async function readReviewQueueViaRpc(
   if (!session || !session.session) return { status: 'unauthorized', detail: 'no session' }
 
   if (!moduleKeySchema.safeParse(moduleKey).success)
-    return { status: 'denied', detail: 'module key not in the practical shape (module-08|09|10)' }
+    return { status: 'denied', detail: 'module key not in the practical shape (module-08|09|10|11)' }
 
   const { data, error } = await sup.rpc('ppg_review_queue', { p_mission_id: moduleKey } as never)
 
@@ -299,7 +299,7 @@ export async function readLatestReviewViaRpc(
   if (!session || !session.session) return { status: 'unauthorized', detail: 'no session' }
 
   if (!moduleKeySchema.safeParse(moduleKey).success)
-    return { status: 'denied', detail: 'module key not in the practical shape (module-08|09|10)' }
+    return { status: 'denied', detail: 'module key not in the practical shape (module-08|09|10|11)' }
 
   const { data, error } = await sup.rpc('ppg_read_latest_review', { p_mission_id: moduleKey } as never)
 
