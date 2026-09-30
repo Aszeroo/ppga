@@ -36,8 +36,8 @@ const seededIds = {
 
 const sql = (statement: string) =>
   execSync(
-    `npx --no-install supabase psql -query -csv -db postgres <<<${JSON.stringify(statement)}`,
-    { encoding: 'utf8' },
+    `docker exec -i supabase_db_ppga psql -U postgres -tA 2>&1`,
+    { input: statement, encoding: 'utf8' },
   )
 
 const impersonate = (role: string, sub: string) =>
@@ -117,15 +117,19 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('admin', seededIds.admin)}
+      `BEGIN;
+        -- owner (RLS-bypass) cleanup FIRST, so the in-tx count is EXACT.
+        DELETE FROM ppg_audit_events WHERE action = 'role_change';
+        SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"admin","sub":"${seededIds.admin}"}';
         SELECT ppg_change_role('teacher'::ppg_role, '${seededIds.learner64110001}'::uuid);
-        SELECT count(*) FROM ppg_audit_events WHERE action = 'role_change';
+        SELECT 'role_change=' || count(*) FROM ppg_audit_events WHERE action = 'role_change';
       ROLLBACK;`,
     )
-    // The event's count is 1 inside the transaction; the ROLLBACK never
-    // persists it — the count proves the RPC's own INSERT, not a trigger.
-    expect(out.includes('1')).toBe(true)
-    expect(out.includes('role_change')).toBe(true)
+    // The labelled count prints a single VALUE row (`role_change=1`) — `-tA`
+    // never echoes the query text, so the label carries the `role_change`
+    // token. The count proves the RPC's own INSERT; the ROLLBACK never persists
+    // it. The admin's own JWT may read the audit stream (admin-only SELECT).
+    expect(out.includes('role_change=1')).toBe(true)
   },
 )
 

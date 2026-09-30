@@ -69,11 +69,11 @@ return new;
 end;
 $$;
 
-drop trigger ppg_profile_for_user on auth.users;
+drop trigger if exists ppg_profile_for_user on auth.users;
 create trigger ppg_profile_for_user
   after insert on auth.users
   for each row
-  execute procedure public.ppg_profile_for_user();
+  execute function public.ppg_profile_for_user();
 
 -- The versioned instrument: the items + the answer key live here, bilingual
 -- JSON; the key is server-side only — the responses' read is the learner's own
@@ -90,7 +90,7 @@ create table public.ppg_pretest_instruments (
 comment on table public.ppg_pretest_instruments is
   'PPGA #8: the versioned seeded Pre-Test instrument; bilingual items + the server-side answer key (never a client-readable key).';
 comment on column public.ppg_pretest_instruments.version is
-  'The instrument's identity — recorded per response (ADR-0002 keeps pre/post comparison interpretable).';
+  'The instrument''s identity — recorded per response (ADR-0002 keeps pre/post comparison interpretable).';
 comment on column public.ppg_pretest_instruments.answer_key is
   'The answer key the submit function scores from; the read rides the definer''s rights — a learner may never SELECT it, only their own response row.';
 
@@ -104,14 +104,15 @@ alter table public.ppg_pretest_instruments enable row level security;
 -- learner, never the key). The definer's submit function reads the key under
 -- the migration owner's rights.
 create policy ppg_pretest_items on public.ppg_pretest_instruments
-  for select (items)
-  using auth.role() = 'learner'
+  for select
+  using (auth.role() = 'learner'
     and exists (
       select 1
         from public.ppg_profiles p
        where p.id = auth.uid()
          and p.consent
-    );
+    )
+  );
 
 -- UPDATE / DELETE / INSERT: no policy is granted. The instrument is immutably
 -- seeded by a migration (the seed below); a client's UPDATE of the key is
@@ -140,7 +141,7 @@ on conflict (version) do nothing;
 -- DELETE policy is granted, so a response cannot be deleted by a client.
 create table public.ppg_pretest_responses (
   learner_id uuid primary key references auth.users (id) on delete cascade,
-  instrument_version text not null references public.ppg_pretest_instruments (version) on delete restricted,
+  instrument_version text not null references public.ppg_pretest_instruments (version) on delete restrict,
   language text not null,
   answers jsonb,
   autosave_state jsonb not null default '{}'::jsonb,
@@ -162,7 +163,7 @@ comment on column public.ppg_pretest_responses.answers is
 comment on column public.ppg_pretest_responses.autosave_state is
   'The autosave state (debounced saves ride `ppg_prettest_upsert`; resumable after an interrupted session).';
 comment on column public.ppg_pretest_responses.score is
-  'The score — the submit function's server-side computation from the answer key, never client-decided.';
+  'The score — the submit function''s server-side computation from the answer key, never client-decided.';
 comment on column public.ppg_pretest_responses.submitted_at is
   'The single-attempt stamp — NULL until the submit; the submit function sets it atomically; the immutable trigger reads it to deny a resubmission/tamper.';
 
@@ -173,9 +174,11 @@ alter table public.ppg_pretest_responses enable row level security;
 -- stream; the read of another learner's row rides their own SELECT policy).
 create policy ppg_pretest_responses_select on public.ppg_pretest_responses
   for select
-  using (auth.role() = 'learner' and learner_id = auth.uid())
-     or auth.role() = 'teacher'
-     or auth.role() = 'admin';
+  using (
+    (auth.role() = 'learner' and learner_id = auth.uid())
+    or auth.role() = 'teacher'
+    or auth.role() = 'admin'
+  );
 
 -- Update: a learner may update their own response ONLY BEFORE a submit
 -- (the immutable trigger below also denies the post-submit UPDATE at the
@@ -183,16 +186,20 @@ create policy ppg_pretest_responses_select on public.ppg_pretest_responses
 -- trigger speaks even a smuggled UPDATE that rides a later policy).
 create policy ppg_pretest_responses_update on public.ppg_pretest_responses
   for update
-  using (auth.role() = 'learner' and learner_id = auth.uid() and submitted_at IS NULL)
-     or (auth.role() = 'admin')
-  with check (auth.role() = 'learner' and learner_id = auth.uid() and submitted_at IS NULL)
-     or (auth.role() = 'admin' and submitted_at IS NULL);
+  using (
+    (auth.role() = 'learner' and learner_id = auth.uid() and submitted_at IS NULL)
+    or (auth.role() = 'admin')
+  )
+  with check (
+    (auth.role() = 'learner' and learner_id = auth.uid() and submitted_at IS NULL)
+    or (auth.role() = 'admin' and submitted_at IS NULL)
+  );
 
 -- INSERT: a learner may insert their own single response row once (the PK
 -- makes the second row impossible); a teacher/admin never insert.
 create policy ppg_pretest_responses_insert on public.ppg_pretest_responses
   for insert
-  using auth.role() = 'learner' and learner_id = auth.uid();
+  with check (auth.role() = 'learner' and learner_id = auth.uid());
 
 -- DELETE: no policy is granted — the response cannot be deleted by a client;
 -- the row retires only via the auth.users cascade (a later account delete).
@@ -220,7 +227,7 @@ drop trigger if exists ppg_prettest_immutable on public.ppg_pretest_responses;
 create trigger ppg_prettest_immutable
   before update on public.ppg_pretest_responses
   for each row
-  execute procedure public.ppg_prettest_immutable();
+  execute function public.ppg_prettest_immutable();
 
 comment on trigger ppg_prettest_immutable on public.ppg_pretest_responses is
   'PPGA #8: the single-attempt + immutable-once-submitted row-level authority; an UPDATE after `submitted_at` raises `already_submitted`, never a silently-overwritten row.';
@@ -402,7 +409,7 @@ alter table public.ppg_course_content enable row level security;
 
 create policy ppg_course_content_select on public.ppg_course_content
   for select
-  using public.ppg_learner_gated(auth.uid());
+  using (public.ppg_learner_gated(auth.uid()));
 
 insert into public.ppg_course_content (lesson_key, title_th, title_en)
   values ('gate-proof', 'บั้นปลายแห่งการรอคอย', 'The Waiting Ends')
@@ -436,8 +443,7 @@ begin
 
   UPDATE public.ppg_profiles t
      set consent = p_consent
-   WHERE t.id = p_target_id
-  returning *;
+   WHERE t.id = p_target_id;
 
   insert into public.ppg_audit_events
     (actor_id, action, target_type, target_id, details, created_at)
@@ -492,8 +498,7 @@ begin
 
   UPDATE public.ppg_profiles t
      set prettest_unlocked_override = true
-   WHERE t.id = p_target_id
-  returning *;
+   WHERE t.id = p_target_id;
 
   insert into public.ppg_audit_events
     (actor_id, action, target_type, target_id, details, created_at)

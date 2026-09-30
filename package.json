@@ -19,7 +19,6 @@
     "react": "latest",
     "react-dom": "latest",
     "server-only": "latest",
-    "sup": "^0.0.4",
     "use-intl": "latest",
     "zod": "^4.6.5"
   },

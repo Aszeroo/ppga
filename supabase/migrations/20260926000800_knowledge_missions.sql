@@ -36,94 +36,6 @@ alter table public.ppg_knowledge_missions enable row level security;
 -- Teacher/admin reads every row. No INSERT/UPDATE/DELETE policy — a
 -- migration seeds the copy (ADR-0003), the submit function writes the
 -- events, never a client deciding.
-create policy ppg_knowledge_missions_select on public.ppg_knowledge_missions
-  for select
-  using (auth.role() = 'learner' AND public.ppg_knowledge_mission_visible(auth.uid(), module_key))
-     OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
-
--- The questions: the Mission's own bilingual prompts/options, the
--- `is_correct` key server-side only (the read RPC never carries it), the
--- educational feedback per question (the explanation says what was right,
--- what was wrong, WHY; the review pointer says what to review — NOT just
--- "correct/incorrect"). `explanation`/`review` columns are real bilingual
--- copy; the key never rides out.
-create table public.ppg_knowledge_mission_questions (
-  module_key text not null references public.ppg_modules (module_key) on delete cascade,
-  order_index integer not null,
-  option_key text not null,
-  prompt_th text not null,
-  prompt_en text not null,
-  option_th text not null,
-  option_en text not null,
-  is_correct boolean not null,
-  explanation_th text not null,
-  explanation_en text not null,
-  review_th text not null,
-  review_en text not null,
-  created_at timestamptz not null default now(),
-  primary key (module_key, order_index, option_key),
-  constraint ppg_knowledge_mission_option_key_check check (option_key in ('a', 'b', 'c')),
-  constraint ppg_knowledge_mission_order_check check (order_index between 1 and 10)
-);
-
-comment on table public.ppg_knowledge_mission_questions is
-  'PPGA #11: the Knowledge Mission questions/options — bilingual prompts/options + the `is_correct` key SERVER-side only (the read RPC''s jsonb never carries it; the submit function''s definer read is the ONLY summing read). The feedback columns (explanation + review pointer) are the what-was-right/what-was-wrong/WHY/what-to-review copy (bilingual, actionable — not a "correct/incorrect" label only).';
-comment on column public.ppg_knowledge_mission_questions.explanation_th is
-  'PPGA #11: the per-question WHY the feedback lands in Thai (what was right/wrong + why — educational, not a label).';
-comment on column public.ppg_knowledge_mission_questions.explanation_en is
-  'PPGA #11: the per-question WHY the feedback lands in English (what was right/wrong + why — educational, not a label).';
-comment on column public.ppg_knowledge_mission_questions.review_th is
-  'PPGA #11: the per-question WHAT-TO-REVIEW pointer in Thai (the Lesson to reread below the threshold).';
-comment on column public.ppg_knowledge_mission_questions.review_en is
-  'PPGA #11: the per-question WHAT-TO-REVIEW pointer in English (the Lesson to reread below the threshold).';
-
-alter table public.ppg_knowledge_mission_questions enable row level security;
-
-create policy ppg_knowledge_mission_questions_select on public.ppg_knowledge_mission_questions
-  for select
-  using (auth.role() = 'learner' AND public.ppg_knowledge_mission_visible(auth.uid(), module_key))
-     OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
-
--- The attempt stream: the append-only score history per learner+mission
--- (unlimited retries ADD rows; the PK stamps the retry count; the score
--- retained). Outcome pass|fail at the 70% threshold (the score% = the
--- matched correct options / all correct options, rounded). The score never
--- becomes the leaderboard state (ADR-0001: XP ≠ any score; the scores
--- never ride the header). Learner reads their own history; Teacher/admin
--- read all; NO INSERT policy from a client (the writes land via the
--- submit function''s definer insert, never a client deciding).
-create table public.ppg_mission_attempts (
-  learner_id uuid not null references auth.users (id) on delete cascade,
-  module_key text not null references public.ppg_modules (module_key) on delete cascade,
-  attempt_seq integer not null,
-  outcome text not null,
-  score_pct integer not null,
-  created_at timestamptz not null default now(),
-  primary key (learner_id, module_key, attempt_seq),
-  constraint ppg_mission_attempt_outcome_check check (outcome in ('pass', 'fail')),
-  constraint ppg_mission_attempt_score_check check (score_pct between 0 and 100)
-);
-
-comment on table public.ppg_mission_attempts is
-  'PPGA #11: the append-only Knowledge Mission attempt stream (unlimited retries add rows; the PK stamps the retry count) — the score history RETAINED per learner+mission (score_pct = the matched correct options / all, rounded; outcome pass|fail at the 70% threshold). A scored instrument here IS a Knowledge Mission (ADR-0001: the score NEVER becomes the leaderboard state — the header reads XP, never a score).';
-
-alter table public.ppg_mission_attempts enable row level security;
-
-create policy ppg_mission_attempts_select on public.ppg_mission_attempts
-  for select
-  using (auth.role() = 'learner' AND learner_id = auth.uid())
-     OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
-
--- The visibility: the Mission rides the gate (#8) + the Module published +
--- the Module OPEN (the linear rule: for Module 1 on the gate alone; for
--- Module N+1 on Module N''s Mission `complete` AND its last lesson''s
--- Self-Check pass) + the CALLER's end-of-module gate (the Module's LAST
--- lesson''s Self-Check PASSED — #10''s rule: the Mission unlocks ONLY after
--- the Module''s Self-Check passes). A locked/draft/arched Module, an
--- ungated learner, an un-passed Self-Check — `false`, never a hidden UI.
 create or replace function public.ppg_knowledge_mission_visible(p_caller uuid, p_module_key text)
 returns boolean
 language plpgsql stable
@@ -178,6 +90,99 @@ grant execute on function public.ppg_knowledge_mission_visible(uuid, text)
 comment on function public.ppg_knowledge_mission_visible(uuid, text) is
   'PPGA #11: the Mission''s own visibility the questions/instructions ride — gate #8 + the Module published + the Module OPEN (the linear rule: #10''s self-check pass AND the previous Module''s Mission `complete`) + the end-of-module gate (the Module''s LAST lesson''s Self-Check passed: the Mission unlocks ONLY after the Module''s Self-Check passes). A locked/draft/arched/un-gated/un-passed Module reaches `false` server-side, never a hidden UI.';
 
+create policy ppg_knowledge_missions_select on public.ppg_knowledge_missions
+  for select
+  using ((auth.role() = 'learner' AND public.ppg_knowledge_mission_visible(auth.uid(), module_key))
+     OR auth.role() = 'teacher'
+     OR auth.role() = 'admin'
+  );
+
+-- The questions: the Mission's own bilingual prompts/options, the
+-- `is_correct` key server-side only (the read RPC never carries it), the
+-- educational feedback per question (the explanation says what was right,
+-- what was wrong, WHY; the review pointer says what to review — NOT just
+-- "correct/incorrect"). `explanation`/`review` columns are real bilingual
+-- copy; the key never rides out.
+create table public.ppg_knowledge_mission_questions (
+  module_key text not null references public.ppg_modules (module_key) on delete cascade,
+  order_index integer not null,
+  option_key text not null,
+  prompt_th text not null,
+  prompt_en text not null,
+  option_th text not null,
+  option_en text not null,
+  is_correct boolean not null,
+  explanation_th text not null,
+  explanation_en text not null,
+  review_th text not null,
+  review_en text not null,
+  created_at timestamptz not null default now(),
+  primary key (module_key, order_index, option_key),
+  constraint ppg_knowledge_mission_option_key_check check (option_key in ('a', 'b', 'c')),
+  constraint ppg_knowledge_mission_order_check check (order_index between 1 and 10)
+);
+
+comment on table public.ppg_knowledge_mission_questions is
+  'PPGA #11: the Knowledge Mission questions/options — bilingual prompts/options + the `is_correct` key SERVER-side only (the read RPC''s jsonb never carries it; the submit function''s definer read is the ONLY summing read). The feedback columns (explanation + review pointer) are the what-was-right/what-was-wrong/WHY/what-to-review copy (bilingual, actionable — not a "correct/incorrect" label only).';
+comment on column public.ppg_knowledge_mission_questions.explanation_th is
+  'PPGA #11: the per-question WHY the feedback lands in Thai (what was right/wrong + why — educational, not a label).';
+comment on column public.ppg_knowledge_mission_questions.explanation_en is
+  'PPGA #11: the per-question WHY the feedback lands in English (what was right/wrong + why — educational, not a label).';
+comment on column public.ppg_knowledge_mission_questions.review_th is
+  'PPGA #11: the per-question WHAT-TO-REVIEW pointer in Thai (the Lesson to reread below the threshold).';
+comment on column public.ppg_knowledge_mission_questions.review_en is
+  'PPGA #11: the per-question WHAT-TO-REVIEW pointer in English (the Lesson to reread below the threshold).';
+
+alter table public.ppg_knowledge_mission_questions enable row level security;
+
+
+create policy ppg_knowledge_mission_questions_select on public.ppg_knowledge_mission_questions
+  for select
+  using ((auth.role() = 'learner' AND public.ppg_knowledge_mission_visible(auth.uid(), module_key))
+     OR auth.role() = 'teacher'
+     OR auth.role() = 'admin'
+  );
+
+-- The attempt stream: the append-only score history per learner+mission
+-- (unlimited retries ADD rows; the PK stamps the retry count; the score
+-- retained). Outcome pass|fail at the 70% threshold (the score% = the
+-- matched correct options / all correct options, rounded). The score never
+-- becomes the leaderboard state (ADR-0001: XP ≠ any score; the scores
+-- never ride the header). Learner reads their own history; Teacher/admin
+-- read all; NO INSERT policy from a client (the writes land via the
+-- submit function''s definer insert, never a client deciding).
+create table public.ppg_mission_attempts (
+  learner_id uuid not null references auth.users (id) on delete cascade,
+  module_key text not null references public.ppg_modules (module_key) on delete cascade,
+  attempt_seq integer not null,
+  outcome text not null,
+  score_pct integer not null,
+  created_at timestamptz not null default now(),
+  primary key (learner_id, module_key, attempt_seq),
+  constraint ppg_mission_attempt_outcome_check check (outcome in ('pass', 'fail')),
+  constraint ppg_mission_attempt_score_check check (score_pct between 0 and 100)
+);
+
+comment on table public.ppg_mission_attempts is
+  'PPGA #11: the append-only Knowledge Mission attempt stream (unlimited retries add rows; the PK stamps the retry count) — the score history RETAINED per learner+mission (score_pct = the matched correct options / all, rounded; outcome pass|fail at the 70% threshold). A scored instrument here IS a Knowledge Mission (ADR-0001: the score NEVER becomes the leaderboard state — the header reads XP, never a score).';
+
+alter table public.ppg_mission_attempts enable row level security;
+
+create policy ppg_mission_attempts_select on public.ppg_mission_attempts
+  for select
+  using ((auth.role() = 'learner' AND learner_id = auth.uid())
+     OR auth.role() = 'teacher'
+     OR auth.role() = 'admin'
+  );
+
+-- The visibility: the Mission rides the gate (#8) + the Module published +
+-- the Module OPEN (the linear rule: for Module 1 on the gate alone; for
+-- Module N+1 on Module N''s Mission `complete` AND its last lesson''s
+-- Self-Check pass) + the CALLER's end-of-module gate (the Module's LAST
+-- lesson''s Self-Check PASSED — #10''s rule: the Mission unlocks ONLY after
+-- the Module''s Self-Check passes). A locked/draft/arched Module, an
+-- ungated learner, an un-passed Self-Check — `false`, never a hidden UI.
+
 -- The read: the instructions + questions+options the SEE-ABLE Mission shows
 -- (the `ppg_read_mission` RPC — the answer key NEVER lands in the jsonb,
 -- the submit function's definer read is the ONLY summing authority; a
@@ -197,14 +202,6 @@ as $$
     'questions', q.agg
   )
   FROM public.ppg_knowledge_missions m
-  WHERE m.module_key = p_module_key
-    AND (
-      auth.role() in ('teacher', 'admin')
-      OR (
-        auth.role() = 'learner'
-        AND public.ppg_knowledge_mission_visible(auth.uid(), p_module_key)
-      )
-    )
   JOIN LATERAL (
     select coalesce(
       jsonb_agg(
@@ -229,7 +226,15 @@ as $$
           AND public.ppg_knowledge_mission_visible(auth.uid(), p_module_key)
         )
       )
-  ) q ON TRUE;
+  ) q ON TRUE
+  WHERE m.module_key = p_module_key
+    AND (
+      auth.role() in ('teacher', 'admin')
+      OR (
+        auth.role() = 'learner'
+        AND public.ppg_knowledge_mission_visible(auth.uid(), p_module_key)
+      )
+    );
 $$;
 
 revoke execute on function public.ppg_read_mission(text)
@@ -614,7 +619,7 @@ grant execute on function public.ppg_check_self_check(text, jsonb)
   to service_role, authenticated;
 
 comment on function public.ppg_check_self_check(text, jsonb) is
-  'PPGA #10 (wired #11): the DATABASE''s own answer-key sum (server-side pass/fail ONLY — unlimited retries: the attempt_seq the events'' count +1), the +50 ledger row (idempotent: the PK — a replay conflicts, never a second +50; xp_granted says what actually landed), and the First Steps badge on the CALLER''s FIRST pass of ANY lesson (the award PK — a duplicate conflicts). PPGA #11 adds HERE: the Mission Ready badge in the SAME transaction (the learner''s first pass marks the FIRST Knowledge Mission READY; the award PK — a second pass adds NO 'mission_ready' row; `badge_granted` stays the first_steps signal #10 set).';
+  'PPGA #10 (wired #11): the DATABASE''s own answer-key sum (server-side pass/fail ONLY — unlimited retries: the attempt_seq the events'' count +1), the +50 ledger row (idempotent: the PK — a replay conflicts, never a second +50; xp_granted says what actually landed), and the First Steps badge on the CALLER''s FIRST pass of ANY lesson (the award PK — a duplicate conflicts). PPGA #11 adds HERE: the Mission Ready badge in the SAME transaction (the learner''s first pass marks the FIRST Knowledge Mission READY; the award PK — a second pass adds NO ''mission_ready'' row; `badge_granted` stays the first_steps signal #10 set).';
 
 -- The gallery: every badge + the CALLER's earned/locked state WITH its
 -- bilingual criteria text (the award_rule_th/en the criteria shown).

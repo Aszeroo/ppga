@@ -76,9 +76,10 @@ alter table public.ppg_courses enable row level security;
 -- migration seeds the single Course.
 create policy ppg_courses_select on public.ppg_courses
   for select
-  using public.ppg_learner_gated(auth.uid())
+  using (public.ppg_learner_gated(auth.uid())
      OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
+     OR auth.role() = 'admin'
+  );
 
 insert into public.ppg_courses (course_key, title_th, title_en)
   values (
@@ -125,120 +126,6 @@ alter table public.ppg_modules enable row level security;
 -- or a locked row never appears: the `SELECT 0`, never a smuggled read. A
 -- Teacher/admin reads every row incl draft/arched (the console sees what
 -- the toggle can change).
-create policy ppg_modules_select on public.ppg_modules
-  for select
-  using (
-    auth.role() = 'learner'
-    AND public.ppg_learner_gated(auth.uid())
-    AND publication_state = 'published'
-    AND public.ppg_module_unlocked(auth.uid(), module_key)
-  )
-     OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
-
--- UPDATE: admin-only (the publication toggle rides the RPC's definer write
--- as well; the direct UPDATE policy speaks for the same authority). No
--- INSERT/DELETE policy — a migration seeds the content (ADR-0003).
-create policy ppg_modules_update on public.ppg_modules
-  for update
-  using auth.role() = 'admin';
-
--- The Lessons: the study material inside a Module (glossary: Lesson). The
--- #16 story's structure is carried as columns, not a JSON blob: the what
--- (what you will learn), the why (why it matters), the body, and the what-
--- next pointer — all bilingual independent. The publication state + the
--- parent module's unlock decide what is VISIBLE to a Learner server-side.
-create table public.ppg_lessons (
-  lesson_key text primary key,
-  module_key text not null references public.ppg_modules (module_key) on delete cascade,
-  order_index integer not null,
-  title_th text not null,
-  title_en text not null,
-  what_learn_th text not null,
-  what_learn_en text not null,
-  why_th text not null,
-  why_en text not null,
-  body_th text not null,
-  body_en text not null,
-  what_next_th text not null,
-  what_next_en text not null,
-  publication_state text not null default 'draft',
-  created_at timestamptz not null default now(),
-  constraint ppg_lesson_publication_check check (publication_state in ('draft', 'published', 'archived')),
-  constraint ppg_lesson_order_check check (order_index between 1 and 3),
-  constraint ppg_lesson_order_unique unique (module_key, order_index)
-);
-
-comment on table public.ppg_lessons is
-  'PPGA #9: the Lessons inside a Module (glossary: Lesson); the #16 story''s what/why/body/what-next structure as bilingual columns (ADR-0003: content as versioned seed).';
-comment on column public.ppg_lessons.publication_state is
-  'PPGA #9: draft|published|archived (ADR-0003). Default draft; a Learner''s SELECT reads published lessons of an OPEN module — draft/arched are INVISIBLE server-side, never a hidden UI.';
-comment on column public.ppg_lessons.what_next_th is
-  'PPGA #9: the #16 story''s "what next" pointer — what is visible here, the next step, server-side text (never a client-decided copy).';
-
-alter table public.ppg_lessons enable row level security;
-
--- Read as a Learner: the gate (#8) AND the published lesson AND the parent
--- module OPEN (the unlock function reads the parent's own `module_key`).
--- A draft/arched lesson, or a lesson of a locked module, never appears —
--- `SELECT 0`. A Teacher/admin reads every row incl draft/arched.
-create policy ppg_lessons_select on public.ppg_lessons
-  for select
-  using (
-    auth.role() = 'learner'
-    AND public.ppg_learner_gated(auth.uid())
-    AND publication_state = 'published'
-    AND public.ppg_module_unlocked(auth.uid(), module_key)
-  )
-     OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
-
-create policy ppg_lessons_update on public.ppg_lessons
-  for update
-  using auth.role() = 'admin';
-
--- The Mission-state placeholder: the completion record the linear rule READS
--- for now (ADR glossary: Mission; #10/#11 replace this with the real
--- Knowledge/Practical missions + their Attempt state). Seeded `incomplete`
--- for every Learner on every module but module 1 — the rule sees: module 1
--- open after the #8 gate stands, the rest LOCKED, server-side. A Learner
--- reads their own completion rows; a Teacher/admin reads all; no UPDATE
--- policy — #10 wires the real writes here (not a client deciding).
-create table public.ppg_module_missions (
-  module_key text not null references public.ppg_modules (module_key) on delete cascade,
-  learner_id uuid not null references auth.users (id) on delete cascade,
-  status text not null default 'incomplete',
-  seeded_at timestamptz not null default now(),
-  primary key (module_key, learner_id),
-  constraint ppg_mission_status_check check (status in ('incomplete', 'complete'))
-);
-
-comment on table public.ppg_module_missions is
-  'PPGA #9: the Mission-completion placeholder the linear rule reads FOR NOW (the unlock function below); #10/#11 wire the real Knowledge/Practical missions + attempts here.';
-
-alter table public.ppg_module_missions enable row level security;
-
-create policy ppg_module_missions_select on public.ppg_module_missions
-  for select
-  using (auth.role() = 'learner' and learner_id = auth.uid())
-     OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
-
--- The placeholder's own seed lands AFTER the modules (end of file), so the
--- cross join reads the seeded modules + the seeded learner profiles; the
--- column's default speaks `incomplete` — nothing here says what a later
--- migration may wire.
-
--- The linear rule: the unlock the DATABASE decides. Module 1 is OPEN once
--- the #8 gate stands (the policy's own gate AND the function here). Module
--- N+1 opens when module N's Mission completes — for NOW the placeholder
--- table above says `incomplete`, so modules 2..10 are LOCKED server-side;
--- #10/#11 wire the real mission-completion writes and the rule becomes the
--- module-2 opens on module-1 complete … with NO change in what is VISIBLE
--- meanwhile (the same authority the #8 gate speaks). The function's execute
--- is granted to the CALLER's JWT roles; the definer's rights read the
--- placeholder rows FILTERED to the CALLER's own `learner_id` — an other
--- Learner''s completion may never ride this read.
 create or replace function public.ppg_module_unlocked(p_caller uuid, p_module_key text)
 returns boolean
 language plpgsql
@@ -286,6 +173,122 @@ grant execute on function public.ppg_module_unlocked(uuid, text)
 
 comment on function public.ppg_module_unlocked(uuid, text) is
   'PPGA #9: the linear-rule authority — module 1 open on the #8 gate alone; module N+1 iff module N''s Mission is `complete` for the CALLER (the placeholder `incomplete` FOR NOW — #10/#11 wire the real completion writes; what stays LOCKED server-side meanwhile).';
+
+create policy ppg_modules_select on public.ppg_modules
+  for select
+  using (
+    (auth.role() = 'learner'
+     AND public.ppg_learner_gated(auth.uid())
+     AND publication_state = 'published'
+     AND public.ppg_module_unlocked(auth.uid(), module_key))
+     OR auth.role() = 'teacher'
+     OR auth.role() = 'admin'
+  );
+
+-- UPDATE: admin-only (the publication toggle rides the RPC's definer write
+-- as well; the direct UPDATE policy speaks for the same authority). No
+-- INSERT/DELETE policy — a migration seeds the content (ADR-0003).
+create policy ppg_modules_update on public.ppg_modules
+  for update
+  using (auth.role() = 'admin');
+
+-- The Lessons: the study material inside a Module (glossary: Lesson). The
+-- #16 story's structure is carried as columns, not a JSON blob: the what
+-- (what you will learn), the why (why it matters), the body, and the what-
+-- next pointer — all bilingual independent. The publication state + the
+-- parent module's unlock decide what is VISIBLE to a Learner server-side.
+create table public.ppg_lessons (
+  lesson_key text primary key,
+  module_key text not null references public.ppg_modules (module_key) on delete cascade,
+  order_index integer not null,
+  title_th text not null,
+  title_en text not null,
+  what_learn_th text not null,
+  what_learn_en text not null,
+  why_th text not null,
+  why_en text not null,
+  body_th text not null,
+  body_en text not null,
+  what_next_th text not null,
+  what_next_en text not null,
+  publication_state text not null default 'draft',
+  created_at timestamptz not null default now(),
+  constraint ppg_lesson_publication_check check (publication_state in ('draft', 'published', 'archived')),
+  constraint ppg_lesson_order_check check (order_index between 1 and 3),
+  constraint ppg_lesson_order_unique unique (module_key, order_index)
+);
+
+comment on table public.ppg_lessons is
+  'PPGA #9: the Lessons inside a Module (glossary: Lesson); the #16 story''s what/why/body/what-next structure as bilingual columns (ADR-0003: content as versioned seed).';
+comment on column public.ppg_lessons.publication_state is
+  'PPGA #9: draft|published|archived (ADR-0003). Default draft; a Learner''s SELECT reads published lessons of an OPEN module — draft/arched are INVISIBLE server-side, never a hidden UI.';
+comment on column public.ppg_lessons.what_next_th is
+  'PPGA #9: the #16 story''s "what next" pointer — what is visible here, the next step, server-side text (never a client-decided copy).';
+
+alter table public.ppg_lessons enable row level security;
+
+-- Read as a Learner: the gate (#8) AND the published lesson AND the parent
+-- module OPEN (the unlock function reads the parent's own `module_key`).
+-- A draft/arched lesson, or a lesson of a locked module, never appears —
+-- `SELECT 0`. A Teacher/admin reads every row incl draft/arched.
+create policy ppg_lessons_select on public.ppg_lessons
+  for select
+  using (
+    (auth.role() = 'learner'
+     AND public.ppg_learner_gated(auth.uid())
+     AND publication_state = 'published'
+     AND public.ppg_module_unlocked(auth.uid(), module_key))
+     OR auth.role() = 'teacher'
+     OR auth.role() = 'admin'
+  );
+
+create policy ppg_lessons_update on public.ppg_lessons
+  for update
+  using (auth.role() = 'admin');
+
+-- The Mission-state placeholder: the completion record the linear rule READS
+-- for now (ADR glossary: Mission; #10/#11 replace this with the real
+-- Knowledge/Practical missions + their Attempt state). Seeded `incomplete`
+-- for every Learner on every module but module 1 — the rule sees: module 1
+-- open after the #8 gate stands, the rest LOCKED, server-side. A Learner
+-- reads their own completion rows; a Teacher/admin reads all; no UPDATE
+-- policy — #10 wires the real writes here (not a client deciding).
+create table public.ppg_module_missions (
+  module_key text not null references public.ppg_modules (module_key) on delete cascade,
+  learner_id uuid not null references auth.users (id) on delete cascade,
+  status text not null default 'incomplete',
+  seeded_at timestamptz not null default now(),
+  primary key (module_key, learner_id),
+  constraint ppg_mission_status_check check (status in ('incomplete', 'complete'))
+);
+
+comment on table public.ppg_module_missions is
+  'PPGA #9: the Mission-completion placeholder the linear rule reads FOR NOW (the unlock function below); #10/#11 wire the real Knowledge/Practical missions + attempts here.';
+
+alter table public.ppg_module_missions enable row level security;
+
+create policy ppg_module_missions_select on public.ppg_module_missions
+  for select
+  using ((auth.role() = 'learner' and learner_id = auth.uid())
+     OR auth.role() = 'teacher'
+     OR auth.role() = 'admin'
+  );
+
+-- The placeholder's own seed lands AFTER the modules (end of file), so the
+-- cross join reads the seeded modules + the seeded learner profiles; the
+-- column's default speaks `incomplete` — nothing here says what a later
+-- migration may wire.
+
+-- The linear rule: the unlock the DATABASE decides. Module 1 is OPEN once
+-- the #8 gate stands (the policy's own gate AND the function here). Module
+-- N+1 opens when module N's Mission completes — for NOW the placeholder
+-- table above says `incomplete`, so modules 2..10 are LOCKED server-side;
+-- #10/#11 wire the real mission-completion writes and the rule becomes the
+-- module-2 opens on module-1 complete … with NO change in what is VISIBLE
+-- meanwhile (the same authority the #8 gate speaks). The function's execute
+-- is granted to the CALLER's JWT roles; the definer's rights read the
+-- placeholder rows FILTERED to the CALLER's own `learner_id` — an other
+-- Learner''s completion may never ride this read.
 
 -- The Course map a Learner sees: the RPC returns every SEE-ABLE module
 -- (the same authority the policies speak) + each row's real LOCK STATE
@@ -368,12 +371,15 @@ as $$
   )
   FROM public.ppg_lessons l
   JOIN public.ppg_modules m ON l.module_key = m.module_key
-  WHERE auth.role() IN ('teacher', 'admin')
-     OR (
-       l.publication_state = 'published'
-       AND public.ppg_learner_gated(auth.uid())
-       AND public.ppg_module_unlocked(auth.uid(), m.module_key)
-     );
+  WHERE l.module_key = p_module_key
+    AND (
+      auth.role() IN ('teacher', 'admin')
+      OR (
+        l.publication_state = 'published'
+        AND public.ppg_learner_gated(auth.uid())
+        AND public.ppg_module_unlocked(auth.uid(), m.module_key)
+      )
+    );
 $$;
 
 revoke execute on function public.ppg_module_lessons(text)

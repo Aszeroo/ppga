@@ -12,7 +12,7 @@
 
 do $$ begin
   begin
-    execute 'drop type public.ppg_role cascade'
+    execute 'drop type public.ppg_role cascade';
   exception
     when undefined_object then null; -- a fresh database has no enum to drop
   end;
@@ -61,11 +61,11 @@ return new;
 end;
 $$;
 
-drop trigger ppg_profile_for_user on auth.users;
+drop trigger if exists ppg_profile_for_user on auth.users;
 create trigger ppg_profile_for_user
   after insert on auth.users
   for each row
-  execute procedure public.ppg_profile_for_user();
+  execute function public.ppg_profile_for_user();
 
 alter table public.ppg_profiles enable row level security;
 
@@ -74,21 +74,27 @@ alter table public.ppg_profiles enable row level security;
 -- role — Supabase ships only anon/authenticated/service_role as DB roles.
 create policy ppg_profiles_select on public.ppg_profiles
   for select
-  using (auth.role() = 'learner' and id = auth.uid())
-     or auth.role() = 'teacher'
-     or auth.role() = 'admin';
+  using (
+    (auth.role() = 'learner' and id = auth.uid())
+    or auth.role() = 'teacher'
+    or auth.role() = 'admin'
+  );
 
 -- Update: a learner may change only their own profile and may never change
 -- role; the CHECK blocks cross-role escalation (and any other row) even if a
 -- client smuggles the UPDATE.
 create policy ppg_profiles_update on public.ppg_profiles
   for update
-  using (auth.role() = 'learner' and id = auth.uid())
-     or (auth.role() = 'teacher' and id = auth.uid())
-     or auth.role() = 'admin'
-  with check auth.role() = 'learner' and id = auth.uid() and role = 'learner'::public.ppg_role
-     or auth.role() = 'teacher' and id = auth.uid() and role = 'teacher'::public.ppg_role
-     or auth.role() = 'admin';
+  using (
+    (auth.role() = 'learner' and id = auth.uid())
+    or (auth.role() = 'teacher' and id = auth.uid())
+    or auth.role() = 'admin'
+  )
+  with check (
+    (auth.role() = 'learner' and id = auth.uid() and role = 'learner'::public.ppg_role)
+    or (auth.role() = 'teacher' and id = auth.uid() and role = 'teacher'::public.ppg_role)
+    or auth.role() = 'admin'
+  );
 
 -- Profiles are never deleted by clients; rows retire only via the auth.users
 -- cascade. Delete is therefore denied outright (no policy granted).
@@ -96,7 +102,7 @@ create policy ppg_profiles_update on public.ppg_profiles
 -- role only (provisioning) — no self-registration path exists for any client.
 create policy ppg_profiles_insert on public.ppg_profiles
   for insert
-  with check auth.role() = 'admin';
+  with check (auth.role() = 'admin');
 
 -- Supabase's local auth admin role (supabase_auth_admin) and the service_role
 -- both bypass RLS for the bootstrap trigger and the migration seeding below.

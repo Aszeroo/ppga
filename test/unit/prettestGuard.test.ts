@@ -41,7 +41,7 @@ test('instrument: versioned seed + the answer key server-side only', () => {
   expect(migration.includes('answer_key jsonb not null')).toBe(true)
   // the items-column policy grants a consenting learner; no UPDATE/DELETE.
   expect(migration.includes('create policy ppg_pretest_items on public.ppg_pretest_instruments')).toBe(true)
-  expect(migration.includes('for select (items)')).toBe(true)
+  expect(migration.includes("for select\n  using (auth.role() = 'learner'")).toBe(true)
   expect(migration.includes("p.consent")).toBe(true)
   // the key never reaches the browser — the read is the definer's submit
   // function's, never a client SELECT on the key column.
@@ -83,7 +83,7 @@ test('gate: the function + the placeholder gated content deny an ungated learner
   expect(migration.includes('create table public.ppg_course_content')).toBe(true)
   expect(migration.includes('alter table public.ppg_course_content enable row level security')).toBe(true)
   expect(migration.includes('create policy ppg_course_content_select on public.ppg_course_content')).toBe(true)
-  expect(migration.includes('using public.ppg_learner_gated')).toBe(true)
+  expect(migration.includes('using (public.ppg_learner_gated(auth.uid()))')).toBe(true)
   // the gate is enforced here (RLS) — content is inaccessible server-side
   // before the gate opens, never a hidden UI the smuggle could pass.
 })

@@ -21,7 +21,7 @@
 -- auth.users.role is the JWT role claim that auth.role() reads; we keep it in
 -- sync with the profile role enum.
 
-insert into auth.users (id, role, email, email_confirmed_at, raw_user_meta_data, password)
+insert into auth.users (id, role, email, email_confirmed_at, raw_user_meta_data, encrypted_password)
 values
   (
     '11111111-1111-1111-1111-111111111111',
