@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     // unrelated row's metadata. The filter narrows to `id = auth.uid()` — the
     // learner's own-row RLS read already restricts them to their own row; the
     // admin/teacher's read of every row now resolves to their own one row.
-    .filter('id', 'id', data.user.id)
+    .eq('id', data.user.id)
     .limit(1)
   const flag =
     flagRows && flagRows.length === 1 && typeof flagRows[0].must_change_password === 'boolean'
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
   const { data: resRows, error: resError } = await sup
     .from('ppg_pretest_responses')
     .select('submitted_at')
-    .filter('learner_id', 'learner_id', data.user.id)
+    .eq('learner_id', data.user.id)
     .limit(1)
   const submitted =
     resRows && resRows.length === 1 && resRows[0].submitted_at != null &&

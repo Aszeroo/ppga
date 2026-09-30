@@ -18,9 +18,9 @@ import { z } from 'zod'
  * own gates decide — a stranger's upload reaches permission_denied, never a smuggled row.
  * Missing env yields not-configured so the app shows the state, never crashes.
  */
-export const moduleKeySchema = z.string().regex(/^module-(08|09|10)$/i)
+const moduleKeySchema = z.string().regex(/^module-(08|09|10|11)$/i)
 
-export const submissionFileSchema = z
+const submissionFileSchema = z
   .object({
     magic: z.enum(['pptx','ppt']),
     size: z.bigint().gte(BigInt(1)).lte(BigInt(25000000)),
@@ -101,7 +101,7 @@ async function createSupaSessionClient() {
  * (the OLE container signature). Garbage of any other prefix yields null — the
  * upload form rejects a wrong type with a clear bilingual error, never a smuggled row.
  */
-export function magicByteValidator(buf: Uint8Array): 'pptx' | 'ppt' | null {
+function magicByteValidator(buf: Uint8Array): 'pptx' | 'ppt' | null {
   // pptx: bytes 0-3 = 0x50 0x4b 0x03 0x04 ('PK' + a zip local-header marker)
   if (
     buf.length >= 4 &&
@@ -147,7 +147,7 @@ export async function createSubmissionViaRpc(
   if (!session || !session.session) return { ok: false, detail: 'no session' }
 
   if (!moduleKeySchema.safeParse(moduleKey).success)
-    return { ok: false, detail: 'target module key not in the practical shape (module-08|09|10)' }
+    return { ok: false, detail: 'target module key not in the practical shape (module-08|09|10|11)' }
 
   const magic = magicByteValidator(fileBuf)
   if (!magic)
@@ -216,7 +216,7 @@ export async function readSubmissionHistoryViaRpc(moduleKey: string): Promise<Su
   if (!session || !session.session) return { status: 'unauthorized', detail: 'no session' }
 
   if (!moduleKeySchema.safeParse(moduleKey).success)
-    return { status: 'denied', detail: 'module key not in the practical shape (module-08|09|10)' }
+    return { status: 'denied', detail: 'module key not in the practical shape (module-08|09|10|11)' }
 
   const { data, error } = await sup.rpc('ppg_submission_history', { p_module_key: moduleKey } as never)
 
@@ -248,7 +248,7 @@ export async function signedUrlForOwnSubmission(
   if (!session || !session.session) return { ok: false, detail: 'no session' }
 
   if (!moduleKeySchema.safeParse(moduleKey).success)
-    return { ok: false, detail: 'module key not in the practical shape (module-08|09|10)' }
+    return { ok: false, detail: 'module key not in the practical shape (module-08|09|10|11)' }
 
   const { data, error } = await sup.rpc(
     'ppg_signed_url_for',
@@ -301,7 +301,7 @@ export async function readPracticalMissionViaRpc(moduleKey: string): Promise<Pra
   if (!session || !session.session) return { status: 'unauthorized', detail: 'no session' }
 
   if (!moduleKeySchema.safeParse(moduleKey).success)
-    return { status: 'denied', detail: 'module key not in the practical shape (module-08|09|10)' }
+    return { status: 'denied', detail: 'module key not in the practical shape (module-08|09|10|11)' }
 
   const { data, error } = await sup.rpc('ppg_read_practical', { p_module_key: moduleKey } as never)
 
@@ -331,56 +331,14 @@ export async function readPracticalMissionViaRpc(moduleKey: string): Promise<Pra
   return { status: 'empty', detail: 'no see-able practical Mission (the gate/lock rule denies this caller)' }
 }
 
-export interface TransitionResult {
-  ok: boolean
-  detail?: string
-  status?: 'in_progress' | 'submitted' | 'needs_improvement' | 'approved'
-}
 
-/**
- * The status lifecycle: in_progress -> submitted; submitted ->
- * needs_improvement | approved; needs_improvement -> approved (the loop resubmit
- * APPENDS a NEW row under a HIGHER submission_seq; the old row stays
- * needs_improvement as the history). The DATABASE's own transition function decides
- (server-side ONLY; the client never decides outcomes); an invalid move reaches
- * `invalid_transition`; a stranger's smuggle reaches `denied_caller`.
- */
-export async function setSubmissionStatusViaRpc(
-  learnerId: string,
-  moduleKey: string,
-  submissionSeq: number,
-  newStatus: 'in_progress' | 'submitted' | 'needs_improvement' | 'approved',
-): Promise<TransitionResult> {
-  const sup = await createSupaSessionClient()
-  if (!sup) return { ok: false, detail: 'not-configured' }
-
-  const { data: session } = await sup.auth.getSession()
-  if (!session || !session.session) return { ok: false, detail: 'no session' }
-
-  if (!moduleKeySchema.safeParse(moduleKey).success)
-    return { ok: false, detail: 'target module key not in the practical shape (module-08|09|10)' }
-
-  const { data, error } = await sup.rpc(
-    'ppg_set_submission_status',
-    {
-      p_learner_id: learnerId,
-      p_mission_id: moduleKey,
-      p_submission_seq: submissionSeq,
-      p_new_status: newStatus,
-    } as never,
-  )
-
-  if (error) {
-    const m = error.message.toLowerCase()
-    if (m.includes('permission_denied')) return { ok: false, detail: `permission_denied: ${error.message}` }
-    if (m.includes('denied_caller')) return { ok: false, detail: `denied_caller: ${error.message}` }
-    if (m.includes('invalid_transition')) return { ok: false, detail: `invalid_transition: ${error.message}` }
-    if (m.includes('submission_missing')) return { ok: false, detail: `submission_missing: ${error.message}` }
-    return { ok: false, detail: error.message }
-  }
-
-  const rows = data as Array<{
-    status?: 'in_progress' | 'submitted' | 'needs_improvement' | 'approved'
-  }>
-  return { ok: true, status: rows?.[0]?.status }
-}
+// The status lifecycle (in_progress -> submitted -> needs_improvement|approved,
+// needs_improvement -> approved; the loop resubmit APPENDS a NEW row under a
+// HIGHER submission_seq; the old row stays needs_improvement as the history) is
+// the DATABASE's own `ppg_set_submission_status` authority — the client never
+// decides outcomes; an invalid move reaches `invalid_transition`, a stranger's
+// smuggle reaches `denied_caller`. The server module does NOT port it as a
+// callable: #13's review/approval (#14) and #15's close-chain approve through
+// the SAME RPC inside their own functions; a standalone `set-` helper would be
+// unused by any route (the upload route only `create`s, the review routes only
+// `submit-review`), so the export NEVER lands and the RPC's gate already speaks.

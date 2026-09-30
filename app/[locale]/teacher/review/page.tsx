@@ -22,18 +22,20 @@ export const dynamic = 'force-dynamic'
 async function TeacherQueue() {
   const t = await getTranslations('review')
 
-  // the queue across the practical missions 08–10: one read per mission, the
-  // RPC's gate (denied_role) is the authority — a learner's read NEVER yields
-  // a queue.
-  const [m08, m09, m10] = await Promise.all([
+  // the queue across the practical missions 08–11 (the Final Project rides
+  // the same review machinery, #15): one read per mission, the RPC's gate
+  // (denied_role) is the authority — a learner's read NEVER yields a queue.
+  const [m08, m09, m10, m11] = await Promise.all([
     readReviewQueueViaRpc('module-08'),
     readReviewQueueViaRpc('module-09'),
     readReviewQueueViaRpc('module-10'),
+    readReviewQueueViaRpc('module-11'),
   ])
   const states = [
     { moduleKey: 'module-08', state: m08 },
     { moduleKey: 'module-09', state: m09 },
     { moduleKey: 'module-10', state: m10 },
+    { moduleKey: 'module-11', state: m11 },
   ]
 
   return (

@@ -248,8 +248,14 @@ test(
          WHERE status = 'incomplete';
       ROLLBACK;`,
     )
-    // 9 modules × the 2 seeded learners, ALL `incomplete` — the linear rule
-    // reads `complete` only, so modules 2..10 stay LOCKED server-side.
-    expect(out.includes('incomplete=18')).toBe(true)
+    // #15 widens the spine to the 11th Mission: the Final Project
+    // (`module-11`) is the 10th module seeded (11 orders CHECK-widened, 1..11;
+    // the module-01..module-11 linear Course). So 10 modules × the 2 seeded
+    // learners, ALL `incomplete` — the linear rule reads `complete` only, so
+    // modules 2..10 (and the Final Project's module-11 too, the `complete`
+    // the Teacher's approval writes) stay LOCKED server-side until the
+    // completion lands. #15's seeded module-11 completion is `incomplete` for
+    // every seeded Learner (the approval's UPSERT is its ONLY writer).
+    expect(out.includes('incomplete=20')).toBe(true)
   },
 )
