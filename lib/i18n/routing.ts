@@ -45,6 +45,7 @@ export const routing = defineRouting({
     '/badges': '/badges',
     '/leaderboard': '/leaderboard',
     '/admin/publication': '/admin/publication',
+    '/admin/export': '/admin/export',
   },
 })
 

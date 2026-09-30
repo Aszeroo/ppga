@@ -20,6 +20,7 @@
     "react-dom": "latest",
     "server-only": "latest",
     "use-intl": "latest",
+    "write-excel-file": "^4.1.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {
@@ -28,6 +29,7 @@
     "@types/react": "latest",
     "eslint": "latest",
     "eslint-config-next": "latest",
+    "fflate": "^0.8.3",
     "prettier": "latest",
     "supabase": "latest",
     "typescript": "latest",

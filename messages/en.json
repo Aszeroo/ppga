@@ -69,6 +69,24 @@
       "archived": "archived (invisible to Learners)",
       "linkAudit": "Audit log (publication events)"
     },
+    "export": {
+      "heading": "Research export",
+      "intro": "CSV, XLSX and SQL extracts of the research tables — one row per participant (Pre-Test, Post-Test, rubric totals, satisfaction) with the real student identity. Teacher/Admin only — a learner is denied at the database, not just the page.",
+      "auditNote": "Every export run writes one audit event (who, what, when): the download itself is the audited call, never the page view.",
+      "counts": "The cohort right now",
+      "participantCount": "Participants (learners)",
+      "pretestSubmitted": "Pre-Test submitted",
+      "posttestSubmitted": "Post-Test submitted",
+      "surveySubmitted": "Satisfaction Survey submitted",
+      "rubricReviews": "Rubric reviews",
+      "submissions": "Submissions",
+      "downloadCsv": "Download CSV",
+      "downloadXlsx": "Download XLSX",
+      "downloadSql": "Download SQL",
+      "emptyCohort": "Empty cohort: no learner rows yet — the downloads still work (header-only files) and every run is still audit-logged.",
+      "linkUsers": "User list",
+      "linkExport": "Research export"
+    },
     "states": {
       "ok": "ok",
       "empty": "empty",
