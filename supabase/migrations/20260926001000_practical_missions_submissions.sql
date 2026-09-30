@@ -13,7 +13,7 @@
 -- practical_missions: modules 8-10 only; bilingual scenario/requirements/expected_output.
 -- Instructions flow from the lesson reader's own columns (not this table).
 create table if not exists public.ppg_practical_missions (
-  module_key      text   not null references public.ppg_modules(module_key) on cascade delete,
+  module_key      text   not null references public.ppg_modules(module_key) on delete cascade,
   scenario_th     text   not null,
   scenario_en     text   not null,
   requirements_th text   not null,
@@ -63,8 +63,7 @@ alter table public.ppg_practical_missions enable row level security;
 -- a teacher/admin reads (never writes) all rows; a stranger's insert reaches denied.
 create policy ppg_submissions_insert on public.ppg_submissions
   for insert
-  to learner
-  with check (auth.uid() = learner_id);
+  with check (auth.role() = 'learner' AND auth.uid() = learner_id);
 
 create policy ppg_submissions_select on public.ppg_submissions
   for select
@@ -109,7 +108,7 @@ begin
       old.learner_id, old.mission_id, old.submission_seq;
   end if;
   if new.status <> old.status then
-    if current_setting('ppga_transition', true) is null then
+    if current_setting('ppg.transition', true) is null then
       raise exception 'append_only_submission_status_only_denied (ADR-0002): the status column moves via ppg_set_submission_status ONLY, NEVER via a hand update (learner %1$2s, mission %3$4s, round %5$5s)',
         old.learner_id, old.mission_id, old.submission_seq;
     end if;
@@ -121,7 +120,7 @@ $$;
 
 create trigger ppg_submissions_append_only
   before update on public.ppg_submissions
-  for each row execute public.ppg_deny_submission_update();
+  for each row execute function public.ppg_deny_submission_update();
 
 create or replace function public.ppg_deny_submission_delete() returns trigger
 language plpgsql as $$
@@ -133,7 +132,7 @@ $$;
 
 create trigger ppg_submissions_append_only_delete
   before delete on public.ppg_submissions
-  for each row execute public.ppg_deny_submission_delete();
+  for each row execute function public.ppg_deny_submission_delete();
 
 revoke execute on function public.ppg_deny_submission_update(), public.ppg_deny_submission_delete()
   from public, anon, authenticator, supabase_auth_admin;
@@ -150,7 +149,7 @@ create or replace function public.ppg_set_submission_status(
   p_submission_seq integer,
   p_new_status   ppg_submission_status
 ) returns setof ppg_submission_status
-language plpgsql security definer set_search_path = public as $$
+language plpgsql security definer set search_path = public as $$
 declare
   v_uid uuid := auth.uid();
   v_old ppg_submission_status;
@@ -188,7 +187,7 @@ begin
     raise exception 'invalid_transition: the only legal moves ride the lifecycle rule (learner %1$2s, mission %3$4s, round %5$5s)',
       p_learner_id, p_mission_id, p_submission_seq;
   end if;
-  perform set_config('ppga_transition', 'on', true); -- the append-only trigger allows the status move iff the flag rides (the function's own UPDATE)
+  perform set_config('ppg.transition', 'on', true); -- the append-only trigger allows the status move iff the flag rides (the function's own UPDATE)
   update public.ppg_submissions
      set status = p_new_status
     where learner_id = p_learner_id
@@ -216,21 +215,21 @@ insert into storage.buckets (id, name, public)
   on conflict (id) do nothing;
 
 create policy ppg_submissions_write_own_prefix on storage.objects
-  for insert to learner
+  for insert
   with check (bucket_id = 'ppg-submissions'
-     AND (split_part(object_list.path, '/', 3) = auth.uid()::text));
+     AND (split_part(name, '/', 2) = auth.uid()::text));
 
 create policy ppg_submissions_read on storage.objects
   for select
   using (bucket_id = 'ppg-submissions'
      AND (
-       split_part(object_list.path, '/', 3) = auth.uid()::text
+       split_part(name, '/', 2) = auth.uid()::text
        OR auth.role() in ('teacher','admin')
      )
   );
 
 create policy ppg_submissions_owner_delete_denied on storage.objects
-  for delete to learner
+  for delete
   using (false); -- append-only: a past object NEVER rides a delete (ADR-0002)
 
 -- practical mission seeds (modules 8-10): real scenario/requirements/expected output
@@ -270,7 +269,7 @@ create or replace function public.ppg_practical_award_xp(
   p_learner_id uuid,
   p_mission_id text
 ) returns integer
-language plpgsql security definer set_search_path = public as $$
+language plpgsql security definer set search_path = public as $$
 begin
   raise exception 'seam_not_fired: the +150 XP practical award is ticket #14''s job (on approval; the xp_ledger PK idempotency) — this ticket #13 stub NEVER fires';
 end;
@@ -287,7 +286,7 @@ create or replace function public.ppg_submission_seq_next(
   p_learner_id uuid,
   p_mission_id text
 ) returns integer
-language plpgsql security definer set_search_path = public as $$
+language plpgsql security definer set search_path = public as $$
 declare v_max integer;
 begin
   if auth.role() <> 'learner' or auth.uid() <> p_learner_id then
@@ -318,7 +317,7 @@ create or replace function public.ppg_insert_submission(
   p_file_size bigint,
   p_reflection text
 ) returns setof ppg_submission_status
-language plpgsql security definer set_search_path = public as $$
+language plpgsql security definer set search_path = public as $$
 begin
   if auth.role() <> 'learner' or auth.uid() <> p_learner_id then
     raise exception 'denied_caller: the caller''s own uid NEVER inserts a stranger''s submission';
@@ -357,7 +356,7 @@ grant execute on function public.ppg_insert_submission(uuid,text,integer,text,te
 -- review #14 seam). the order the submission_seq.
 create or replace function public.ppg_submission_history(p_module_key text)
 returns setof public.ppg_submissions
-language plpgsql security definer set_search_path = public as $$
+language plpgsql security definer set search_path = public as $$
 begin
   return query
     select s.* from public.ppg_submissions s
@@ -383,7 +382,7 @@ create or replace function public.ppg_signed_url_for(
   p_submission_seq integer,
   p_expiry_secs integer
 ) returns jsonb
-language plpgsql security definer set_search_path = public as $$
+language plpgsql security definer set search_path = public as $$
 declare
   v_path text;
 begin
@@ -421,7 +420,7 @@ grant execute on function public.ppg_signed_url_for(text,integer,integer)
 -- rls policy denies a stranger's read; the instructions flow from the lessons, NOT here).
 create or replace function public.ppg_read_practical(p_module_key text)
 returns jsonb
-language plpgsql security definer set_search_path = public as $$
+language plpgsql security definer set search_path = public as $$
 begin
   return to_jsonb(p)
     from public.ppg_practical_missions p

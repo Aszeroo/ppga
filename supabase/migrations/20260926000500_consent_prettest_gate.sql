@@ -73,7 +73,7 @@ drop trigger if exists ppg_profile_for_user on auth.users;
 create trigger ppg_profile_for_user
   after insert on auth.users
   for each row
-  execute procedure public.ppg_profile_for_user();
+  execute function public.ppg_profile_for_user();
 
 -- The versioned instrument: the items + the answer key live here, bilingual
 -- JSON; the key is server-side only — the responses' read is the learner's own
@@ -227,7 +227,7 @@ drop trigger if exists ppg_prettest_immutable on public.ppg_pretest_responses;
 create trigger ppg_prettest_immutable
   before update on public.ppg_pretest_responses
   for each row
-  execute procedure public.ppg_prettest_immutable();
+  execute function public.ppg_prettest_immutable();
 
 comment on trigger ppg_prettest_immutable on public.ppg_pretest_responses is
   'PPGA #8: the single-attempt + immutable-once-submitted row-level authority; an UPDATE after `submitted_at` raises `already_submitted`, never a silently-overwritten row.';

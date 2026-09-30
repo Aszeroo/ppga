@@ -77,7 +77,7 @@ drop trigger if exists ppg_profile_for_user on auth.users;
 create trigger ppg_profile_for_user
   after insert on auth.users
   for each row
-  execute procedure public.ppg_profile_for_user();
+  execute function public.ppg_profile_for_user();
 
 -- The provision-audit RPC: the Teacher/Admin provisioning path (#7). One call
 -- = one UPDATE of the created account's role claim, one SELECT assert the

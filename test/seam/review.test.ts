@@ -45,8 +45,8 @@ const seededIds = {
 
 const sql = (statement: string) =>
   execSync(
-    `npx --no-install supabase psql -query -csv -db postgres <<<${JSON.stringify(statement)}`,
-    { encoding: 'utf8' },
+    `docker exec -i supabase_db_ppga psql -U postgres -tA 2>&1`,
+    { input: statement, encoding: 'utf8' },
   )
 
 const impersonate = (role: string, sub: string) =>
@@ -76,7 +76,11 @@ test(
           'approved', 'ดี', 'good');
       ROLLBACK;`,
     )
-    expect(out.includes('rubric_score_denied')).toBe(true)
+    // A learner's call rides the function's own role gate — the title's
+    // `denied_role` — and NEVER yields a review row (AC: only Teacher/Admin
+    // can review). An all-3s payload is VALID, so it can never raise a
+    // `rubric_score_denied`; the denial here is a ROLE denial.
+    expect(out.includes('denied_role')).toBe(true)
   },
 )
 
@@ -91,7 +95,7 @@ test(
         SELECT public.ppg_set_submission_status('${seededIds.learnerA}', 'module-08', 903, 'submitted');
         SET LOCAL "request.jwt.claims" = '{"role":"teacher","sub":"${seededIds.teacher}"}';
         SELECT public.ppg_submit_review('module-08', 903,
-          ${scores(5, 4, 4, 3, 3, 2, 1)}, 'approved', 'fb th', 'fb en');
+          ${scores(5, 4, 4, 3, 3, 2, 3)}, 'approved', 'fb th', 'fb en');
       ROLLBACK;`,
     )
     // the review lands (the server's own 24 sum rides the row, never a client count)
@@ -112,6 +116,8 @@ test(
         SET LOCAL "request.jwt.claims" = '{"role":"teacher","sub":"${seededIds.teacher}"}';
         SELECT public.ppg_submit_review('module-08', 904, ${ALL_THREES},
           'approved', 'fb th', 'fb en');
+        RESET ROLE; -- the hand replay rides the OWNER (RLS bypassed) so the
+        -- BEFORE UPDATE deny TRIGGER (the ADR-0002 last line of defense) fires.
         UPDATE public.ppg_rubric_reviews
           SET total_score = 35
         WHERE learner_id = '${seededIds.learnerA}'
@@ -135,6 +141,8 @@ test(
         SET LOCAL "request.jwt.claims" = '{"role":"teacher","sub":"${seededIds.teacher}"}';
         SELECT public.ppg_submit_review('module-08', 905, ${ALL_THREES},
           'approved', 'fb th', 'fb en');
+        RESET ROLE; -- the hand DELETE rides the OWNER (RLS bypassed) so the
+        -- BEFORE DELETE deny TRIGGER (the ADR-0002 last line of defense) fires.
         DELETE FROM public.ppg_rubric_reviews
         WHERE learner_id = '${seededIds.learnerA}'
           AND mission_id = 'module-08'

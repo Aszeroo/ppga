@@ -126,16 +126,64 @@ alter table public.ppg_modules enable row level security;
 -- or a locked row never appears: the `SELECT 0`, never a smuggled read. A
 -- Teacher/admin reads every row incl draft/arched (the console sees what
 -- the toggle can change).
+create or replace function public.ppg_module_unlocked(p_caller uuid, p_module_key text)
+returns boolean
+language plpgsql
+security definer
+set search_path = public, auth
+as $$
+declare
+  v_order integer;
+begin
+  SELECT m.order_index INTO v_order
+    FROM public.ppg_modules m
+  WHERE m.module_key = p_module_key;
+  if v_order IS NULL then
+    return false;
+  end if;
+
+  -- Module 1 (the first module) opens on the #8 gate alone — the policy
+  -- ANDs this function with `ppg_learner_gated`, so `true` here is only
+  -- the linear-rule part: no one else's completion decides module 1.
+  if v_order = 1 then
+    return true;
+  end if;
+
+  -- Module N+1 opens iff module N (order N-1)'s Mission completed for the
+  -- CALLER (the placeholder reads `incomplete`; #10/#11 write `complete`).
+  return EXISTS (
+    SELECT 1
+      FROM public.ppg_module_missions mi
+    WHERE mi.learner_id = p_caller
+      AND mi.module_key = (
+        SELECT m2.module_key
+          FROM public.ppg_modules m2
+        WHERE m2.order_index = v_order - 1
+        LIMIT 1
+      )
+      AND mi.status = 'complete'
+  );
+end;
+$$;
+
+revoke execute on function public.ppg_module_unlocked(uuid, text)
+  from public, anon, authenticator, supabase_auth_admin;
+grant execute on function public.ppg_module_unlocked(uuid, text)
+  to service_role, authenticated;
+
+comment on function public.ppg_module_unlocked(uuid, text) is
+  'PPGA #9: the linear-rule authority — module 1 open on the #8 gate alone; module N+1 iff module N''s Mission is `complete` for the CALLER (the placeholder `incomplete` FOR NOW — #10/#11 wire the real completion writes; what stays LOCKED server-side meanwhile).';
+
 create policy ppg_modules_select on public.ppg_modules
   for select
   using (
-    auth.role() = 'learner'
-    AND public.ppg_learner_gated(auth.uid())
-    AND publication_state = 'published'
-    AND public.ppg_module_unlocked(auth.uid(), module_key)
-  )
+    (auth.role() = 'learner'
+     AND public.ppg_learner_gated(auth.uid())
+     AND publication_state = 'published'
+     AND public.ppg_module_unlocked(auth.uid(), module_key))
      OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
+     OR auth.role() = 'admin'
+  );
 
 -- UPDATE: admin-only (the publication toggle rides the RPC's definer write
 -- as well; the direct UPDATE policy speaks for the same authority). No
@@ -186,13 +234,13 @@ alter table public.ppg_lessons enable row level security;
 create policy ppg_lessons_select on public.ppg_lessons
   for select
   using (
-    auth.role() = 'learner'
-    AND public.ppg_learner_gated(auth.uid())
-    AND publication_state = 'published'
-    AND public.ppg_module_unlocked(auth.uid(), module_key)
-  )
+    (auth.role() = 'learner'
+     AND public.ppg_learner_gated(auth.uid())
+     AND publication_state = 'published'
+     AND public.ppg_module_unlocked(auth.uid(), module_key))
      OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
+     OR auth.role() = 'admin'
+  );
 
 create policy ppg_lessons_update on public.ppg_lessons
   for update
@@ -241,53 +289,6 @@ create policy ppg_module_missions_select on public.ppg_module_missions
 -- is granted to the CALLER's JWT roles; the definer's rights read the
 -- placeholder rows FILTERED to the CALLER's own `learner_id` — an other
 -- Learner''s completion may never ride this read.
-create or replace function public.ppg_module_unlocked(p_caller uuid, p_module_key text)
-returns boolean
-language plpgsql
-security definer
-set search_path = public, auth
-as $$
-declare
-  v_order integer;
-begin
-  SELECT m.order_index INTO v_order
-    FROM public.ppg_modules m
-  WHERE m.module_key = p_module_key;
-  if v_order IS NULL then
-    return false;
-  end if;
-
-  -- Module 1 (the first module) opens on the #8 gate alone — the policy
-  -- ANDs this function with `ppg_learner_gated`, so `true` here is only
-  -- the linear-rule part: no one else's completion decides module 1.
-  if v_order = 1 then
-    return true;
-  end if;
-
-  -- Module N+1 opens iff module N (order N-1)'s Mission completed for the
-  -- CALLER (the placeholder reads `incomplete`; #10/#11 write `complete`).
-  return EXISTS (
-    SELECT 1
-      FROM public.ppg_module_missions mi
-    WHERE mi.learner_id = p_caller
-      AND mi.module_key = (
-        SELECT m2.module_key
-          FROM public.ppg_modules m2
-        WHERE m2.order_index = v_order - 1
-        LIMIT 1
-      )
-      AND mi.status = 'complete'
-  );
-end;
-$$;
-
-revoke execute on function public.ppg_module_unlocked(uuid, text)
-  from public, anon, authenticator, supabase_auth_admin;
-grant execute on function public.ppg_module_unlocked(uuid, text)
-  to service_role, authenticated;
-
-comment on function public.ppg_module_unlocked(uuid, text) is
-  'PPGA #9: the linear-rule authority — module 1 open on the #8 gate alone; module N+1 iff module N''s Mission is `complete` for the CALLER (the placeholder `incomplete` FOR NOW — #10/#11 wire the real completion writes; what stays LOCKED server-side meanwhile).';
 
 -- The Course map a Learner sees: the RPC returns every SEE-ABLE module
 -- (the same authority the policies speak) + each row's real LOCK STATE

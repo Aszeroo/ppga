@@ -65,7 +65,7 @@ drop trigger if exists ppg_profile_for_user on auth.users;
 create trigger ppg_profile_for_user
   after insert on auth.users
   for each row
-  execute procedure public.ppg_profile_for_user();
+  execute function public.ppg_profile_for_user();
 
 alter table public.ppg_profiles enable row level security;
 

@@ -38,8 +38,8 @@ const seededIds = {
 
 const sql = (statement: string) =>
   execSync(
-    `npx --no-install supabase psql -query -csv -db postgres <<<${JSON.stringify(statement)}`,
-    { encoding: 'utf8' },
+    `docker exec -i supabase_db_ppga psql -U postgres -tA 2>&1`,
+    { input: statement, encoding: 'utf8' },
   )
 
 const impersonate = (role: string, sub: string) =>

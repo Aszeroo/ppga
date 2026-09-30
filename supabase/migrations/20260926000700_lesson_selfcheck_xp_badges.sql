@@ -42,7 +42,10 @@ create table public.ppg_self_check_questions (
   primary key (lesson_key, order_index, option_key),
   constraint ppg_self_check_option_key_check check (option_key in ('a', 'b', 'c', 'd')),
   constraint ppg_self_check_question_order_check check (order_index between 1 and 3),
-  constraint ppg_self_check_question_order_unique unique (lesson_key, order_index),
+  -- NOTE: NO `unique (lesson_key, order_index)` — this table is OPTION-level
+  -- (three a|b|c rows share one question's (lesson_key, order_index)); the PK
+  -- (lesson_key, order_index, option_key) is the authority. A per-question
+  -- unique here contradicted the seed and the read RPC (both expect a|b|c).
   constraint ppg_self_check_options_per_question_check check (option_key in ('a', 'b', 'c'))
 );
 
@@ -58,17 +61,6 @@ alter table public.ppg_self_check_questions enable row level security;
 -- (the console sees what the migration seeds). No INSERT/UPDATE/DELETE
 -- policy — a migration seeds the questions (ADR-0003: content as versioned
 -- seed), the check function writes EVENTS, never a client deciding.
-create policy ppg_self_check_questions_select on public.ppg_self_check_questions
-  for select
-  using ((auth.role() = 'learner' AND public.ppg_self_check_visible(auth.uid(), lesson_key))
-     OR auth.role() = 'teacher'
-     OR auth.role() = 'admin'
-  );
-
--- The answer-key invisibility: the Learner''s own SELECT of the key column
--- is denied by the same authority the row policy speaks (the visibility
--- function AND the column''s own `is_correct` live server-side) — the
--- check function's definer read is the ONLY summing read.
 create or replace function public.ppg_self_check_visible(p_caller uuid, p_lesson_key text)
 returns boolean
 language sql
@@ -92,6 +84,18 @@ grant execute on function public.ppg_self_check_visible(uuid, text)
 
 comment on function public.ppg_self_check_visible(uuid, text) is
   'PPGA #10: the Lesson''s own visibility the questions ride (gate #8 + published + the module OPEN) — a locked/draft/arched Lesson is INVISIBLE server-side, never a hidden UI.';
+
+create policy ppg_self_check_questions_select on public.ppg_self_check_questions
+  for select
+  using ((auth.role() = 'learner' AND public.ppg_self_check_visible(auth.uid(), lesson_key))
+     OR auth.role() = 'teacher'
+     OR auth.role() = 'admin'
+  );
+
+-- The answer-key invisibility: the Learner''s own SELECT of the key column
+-- is denied by the same authority the row policy speaks (the visibility
+-- function AND the column''s own `is_correct` live server-side) — the
+-- check function's definer read is the ONLY summing read.
 
 -- The questions read: the RPC the LESSON page calls (the same authority the
 -- row policy speaks + the CALLER''s JWT; every SEE-ABLE question of the

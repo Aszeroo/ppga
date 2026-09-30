@@ -51,7 +51,7 @@ drop trigger if exists ppg_profile_for_user on auth.users;
 create trigger ppg_profile_for_user
   after insert on auth.users
   for each row
-  execute procedure public.ppg_profile_for_user();
+  execute function public.ppg_profile_for_user();
 
 -- The existing `ppg_profiles_update` policy from Ticket #3 already allows a
 -- learner to update their own row (and `role` only). `locale` is an ordinary

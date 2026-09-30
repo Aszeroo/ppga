@@ -18,7 +18,7 @@
 -- server-computed 7–35), review insert, transitions, XP idempotency — all in
 -- DB functions/RLS; the client NEVER decides outcomes.
 -- Supabase Storage API verified via ctx7 (the signed-URL download #13 route);
-# no fake behavior; the descriptors are real bilingual copy (ADR-0003).
+-- no fake behavior; the descriptors are real bilingual copy (ADR-0003).
 
 -- The rubric criteria: the 7 named criteria the Teacher scores 1–5 on. The
 -- taxonomy is shared (read-only to the authenticated roles, no client authoring
@@ -135,7 +135,7 @@ $$;
 
 create trigger ppg_rubric_reviews_append_only
   before update on public.ppg_rubric_reviews
-  for each row execute public.ppg_deny_rubric_update();
+  for each row execute function public.ppg_deny_rubric_update();
 
 create or replace function public.ppg_deny_rubric_delete() returns trigger
 language plpgsql as $$
@@ -147,7 +147,7 @@ $$;
 
 create trigger ppg_rubric_reviews_append_only_delete
   before delete on public.ppg_rubric_reviews
-  for each row execute public.ppg_deny_rubric_delete();
+  for each row execute function public.ppg_deny_rubric_delete();
 
 revoke execute on function public.ppg_deny_rubric_update()
   from public, anon, authenticator, supabase_auth_admin;
@@ -182,14 +182,14 @@ begin
      new.review_notes_en is not null or
      new.reviewed_by     is not null or
      new.reviewed_at     is not null then
-    if current_setting('ppg_rerun', true) is null then
+    if current_setting('ppg.rerun', true) is null then
       raise exception 'append_only_submission_review_denied (ADR-0002): the review columns NEVER ride a replay update (learner %1$2s, mission %3$4s, round %5$5s); #14 teacher review rides a definer UPDATE under ppg_rerun ONLY, NEVER a hand replay update',
         old.learner_id, old.mission_id, old.submission_seq;
     end if;
     return new;
   end if;
   if new.status <> old.status then
-    if current_setting('ppga_transition', true) is null then
+    if current_setting('ppg.transition', true) is null then
       raise exception 'append_only_submission_status_only_denied (ADR-0002): the status column moves via ppg_set_submission_status ONLY, NEVER via a hand update (learner %1$2s, mission %3$4s, round %5$5s)',
         old.learner_id, old.mission_id, old.submission_seq;
     end if;
@@ -211,7 +211,7 @@ create or replace function public.ppg_set_submission_status(
   p_submission_seq integer,
   p_new_status   ppg_submission_status
 ) returns setof ppg_submission_status
-language plpgsql security definer set_search_path = public as $$
+language plpgsql security definer set search_path = public as $$
 declare
   v_uid uuid := auth.uid();
   v_old ppg_submission_status;
@@ -220,7 +220,7 @@ begin
     if auth.role() in ('teacher','admin') then
       -- the review's own definer call carries the flag; a stranger's
       -- smuggle NEVER reaches the read.
-      if current_setting('ppg_rerun', true) is null then
+      if current_setting('ppg.rerun', true) is null then
         raise exception 'denied_caller: the caller''s own uid NEVER sets a stranger''s submission status';
       end if;
     end if;
@@ -230,7 +230,7 @@ begin
   end if;
   if auth.role() in ('teacher','admin') and
      p_learner_id <> v_uid and
-     current_setting('ppg_rerun', true) is null then
+     current_setting('ppg.rerun', true) is null then
     raise exception 'denied_role: a teacher/admin reads the review verdict, NEVER sets the status of a learner''s row (outside the review''s own definer RPC)';
   end if;
   select status into v_old
@@ -250,7 +250,7 @@ begin
     raise exception 'invalid_transition: the only legal moves ride the lifecycle rule (learner %1$2s, mission %3$4s, round %5$5s)',
       p_learner_id, p_mission_id, p_submission_seq;
   end if;
-  perform set_config('ppga_transition', 'on', true); -- the append-only trigger allows the status move iff the flag rides (the function's own UPDATE)
+  perform set_config('ppg.transition', 'on', true); -- the append-only trigger allows the status move iff the flag rides (the function's own UPDATE)
   update public.ppg_submissions
      set status = p_new_status
     where learner_id = p_learner_id
@@ -279,7 +279,7 @@ grant execute on function public.ppg_set_submission_status(uuid,text,integer,ppg
 create or replace function public.ppg_review_queue(p_mission_id text)
 returns jsonb
 language plpgsql stable
-security definer set_search_path = public as $$
+security definer set search_path = public as $$
 declare
   v_rows jsonb;
 begin
@@ -340,7 +340,7 @@ create or replace function public.ppg_submit_review(
   p_feedback_th    text,
   p_feedback_en    text
 ) returns jsonb
-language plpgsql security definer set_search_path = public as $$
+language plpgsql security definer set search_path = public as $$
 declare
   v_uid uuid := auth.uid();           -- the teacher/admin caller's own uid
   v_learner_id uuid;                   -- the submission owner (the row read below)
@@ -408,7 +408,7 @@ begin
   -- UPDATE of review_* carries `ppg_rerun = on` (the append-only trigger
   -- allows the review columns iff the flag rides; a hand replay update NEVER
   -- speaks).
-  perform set_config('ppg_rerun', 'on', true);
+  perform set_config('ppg.rerun', 'on', true);
 
   update public.ppg_submissions
      set review_verdict = p_decision::text,
@@ -513,7 +513,7 @@ comment on function public.ppg_submit_review(text,integer,jsonb,ppg_review_decis
 create or replace function public.ppg_review_history(p_mission_id text)
 returns jsonb
 language sql stable
-security definer set_search_path = public as $$
+security definer set search_path = public as $$
   select coalesce(
     jsonb_agg(
       jsonb_build_object(
@@ -563,7 +563,7 @@ comment on function public.ppg_review_history(text) is
 create or replace function public.ppg_read_latest_review(p_mission_id text)
 returns jsonb
 language plpgsql stable
-security definer set_search_path = public as $$
+security definer set search_path = public as $$
 declare
   v_latest jsonb := '{}'::jsonb;
   v_history jsonb := '[]'::jsonb;
@@ -623,8 +623,7 @@ begin
       and (
         auth.role() in ('teacher','admin')
         or (auth.role() = 'learner' and r.learner_id = auth.uid())
-      )
-    order by r.submission_seq asc;
+      );
 
   return jsonb_build_object(
     'latest', v_latest,
@@ -648,36 +647,37 @@ comment on function public.ppg_read_latest_review(text) is
 create or replace function public.ppg_read_rubric_criteria()
 returns jsonb
 language sql stable
-security definer set_search_path = public as $$
+security definer set search_path = public as $$
   select jsonb_build_object(
-    'criteria', coalesce(
-      jsonb_agg(
-        jsonb_build_object(
-          'criterion_key', c.criterion_key,
-          'ordinal', c.ordinal,
-          'label_th', c.label_th,
-          'label_en', c.label_en
-        ) ORDER BY c.ordinal asc
-      )::jsonb,
-      '[]'::jsonb
+    'criteria', (
+      select coalesce(
+        jsonb_agg(
+          jsonb_build_object(
+            'criterion_key', c.criterion_key,
+            'ordinal', c.ordinal,
+            'label_th', c.label_th,
+            'label_en', c.label_en
+          ) ORDER BY c.ordinal asc
+        )::jsonb,
+        '[]'::jsonb
+      )
+      from public.ppg_rubric_criteria c
     ),
-    'descriptors', coalesce(
-      jsonb_agg(
-        jsonb_build_object(
-          'criterion_key', d.criterion_key,
-          'score_band', d.score_band,
-          'descriptor_th', d.descriptor_th,
-          'descriptor_en', d.descriptor_en
-        ) ORDER BY d.criterion_key, d.score_band asc
-      )::jsonb,
-      '[]'::jsonb
+    'descriptors', (
+      select coalesce(
+        jsonb_agg(
+          jsonb_build_object(
+            'criterion_key', d.criterion_key,
+            'score_band', d.score_band,
+            'descriptor_th', d.descriptor_th,
+            'descriptor_en', d.descriptor_en
+          ) ORDER BY d.criterion_key asc, d.score_band asc
+        )::jsonb,
+        '[]'::jsonb
+      )
+      from public.ppg_rub_descriptors d
     )
-  )
-    from public.ppg_rubric_criteria c
-    CROSS JOIN public.ppg_rub_descriptors d
-    WHERE EXISTS (
-      SELECT 1 FROM public.ppg_rubric_criteria WHERE 1
-    );
+  );
 $$;
 
 revoke execute on function public.ppg_read_rubric_criteria()
@@ -807,7 +807,7 @@ insert into public.ppg_rub_descriptors (criterion_key, score_band, descriptor_th
    'The deck is nearly complete: the deliverable + the no-fake note are present; a minor gap.'),
   ('completeness', 5,
    'ครบ-ถ้วนม-เพรียะ-บ-ม-ก: ทุก-สไลด-เพรียะ-บ: ไม่-เพรียะ',
-   'The deck is complete: the deliverable + the no-fake note; every required section is present.'),
+   'The deck is complete: the deliverable + the no-fake note; every required section is present.')
   on conflict (criterion_key, score_band) do nothing;
 
 -- the badge taxonomy: #11 seeds modules 1..7 knowledge mission badges; the
