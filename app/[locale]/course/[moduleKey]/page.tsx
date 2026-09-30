@@ -51,11 +51,12 @@ async function LessonsList({ moduleKey }: { moduleKey: string }) {
   )
 }
 
-export default async function ModulePage({ params }: { params: { moduleKey: string } }) {
+export default async function ModulePage({ params }: { params: Promise<{ moduleKey: string }> }) {
   const t = await getTranslations('lesson')
+  const { moduleKey } = await params
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <LessonsList moduleKey={params.moduleKey} />
+      <LessonsList moduleKey={moduleKey} />
     </Suspense>
   )
 }
