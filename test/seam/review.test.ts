@@ -58,14 +58,6 @@ const scores = (c1: number, c2: number, c3: number, c4: number, c5: number, c6: 
 
 const ALL_THREES = scores(3, 3, 3, 3, 3, 3, 3)
 
-// a fresh `submitted` submission round the review runs against (rolled back
-// with the whole review's side effects).
-const setupSubmitted = (learnerId: string) => `
-  INSERT INTO ppg_submissions
-    (learner_id, mission_id, submission_seq, storage_path, file_magic, file_size, reflection, status)
-  VALUES ('${learnerId}', 'module-08', 901,
-    'submissions/${learnerId}/module-08/901', 'pptx', 1000, 'seam', 'submitted');`
-
 test(
   'Role gate: a LEARNER call of the review submit RPC NEVER yields a review (denied_role)',
   { skip: !hasLocalStack },

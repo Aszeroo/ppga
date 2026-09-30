@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 
 import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import { Link } from '../../../../lib/i18n/routing'
 
 import { readReviewQueueViaRpc } from '../../../../lib/sup/reviews'
@@ -19,7 +20,7 @@ import { StatusPill } from '../../../../components/StatusPill'
 export const dynamic = 'force-dynamic'
 
 async function TeacherQueue() {
-  const t = useTranslations('review')
+  const t = await getTranslations('review')
 
   // the queue across the practical missions 08–10: one read per mission, the
   // RPC's gate (denied_role) is the authority — a learner's read NEVER yields

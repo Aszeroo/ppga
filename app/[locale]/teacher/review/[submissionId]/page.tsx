@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 
 import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import { Link } from '../../../../../lib/i18n/routing'
 
 import { readRubricCriteriaViaRpc } from '../../../../../lib/sup/reviews'
@@ -37,7 +38,7 @@ async function ReviewForm({
 }: {
   submissionId: string
 }) {
-  const t = useTranslations('review')
+  const t = await getTranslations('review')
 
   // `submissionId` rides `module-08/2` (mission/round; the queue's link form)
   const slash = submissionId.indexOf('/')

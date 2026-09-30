@@ -46,9 +46,6 @@ const sql = (statement: string) =>
     { input: statement, encoding: 'utf8' },
   )
 
-const asRole = (role: string, sub: string) =>
-  `SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"${role}","sub":"${sub}"}';`
-
 // the owner-level cleanup that rides the SAME transaction (rolled back): the
 // response row + the override audit events, so every test starts from the
 // seeded baseline inside its own tx whatever the container holds.

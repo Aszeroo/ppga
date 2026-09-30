@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../../../lib/i18n/routing'
 
 import { readLatestReviewViaRpc } from '../../../../../lib/sup/reviews'
@@ -20,8 +21,8 @@ import { StatusPill } from '../../../../../components/StatusPill'
 export const dynamic = 'force-dynamic'
 
 async function LearnerReviewResult({ moduleKey }: { moduleKey: string }) {
-  const t = useTranslations('review')
-  const locale = useLocale()
+  const t = await getTranslations('review')
+  const locale = await getLocale()
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
 
   const latest = await readLatestReviewViaRpc(moduleKey)
