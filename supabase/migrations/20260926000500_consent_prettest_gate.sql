@@ -443,8 +443,7 @@ begin
 
   UPDATE public.ppg_profiles t
      set consent = p_consent
-   WHERE t.id = p_target_id
-  returning *;
+   WHERE t.id = p_target_id;
 
   insert into public.ppg_audit_events
     (actor_id, action, target_type, target_id, details, created_at)
@@ -499,8 +498,7 @@ begin
 
   UPDATE public.ppg_profiles t
      set prettest_unlocked_override = true
-   WHERE t.id = p_target_id
-  returning *;
+   WHERE t.id = p_target_id;
 
   insert into public.ppg_audit_events
     (actor_id, action, target_type, target_id, details, created_at)

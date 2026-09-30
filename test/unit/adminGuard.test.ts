@@ -20,7 +20,7 @@ test('audit foundation: the migration creates the table + the admin-only read po
   expect(migration.includes('create table public.ppg_audit_events')).toBe(true)
   expect(migration.includes('alter table public.ppg_audit_events enable row level security')).toBe(true)
   expect(migration.includes('create policy ppg_audit_events_select on public.ppg_audit_events')).toBe(true)
-  expect(migration.includes('using auth.role()')).toBe(true)
+  expect(migration.includes("using (auth.role() = 'admin')")).toBe(true)
   // append-only: no UPDATE/DELETE policy is granted (the comment says so);
   // the migration must never grant one.
   expect(migration.includes('for update')).toBe(false)

@@ -47,7 +47,7 @@ test('RLS: a gated learner reads ONLY published + unlocked modules (never draft/
   expect(m.includes('AND public.ppg_module_unlocked(auth.uid(), module_key)')).toBe(true)
   expect(m.includes('create policy ppg_lessons_select on public.ppg_lessons')).toBe(true)
   expect(m.includes('create policy ppg_modules_update on public.ppg_modules')).toBe(true)
-  expect(m.includes("using auth.role() = 'admin'")).toBe(true)
+  expect(m.includes("using (auth.role() = 'admin')")).toBe(true)
 })
 
 test('Rule: module 1 opens on the gate alone; module N+1 iff module N is complete (the placeholder)', () => {

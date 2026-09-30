@@ -102,8 +102,7 @@ begin
   -- rights make it possible; the gate above made it admin-only.
   update public.ppg_profiles t
      set role = p_new_role
-   WHERE t.id = p_target_id
-  returning *;
+   WHERE t.id = p_target_id;
 
   -- Exactly one audit event, same transaction, same call.
   insert into public.ppg_audit_events

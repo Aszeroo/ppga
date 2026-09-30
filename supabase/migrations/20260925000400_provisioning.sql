@@ -135,8 +135,7 @@ begin
            'role', 'learner'::text,
            'must_change_password', true
          )
-     WHERE u.id = p_target_id
-    returning *;
+     WHERE u.id = p_target_id;
   end if;
 
   -- Exactly one audit event, same transaction, same call — for every line
