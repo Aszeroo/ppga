@@ -109,6 +109,12 @@ async function RoleChangeControl() {
       <p>
         <Link href="/admin/audit">{t('users.linkAuditOverride')}</Link>
       </p>
+      {/* Ticket #16: the research export page (Admin/Teacher) — the audited
+        CSV/XLSX/SQL downloads live there, denied to a learner by the
+        database's own gate. */}
+      <p>
+        <Link href="/admin/export">{t('export.linkExport')}</Link>
+      </p>
     </section>
   )
 }

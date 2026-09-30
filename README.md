@@ -129,3 +129,34 @@ treats the student-ID as the login identifier without requiring a real email.
 No `signup` route, page or API exists: self-registration is blocked by RLS's
 insert policy (`admin` only) and by the absence of any self-registration
 surface.
+## Ticket #16 — Research export (CSV / XLSX / SQL)
+
+The Admin/Teacher Export page (`/admin/export`) extracts the research tables —
+one row per participant with the Pre-Test, Post-Test, rubric totals, the
+Satisfaction Survey and the REAL student identity (`student_id`, `full_name`)
+per the spec decision. The extract, the SQL dump and the audit INSERT all
+happen inside the database (`ppg_research_export` — one call, one audit
+event); the Next.js layer only streams the bytes.
+
+Routes:
+
+- `/admin/export` — the Export page: the teacher/admin-gated preview (counts
+  per instrument, NO audit — a page view is not an export run) + the three
+  download links; a learner who reaches it sees `denied` because the
+  DATABASE's function gate refused them.
+- `/api/export/research?format=csv|xlsx|sql` — the audited download:
+  **CSV** (UTF-8 BOM + CRLF + RFC 4180 escaping so Thai reads in Excel),
+  **XLSX** (a real workbook via `write-excel-file` — one dependency,
+  `fflate`), **SQL** (a restorable transaction script: one BEGIN/COMMIT,
+  every INSERT `ON CONFLICT DO NOTHING`, learner profiles + the five
+  research tables — never the audit stream, never `auth.users`). A re-run of
+  the dump is a no-op, never a duplicate.
+- `/api/export/preview` — the page's state read (teacher/admin-only).
+
+Every export run writes exactly one `ppg_audit_events` row on the SAME DB
+call (who = `actor_id`, what = `action` + `details.format` +
+`details.participant_count`, when = `created_at`). The format gate refuses
+anything beyond csv/xlsx/sql — the PDF report is issue #17. The empty cohort
+is a normal result: header-only CSV/XLSX, a commented 0-INSERT dump, still
+audit-logged. `middleware.ts` guards `/admin/export` alongside the rest of
+the console.
