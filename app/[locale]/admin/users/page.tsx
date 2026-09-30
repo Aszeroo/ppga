@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import { Link } from '../../../../lib/i18n/routing'
 
 import { listUsersViaRpc, type UsersState } from '../../../../lib/sup/admin'
@@ -22,7 +22,7 @@ import { listUsersViaRpc, type UsersState } from '../../../../lib/sup/admin'
 export const dynamic = 'force-dynamic'
 
 async function UsersList() {
-  const t = useTranslations('admin')
+  const t = await getTranslations('admin')
   const state = await listUsersViaRpc(0)
   return (
     <section aria-label={t('users.list')}>
@@ -43,7 +43,7 @@ async function UsersList() {
 }
 
 async function RoleChangeControl() {
-  const t = useTranslations('admin')
+  const t = await getTranslations('admin')
   return (
     <section>
       <form
@@ -113,8 +113,8 @@ async function RoleChangeControl() {
   )
 }
 
-export default function AdminUsersPage() {
-  const t = useTranslations('admin')
+export default async function AdminUsersPage() {
+  const t = await getTranslations('admin')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <UsersList />

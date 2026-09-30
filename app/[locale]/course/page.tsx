@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { useLocale, useTranslations } from 'next-intl'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../lib/i18n/routing'
 
 import { readCourseMapViaRpc } from '../../../lib/sup/curriculum'
@@ -22,8 +22,8 @@ import { Card } from '../../../components/Card'
 export const dynamic = 'force-dynamic'
 
 async function CourseMap() {
-  const t = useTranslations('course')
-  const locale = useLocale()
+  const t = await getTranslations('course')
+  const locale = await getLocale()
   const state = await readCourseMapViaRpc()
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
   return (
@@ -60,8 +60,8 @@ async function CourseMap() {
   )
 }
 
-export default function CoursePage() {
-  const t = useTranslations('course')
+export default async function CoursePage() {
+  const t = await getTranslations('course')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <main>

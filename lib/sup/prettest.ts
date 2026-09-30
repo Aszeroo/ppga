@@ -149,7 +149,6 @@ export async function readGateViaTable(): Promise<GateState> {
     gateRow && typeof gateRow.prettest_unlocked_override === 'boolean'
       ? (gateRow.prettest_unlocked_override as boolean)
       : false
-  const submitted = resRow && resRow.submitted_at != null
   return {
     status: 'ok',
     consent,

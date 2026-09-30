@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import { Link } from '../../../lib/i18n/routing'
 
 import { readGateViaTable } from '../../../lib/sup/prettest'
@@ -23,7 +23,7 @@ import { readGateViaTable } from '../../../lib/sup/prettest'
 export const dynamic = 'force-dynamic'
 
 async function GateStatus() {
-  const t = useTranslations('content')
+  const t = await getTranslations('content')
   const state = await readGateViaTable()
   return (
     <section aria-label={t('gateLabel')}>
@@ -38,8 +38,8 @@ async function GateStatus() {
   )
 }
 
-export default function ContentPage() {
-  const t = useTranslations('content')
+export default async function ContentPage() {
+  const t = await getTranslations('content')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <GateStatus />

@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 
 import { checkDatabaseConnectivity } from '../../../lib/sup/health'
 
@@ -15,7 +15,7 @@ import { checkDatabaseConnectivity } from '../../../lib/sup/health'
 export const dynamic = 'force-dynamic'
 
 async function HealthContent() {
-  const t = useTranslations('health')
+  const t = await getTranslations('health')
   const result = await checkDatabaseConnectivity()
   return (
     <section>
@@ -25,8 +25,8 @@ async function HealthContent() {
   )
 }
 
-export default function HealthPage() {
-  const t = useTranslations('health')
+export default async function HealthPage() {
+  const t = await getTranslations('health')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <HealthContent />
