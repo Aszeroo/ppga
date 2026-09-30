@@ -93,11 +93,12 @@ async function LessonView({ moduleKey, lessonKey }: { moduleKey: string; lessonK
   )
 }
 
-export default async function LessonPage({ params }: { params: { moduleKey: string; lessonKey: string } }) {
+export default async function LessonPage({ params }: { params: Promise<{ moduleKey: string; lessonKey: string }> }) {
   const t = await getTranslations('lesson')
+  const { moduleKey, lessonKey } = await params
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <LessonView moduleKey={params.moduleKey} lessonKey={params.lessonKey} />
+      <LessonView moduleKey={moduleKey} lessonKey={lessonKey} />
     </Suspense>
   )
 }

@@ -115,11 +115,12 @@ async function PracticalAttempt({ moduleKey }: { moduleKey: string }) {
   )
 }
 
-export default async function PracticalPage({ params }: { params: { moduleKey: string } }) {
+export default async function PracticalPage({ params }: { params: Promise<{ moduleKey: string }> }) {
   const t = await getTranslations('practical')
+  const { moduleKey } = await params
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <PracticalAttempt moduleKey={params.moduleKey} />
+      <PracticalAttempt moduleKey={moduleKey} />
     </Suspense>
   )
 }

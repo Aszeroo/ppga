@@ -113,11 +113,12 @@ async function MissionAttempt({ moduleKey }: { moduleKey: string }) {
   )
 }
 
-export default async function MissionPage({ params }: { params: { moduleKey: string } }) {
+export default async function MissionPage({ params }: { params: Promise<{ moduleKey: string }> }) {
   const t = await getTranslations('mission')
+  const { moduleKey } = await params
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <MissionAttempt moduleKey={params.moduleKey} />
+      <MissionAttempt moduleKey={moduleKey} />
     </Suspense>
   )
 }
