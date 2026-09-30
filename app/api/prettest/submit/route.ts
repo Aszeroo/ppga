@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   prettestFormSchema,
   submitViaRpc,
-  upsupertAutosaveViaRpc,
 } from '../../../../lib/sup/prettest'
 
 /**

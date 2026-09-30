@@ -13,7 +13,12 @@ const secretGuard = {
   ignores: [
     'lib/**/*',
     'app/api/**/*',
+    // The health page imports the server-only connectivity probe by design;
+    // the page moved under [locale] in ticket #4 (i18n-prefixed routes).
+    // The brackets are glob-escaped: [locale] is a literal directory name,
+    // not a character class.
     'app/health/**/*',
+    'app/\\[locale\\]/health/**/*',
     'test/**/*',
     'eslint.config.mjs',
     'next.config.ts',
@@ -30,19 +35,19 @@ const secretGuard = {
         paths: [
           {
             name: 'lib/sup/server',
-            reason:
+            message:
               'The service-role client factory is server-only and may not reach the browser.',
           },
           {
             name: '@/lib/sup/server',
-            reason:
+            message:
               'The service-role client factory is server-only and may not reach the browser.',
           },
         ],
         patterns: [
           {
             group: ['**/lib/sup/server', '**/lib/sup/health'],
-            reason:
+            message:
               'Server-side Supabase client factories may not reach the browser.',
           },
         ],
@@ -59,10 +64,17 @@ const secretGuard = {
   },
 }
 
+// typescript-eslint's `recommended` preset is an ARRAY of config objects in
+// typescript-eslint v8 (base is a single object); it must be spread into the
+// flat config — a nested array crashes ESLint 9's normalization with
+// `TypeError: Unexpected array.` (flatTraverse in @eslint/config-array).
 const eslintConfig = [
+  // Non-project artifacts (local agent worktrees, the Next build output) —
+  // never lint these; flat config does not read .gitignore.
+  { ignores: ['.claude/**', '.claue/**', '.next/**', 'node_modules/**'] },
   ...nextVitals,
   tsgl.configs.base,
-  tsgl.configs.recommended,
+  ...tsgl.configs.recommended,
   secretGuard,
 ]
 

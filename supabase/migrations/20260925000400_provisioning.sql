@@ -73,7 +73,7 @@ return new;
 end;
 $$;
 
-drop trigger ppg_profile_for_user on auth.users;
+drop trigger if exists ppg_profile_for_user on auth.users;
 create trigger ppg_profile_for_user
   after insert on auth.users
   for each row

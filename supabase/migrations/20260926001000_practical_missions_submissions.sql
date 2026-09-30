@@ -68,15 +68,17 @@ create policy ppg_submissions_insert on public.ppg_submissions
 
 create policy ppg_submissions_select on public.ppg_submissions
   for select
-  using (auth.role() = 'learner' AND learner_id = auth.uid())
+  using ((auth.role() = 'learner' AND learner_id = auth.uid())
      OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
+     OR auth.role() = 'admin'
+  );
 
 create policy ppg_practical_missions_select on public.ppg_practical_missions
   for select
-  using auth.role() = 'learner'
+  using (auth.role() = 'learner'
      OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
+     OR auth.role() = 'admin'
+  );
 
 -- append-only deny: a replay update rides DENIED on immutable columns; the status
 -- column ONLY moves via ppg_set_submission_status (the security-definer function
@@ -178,11 +180,11 @@ begin
     raise exception 'submission_missing: no row for this learner/mission/round (learner %1$2s, mission %3$4s, round %5$5s)',
       p_learner_id, p_mission_id, p_submission_seq;
   end if;
-  if (v_old, p_new_status) not in
-     ('in_progress','submitted')::text,
-     ('submitted','needs_improvement')::text,
-     ('submitted','approved')::text,
-     ('needs_improvement','approved')::text then
+  if not (
+       (v_old = 'in_progress'       and p_new_status = 'submitted')
+    or (v_old = 'submitted'         and p_new_status in ('needs_improvement','approved'))
+    or (v_old = 'needs_improvement' and p_new_status = 'approved')
+  ) then
     raise exception 'invalid_transition: the only legal moves ride the lifecycle rule (learner %1$2s, mission %3$4s, round %5$5s)',
       p_learner_id, p_mission_id, p_submission_seq;
   end if;
@@ -220,15 +222,16 @@ create policy ppg_submissions_write_own_prefix on storage.objects
 
 create policy ppg_submissions_read on storage.objects
   for select
-  using bucket_id = 'ppg-submissions'
+  using (bucket_id = 'ppg-submissions'
      AND (
        split_part(object_list.path, '/', 3) = auth.uid()::text
        OR auth.role() in ('teacher','admin')
-     );
+     )
+  );
 
 create policy ppg_submissions_owner_delete_denied on storage.objects
   for delete to learner
-  using false; -- append-only: a past object NEVER rides a delete (ADR-0002)
+  using (false); -- append-only: a past object NEVER rides a delete (ADR-0002)
 
 -- practical mission seeds (modules 8-10): real scenario/requirements/expected output
 -- content, bilingual, no fake behavior (the lesson bodies flow to the reader, NOT here).

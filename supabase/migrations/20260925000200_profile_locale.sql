@@ -7,7 +7,7 @@
 --
 do $$ begin
   begin
-    execute 'drop type public.ppg_locale cascade'
+    execute 'drop type public.ppg_locale cascade';
   exception
     when undefined_object then null; -- a fresh database has no enum to drop
   end;
@@ -47,7 +47,7 @@ return new;
 end;
 $$;
 
-drop trigger ppg_profile_for_user on auth.users;
+drop trigger if exists ppg_profile_for_user on auth.users;
 create trigger ppg_profile_for_user
   after insert on auth.users
   for each row

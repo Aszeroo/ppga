@@ -39,7 +39,7 @@ comment on column public.ppg_audit_events.action is
 comment on column public.ppg_audit_events.target_type is
   'The object kind — `profile` here; later `account`, `publication`.';
 comment on column public.ppg_audit_events.target_id is
-  'The object's identity — the profile''s id here; no FK to keep the stream append-only across row-retire.';
+  'The object''s identity — the profile''s id here; no FK to keep the stream append-only across row-retire.';
 comment on column public.ppg_audit_events.details is
   'Structured detail (`{ "old_role": ..., "new_role": ... }` here); every event stays parseable for #56''s inspect.';
 
@@ -50,7 +50,7 @@ alter table public.ppg_audit_events enable row level security;
 -- views" are an admin-only surface, #56).
 create policy ppg_audit_events_select on public.ppg_audit_events
   for select
-  using auth.role() = 'admin';
+  using (auth.role() = 'admin');
 
 -- Insert: every authenticated role — the audit stream is what a role-gated
 -- operation must write to; the deny on read does not deny the write. The
@@ -58,7 +58,7 @@ create policy ppg_audit_events_select on public.ppg_audit_events
 -- role's bypass, never the anon key.
 create policy ppg_audit_events_insert on public.ppg_audit_events
   for insert
-  using auth.role() in ('learner'::text, 'teacher'::text, 'admin'::text);
+  with check (auth.role() in ('learner'::text, 'teacher'::text, 'admin'::text));
 
 -- UPDATE / DELETE: no policy is granted, so the command tag is denied by the
 -- table itself — the append-only enforcement lives in the database, never in

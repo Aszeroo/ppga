@@ -38,9 +38,10 @@ alter table public.ppg_knowledge_missions enable row level security;
 -- events, never a client deciding.
 create policy ppg_knowledge_missions_select on public.ppg_knowledge_missions
   for select
-  using (auth.role() = 'learner' AND public.ppg_knowledge_mission_visible(auth.uid(), module_key))
+  using ((auth.role() = 'learner' AND public.ppg_knowledge_mission_visible(auth.uid(), module_key))
      OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
+     OR auth.role() = 'admin'
+  );
 
 -- The questions: the Mission's own bilingual prompts/options, the
 -- `is_correct` key server-side only (the read RPC never carries it), the
@@ -82,9 +83,10 @@ alter table public.ppg_knowledge_mission_questions enable row level security;
 
 create policy ppg_knowledge_mission_questions_select on public.ppg_knowledge_mission_questions
   for select
-  using (auth.role() = 'learner' AND public.ppg_knowledge_mission_visible(auth.uid(), module_key))
+  using ((auth.role() = 'learner' AND public.ppg_knowledge_mission_visible(auth.uid(), module_key))
      OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
+     OR auth.role() = 'admin'
+  );
 
 -- The attempt stream: the append-only score history per learner+mission
 -- (unlimited retries ADD rows; the PK stamps the retry count; the score
@@ -113,9 +115,10 @@ alter table public.ppg_mission_attempts enable row level security;
 
 create policy ppg_mission_attempts_select on public.ppg_mission_attempts
   for select
-  using (auth.role() = 'learner' AND learner_id = auth.uid())
+  using ((auth.role() = 'learner' AND learner_id = auth.uid())
      OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
+     OR auth.role() = 'admin'
+  );
 
 -- The visibility: the Mission rides the gate (#8) + the Module published +
 -- the Module OPEN (the linear rule: for Module 1 on the gate alone; for

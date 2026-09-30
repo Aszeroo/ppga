@@ -76,9 +76,10 @@ alter table public.ppg_courses enable row level security;
 -- migration seeds the single Course.
 create policy ppg_courses_select on public.ppg_courses
   for select
-  using public.ppg_learner_gated(auth.uid())
+  using (public.ppg_learner_gated(auth.uid())
      OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
+     OR auth.role() = 'admin'
+  );
 
 insert into public.ppg_courses (course_key, title_th, title_en)
   values (
@@ -141,7 +142,7 @@ create policy ppg_modules_select on public.ppg_modules
 -- INSERT/DELETE policy — a migration seeds the content (ADR-0003).
 create policy ppg_modules_update on public.ppg_modules
   for update
-  using auth.role() = 'admin';
+  using (auth.role() = 'admin');
 
 -- The Lessons: the study material inside a Module (glossary: Lesson). The
 -- #16 story's structure is carried as columns, not a JSON blob: the what
@@ -195,7 +196,7 @@ create policy ppg_lessons_select on public.ppg_lessons
 
 create policy ppg_lessons_update on public.ppg_lessons
   for update
-  using auth.role() = 'admin';
+  using (auth.role() = 'admin');
 
 -- The Mission-state placeholder: the completion record the linear rule READS
 -- for now (ADR glossary: Mission; #10/#11 replace this with the real
@@ -220,9 +221,10 @@ alter table public.ppg_module_missions enable row level security;
 
 create policy ppg_module_missions_select on public.ppg_module_missions
   for select
-  using (auth.role() = 'learner' and learner_id = auth.uid())
+  using ((auth.role() = 'learner' and learner_id = auth.uid())
      OR auth.role() = 'teacher'
-     OR auth.role() = 'admin';
+     OR auth.role() = 'admin'
+  );
 
 -- The placeholder's own seed lands AFTER the modules (end of file), so the
 -- cross join reads the seeded modules + the seeded learner profiles; the
