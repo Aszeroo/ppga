@@ -203,17 +203,18 @@ test(
   'Rubric validation: a 0/6/8 score NEVER rides (rubric_score_denied — 1-5 each ONLY)',
   { skip: !hasLocalStack },
   () => {
-    // the teacher submits a prepared submission, then the 0-score smuggle
+    // the teacher submits a prepared submission (one consistent round: 902 —
+    // the insert, the status move and the review ALL ride the same seq/path),
+    // then the 0-score smuggle
     const out = sql(
       `BEGIN;
         SET LOCAL role authenticated;
         SET LOCAL "request.jwt.claims" = '{"role":"learner","sub":"${seededIds.learnerA}"}';
         SELECT public.ppg_insert_submission('${seededIds.learnerA}', 'module-08', 902,
-          'submissions/${seededIds.learnerA}/module-08/901', 'pptx', 1000, 'x');
-        SELECT public.ppg_set_submission_status('${seededIds.learnerA}', 'module-08', 901, 'submitted');
-        SET LOCAL role authenticated;
+          'submissions/${seededIds.learnerA}/module-08/902', 'pptx', 1000, 'x');
+        SELECT public.ppg_set_submission_status('${seededIds.learnerA}', 'module-08', 902, 'submitted');
         SET LOCAL "request.jwt.claims" = '{"role":"teacher","sub":"${seededIds.teacher}"}';
-        SELECT public.ppg_submit_review('module-08', 901,
+        SELECT public.ppg_submit_review('module-08', 902,
           ${scores(0, 3, 3, 3, 3, 3, 3)}, 'approved', 'fb th', 'fb en');
       ROLLBACK;`,
     )
