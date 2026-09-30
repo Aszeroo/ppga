@@ -64,12 +64,20 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('teacher', seededIds.teacher)}
+      `BEGIN;
+        DELETE FROM ppg_audit_events WHERE action = 'provision';
+        SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"teacher","sub":"${seededIds.teacher}"}';
         SELECT ppg_provision_finalize(null, '64110001', 'Lew A. Boonthi', 'created');
+        RESET ROLE;
+        SELECT 'provision=' || count(*) FROM ppg_audit_events WHERE action = 'provision';
       ROLLBACK;`,
     )
+    // A teacher's call is NOT a gate raise (no `permission_denied`); the write
+    // landed (the owner read — the audit SELECT is admin-only, so the teacher
+    // itself could never read it) proves the RPC INSERTed exactly one provision
+    // event. The labelled count is the value `-tA` prints.
     expect(!out.includes('permission_denied')).toBe(true)
-    expect(out.includes('provision')).toBe(true)
+    expect(out.includes('provision=1')).toBe(true)
   },
 )
 
@@ -91,13 +99,18 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('teacher', seededIds.teacher)}
+      `BEGIN;
+        DELETE FROM ppg_audit_events WHERE action = 'provision';
+        SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"teacher","sub":"${seededIds.teacher}"}';
         SELECT ppg_provision_finalize(null, '64110001', 'Lew A. Boonthi', 'created');
-        SELECT count(*) FROM ppg_audit_events WHERE action = 'provision';
+        RESET ROLE;
+        SELECT 'provision=' || count(*) FROM ppg_audit_events WHERE action = 'provision';
       ROLLBACK;`,
     )
-    expect(out.includes('1')).toBe(true)
-    expect(out.includes('provision')).toBe(true)
+    // EXACTLY one provision event per call (the owner cleanup makes the in-tx
+    // count exact); the labelled count is a single value row `provision=1`. The
+    // owner (RESET ROLE) read stands in for the admin-only audit SELECT.
+    expect(out.includes('provision=1')).toBe(true)
   },
 )
 
@@ -111,8 +124,11 @@ test(
         VALUES ('99990001-0001-0001-0001-000100010001', '99990001', 'Self Registrant', 'learner');
       ROLLBACK;`,
     )
+    // The WITH CHECK admin-only policy denies the self-registration INSERT with
+    // a hard RLS error (NOT a silent 0-row) — Postgres names the TABLE in the
+    // raise (`for table "ppg_profiles"`), never the specific policy.
     expect(out.includes('violates row-level security policy')).toBe(true)
-    expect(out.includes('ppg_profiles_insert')).toBe(true)
+    expect(out.includes('ppg_profiles')).toBe(true)
   },
 )
 
@@ -121,12 +137,15 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('admin', seededIds.admin)}
-        SELECT must_change_password FROM ppg_profiles ORDER BY student_id;
+      `BEGIN;
+        SELECT 'mcp=' || must_change_password::text FROM ppg_profiles ORDER BY student_id;
       ROLLBACK;`,
     )
-    expect(out.includes('false')).toBe(true)
-    expect(out.includes('t') || out.includes('true')).toBe(true)
+    // The column EXISTS (the ALTER landed — the read resolves); the seeded
+    // bootstrap rows carry no metadata flag, so the coalesce default rides
+    // FALSE. `-tA` prints booleans as `f`/`t`, so the value is cast to text.
+    expect(out.includes('mcp=false')).toBe(true)
+    expect(out.includes('mcp=true')).toBe(false)
   },
 )
 
@@ -135,11 +154,17 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('teacher', seededIds.teacher)}
+      `BEGIN;
+        DELETE FROM ppg_audit_events WHERE action = 'provision';
+        SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"teacher","sub":"${seededIds.teacher}"}';
         SELECT ppg_provision_finalize(null, '64110001', 'Lew A. Boonthi', 'created');
+        RESET ROLE;
         SELECT details::text FROM ppg_audit_events WHERE action = 'provision';
       ROLLBACK;`,
     )
+    // The audit read is admin-only, so the owner (RESET ROLE) stands in. The
+    // details carry ONLY the identity + name + line result — NO password
+    // material ever rides the event.
     expect(out.includes('student_id')).toBe(true)
     expect(out.includes('full_name')).toBe(true)
     expect(out.includes('line_result')).toBe(true)

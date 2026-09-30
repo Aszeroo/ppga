@@ -216,22 +216,17 @@ declare
   v_uid uuid := auth.uid();
   v_old ppg_submission_status;
 begin
-  if p_learner_id <> v_uid then
-    if auth.role() in ('teacher','admin') then
-      -- the review's own definer call carries the flag; a stranger's
-      -- smuggle NEVER reaches the read.
-      if current_setting('ppg.rerun', true) is null then
-        raise exception 'denied_caller: the caller''s own uid NEVER sets a stranger''s submission status';
-      end if;
-    end if;
-    if auth.role() = 'learner' then
-      raise exception 'denied_caller: the caller''s own uid NEVER sets a stranger''s submission status';
-    end if;
-  end if;
   if auth.role() in ('teacher','admin') and
      p_learner_id <> v_uid and
      current_setting('ppg.rerun', true) is null then
     raise exception 'denied_role: a teacher/admin reads the review verdict, NEVER sets the status of a learner''s row (outside the review''s own definer RPC)';
+  end if;
+  if p_learner_id <> v_uid then
+    if auth.role() = 'learner' then
+      raise exception 'denied_caller: the caller''s own uid NEVER sets a stranger''s submission status';
+    end if;
+    -- the teacher/admin speaks past here ONLY under the review's own
+    -- definer flag (ppg.rerun); a stranger's smuggle NEVER reaches the read.
   end if;
   select status into v_old
     from public.ppg_submissions

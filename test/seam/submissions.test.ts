@@ -69,8 +69,11 @@ test(
           'submissions/${seededIds.learnerB}/module-08/1', 'pptx', 1000, 'x', 'in_progress');
       ROLLBACK;`,
     )
+    // The `ppg_submissions_insert` CHECK (learner AND own uid) denies the
+    // foreign row with a hard RLS error — Postgres names the TABLE in the raise
+    // (`for table "ppg_submissions"`), never the specific policy.
     expect(out.includes('violates row-level security policy')).toBe(true)
-    expect(out.includes('ppg_submissions_insert')).toBe(true)
+    expect(out.includes('ppg_submissions')).toBe(true)
   },
 )
 
@@ -78,19 +81,27 @@ test(
   'Append-only: a past submission NEVER moves by a hand replay update (ADR-0002 — the file + the reflection NEVER ride a replay update)',
   { skip: !hasLocalStack },
   () => {
-    // the own learner own row: the replay update rides the RLS default-deny
-    // (no update policy exists) + the append-only trigger the definer NEVER
-    // speaks by hand.
+    // The append-only TRIGGER is the ADR-0002 last line of defense: it fires
+    // only if RLS doesn't FIRST hide the row. As a bare learner there is NO
+    // update policy (RLS default-deny moves 0 rows SILENTLY, no error), so the
+    // hand replay must ride the OWNER (RLS bypassed, `RESET ROLE`) for the
+    // BEFORE UPDATE deny trigger to speak — mirroring `review.test.ts`. The row
+    // is seeded through the learner's OWN definer insert RPC.
     const out = sql(
-      `${impersonate('learner', seededIds.learnerA)}
+      `BEGIN;
+        DELETE FROM ppg_submissions WHERE learner_id = '${seededIds.learnerA}' AND mission_id = 'module-08' AND submission_seq = 901;
+        SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"learner","sub":"${seededIds.learnerA}"}';
+        SELECT * FROM ppg_insert_submission('${seededIds.learnerA}'::uuid, 'module-08', 901,
+          '${ownPath(seededIds.learnerA, 901)}', 'pptx', 1000, 'a short reflection');
+        RESET ROLE; -- the hand replay rides the OWNER (RLS bypassed) so the trigger fires
         UPDATE ppg_submissions
          SET reflection = 'a hand replay update'
          WHERE learner_id = '${seededIds.learnerA}'
            AND mission_id = 'module-08'
-           AND submission_seq = 1;
+           AND submission_seq = 901;
       ROLLBACK;`,
     )
-    expect(out.includes('violates row-level security policy')).toBe(true)
+    expect(out.includes('append_only_submission_immutable_denied')).toBe(true)
   },
 )
 
@@ -98,15 +109,24 @@ test(
   'Append-only: a past submission NEVER disappears (ADR-0002 — DELETE rides the default-deny + the before-delete trigger)',
   { skip: !hasLocalStack },
   () => {
+    // As a bare learner there is NO delete policy (RLS default-deny deletes 0
+    // rows SILENTLY, no error), so the hand delete must ride the OWNER
+    // (`RESET ROLE`) for the BEFORE DELETE deny trigger to fire — the ADR-0002
+    // last line of defense. The row rides the learner's OWN definer insert RPC.
     const out = sql(
-      `${impersonate('learner', seededIds.learnerA)}
+      `BEGIN;
+        DELETE FROM ppg_submissions WHERE learner_id = '${seededIds.learnerA}' AND mission_id = 'module-08' AND submission_seq = 902;
+        SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"learner","sub":"${seededIds.learnerA}"}';
+        SELECT * FROM ppg_insert_submission('${seededIds.learnerA}'::uuid, 'module-08', 902,
+          '${ownPath(seededIds.learnerA, 902)}', 'pptx', 1000, 'a short reflection');
+        RESET ROLE; -- the hand delete rides the OWNER (RLS bypassed) so the trigger fires
         DELETE FROM ppg_submissions
          WHERE learner_id = '${seededIds.learnerA}'
            AND mission_id = 'module-08'
-           AND submission_seq = 1;
+           AND submission_seq = 902;
       ROLLBACK;`,
     )
-    expect(out.includes('violates row-level security policy')).toBe(true)
+    expect(out.includes('append_only_submission_delete_denied')).toBe(true)
   },
 )
 
@@ -164,13 +184,25 @@ test(
   'Lifecycle: a teacher NEVER sets a learner status (denied_role denies the review seam at ticket #14 own write)',
   { skip: !hasLocalStack },
   () => {
+    // A teacher's DIRECT call NEVER moves a learner's row. The row is seeded
+    // `submitted` (so `submitted->approved` is a LEGAL pair that WOULD land if
+    // the role seam leaked); the teacher's call rides the documented
+    // `denied_role` guard (teacher/admin on a stranger's row WITHOUT the
+    // review's own ppg.rerun flag) and the new status NEVER returns.
     const out = sql(
-      `${impersonate('teacher', seededIds.teacher)}
+      `BEGIN;
+        DELETE FROM ppg_submissions WHERE learner_id = '${seededIds.learnerA}' AND mission_id = 'module-08' AND submission_seq = 903;
+        INSERT INTO ppg_submissions
+          (learner_id, mission_id, submission_seq, storage_path, file_magic, file_size, reflection, status)
+        VALUES ('${seededIds.learnerA}', 'module-08', 903,
+          '${ownPath(seededIds.learnerA, 903)}', 'pptx', 1000, 'x', 'submitted');
+        SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"teacher","sub":"${seededIds.teacher}"}';
         SELECT * FROM ppg_set_submission_status
-          ('${seededIds.learnerA}'::uuid, 'module-08', 1, 'approved'::ppg_submission_status);
+          ('${seededIds.learnerA}'::uuid, 'module-08', 903, 'approved'::ppg_submission_status);
       ROLLBACK;`,
     )
     expect(out.includes('denied_role')).toBe(true)
+    expect(out.includes('approved')).toBe(false)
   },
 )
 

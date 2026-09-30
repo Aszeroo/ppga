@@ -52,8 +52,17 @@ test(
         UPDATE ppg_profiles SET role = 'admin' WHERE student_id = '64110001';
       ROLLBACK;`,
     )
+    // the learner's own row PASSES the USING clause (id = auth.uid()); the
+    // smuggled `role = 'admin'` NEW row dies on the policy's WITH CHECK —
+    // the real error names the table (Postgres never names the policy here)
     expect(out.includes('violates row-level security policy')).toBe(true)
-    expect(out.includes('ppg_profiles_update')).toBe(true)
+    expect(out.includes('for table "ppg_profiles"')).toBe(true)
+    // the raise ABORTS the tx (nothing can follow it) — a fresh owner read
+    // pins the role at the seeded `learner`: the escalation never landed.
+    const role = sql(
+      `SELECT 'role=' || role FROM ppg_profiles WHERE student_id = '64110001';`,
+    )
+    expect(role.includes('role=learner')).toBe(true)
   },
 )
 
