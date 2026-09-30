@@ -371,12 +371,15 @@ as $$
   )
   FROM public.ppg_lessons l
   JOIN public.ppg_modules m ON l.module_key = m.module_key
-  WHERE auth.role() IN ('teacher', 'admin')
-     OR (
-       l.publication_state = 'published'
-       AND public.ppg_learner_gated(auth.uid())
-       AND public.ppg_module_unlocked(auth.uid(), m.module_key)
-     );
+  WHERE l.module_key = p_module_key
+    AND (
+      auth.role() IN ('teacher', 'admin')
+      OR (
+        l.publication_state = 'published'
+        AND public.ppg_learner_gated(auth.uid())
+        AND public.ppg_module_unlocked(auth.uid(), m.module_key)
+      )
+    );
 $$;
 
 revoke execute on function public.ppg_module_lessons(text)

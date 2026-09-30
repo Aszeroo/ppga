@@ -107,11 +107,11 @@ test(
     )
     // every SEE-ABLE module rides the map (locked ones as locked — never
     // invisible): module-01 OPEN on the gate alone, module-02 LOCKED (the
-    // linear rule reads the mission `complete` rows — none exist).
-    expect(out.includes('"module_key": "module-01"')).toBe(true)
-    expect(out.includes('"lock_state": "open"')).toBe(true)
-    expect(out.includes('"lock_state": "locked"')).toBe(true)
-    expect(out.includes('"module_key": "module-02", "order_index": 2')).toBe(true)
+    // linear rule reads the mission `complete` rows — none exist). The
+    // jsonb prints insertion-ordered keys (`"lock_state": .., "module_key": ..`).
+    expect(out.includes('"lock_state": "open", "module_key": "module-01"')).toBe(true)
+    expect(out.includes('"lock_state": "locked", "module_key": "module-02"')).toBe(true)
+    expect(out.includes('"lock_state": "open", "module_key": "module-02"')).toBe(false)
   },
 )
 
@@ -225,15 +225,16 @@ test(
         ${publicationReset}
         ${asRole('learner', seededIds.learner64110001)}
         SELECT ppg_set_publication('module-02', 'draft');
-        RESET ROLE; -- the owner read proves NOTHING was written
-        SELECT 'state=' || publication_state FROM ppg_modules
-         WHERE module_key = 'module-02';
       ROLLBACK;`,
     )
     expect(out.includes('permission_denied')).toBe(true)
-    // an aborted tx proves it too, but the owner read (before the ROLLBACK
-    // would erase it anyway) pins the state at the seeded `published`.
-    expect(out.includes('state=published')).toBe(true)
+    // the raise aborts the tx (nothing can write after it); a fresh owner
+    // read pins the state at the seeded `published` — never a silent write.
+    const state = sql(
+      `SELECT 'state=' || publication_state FROM ppg_modules
+        WHERE module_key = 'module-02';`,
+    )
+    expect(state.includes('state=published')).toBe(true)
   },
 )
 
