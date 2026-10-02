@@ -5,40 +5,60 @@ import { Link } from '../../../../../lib/i18n/routing'
 
 import { readLessonsViaRpc } from '../../../../../lib/sup/curriculum'
 import { readSelfCheckQuestionsViaRpc } from '../../../../../lib/sup/xp'
+import { readChallengeReads } from '../../../../../lib/sup/challenge'
+import { buildChallengeContext, challengeTrackSteps, ledgerEvent, ledgerEventAttr } from '../../../../../lib/challengeStages'
 import { Card } from '../../../../../components/Card'
 import { Badge } from '../../../../../components/Badge'
 import { StatusPill } from '../../../../../components/StatusPill'
+import { ChallengeTrack } from '../../../../../components/ChallengeTrack'
+import { XpRewardChip } from '../../../../../components/XpRewardChip'
 
 /**
- * Ticket #9 + #10 lesson view: the #16 story's WHAT / WHY / BODY / WHAT-
- * NEXT structure from the DATABASE's own bilingual columns (the
- * `ppg_module_lessons` RPC filtered to the CALLER's lesson; a locked module
- * returns `[]` server-side so the page shows the unavailable state text),
- * and the #10 Self-Check that ENDS the Lesson: the DATABASE's own questions
- * the SEE-ABLE Lesson shows (the `ppg_self_check_questions` RPC — the
- * answer key NEVER lands in the jsonb; a locked/draft/arched Lesson returns
- * `[]`, never a hidden UI), the retry form (the native POST to
- * /api/self-check/submit runs the `ppg_check_self_check` RPC — the
+ * Ticket #9 + #10 lesson view (#45 stage-4 framing on top): the #16 story's
+ * WHAT / WHY / BODY / WHAT-NEXT structure from the DATABASE's own bilingual
+ * columns (the `ppg_module_lessons` RPC filtered to the CALLER's lesson; a
+ * locked module returns `[]` server-side so the page shows the unavailable
+ * state text), and the #10 Self-Check that ENDS the Lesson: the DATABASE's
+ * own questions the SEE-ABLE Lesson shows (the `ppg_self_check_questions`
+ * RPC — the answer key NEVER lands in the jsonb; a locked/draft/arched
+ * Lesson returns `[]`, never a hidden UI), the retry form (the native POST
+ * to /api/self-check/submit runs the `ppg_check_self_check` RPC — the
  * DATABASE's own answer-key sum decides pass/fail server-side; unlimited
  * retries), and the +50/First Steps notes the ledger/badge PKs speak
- * (exactly-once grants). `force-dynamic` because the page reads through
- * the session JWT. Every state (`lesson.view.*`, `lesson.states.*`,
- * `lesson.linkModule`, `lesson.fallbackSuspense`,
- * `selfcheck.section.*`, `selfcheck.states.*`) has its own copy in
- * `messages`.
+ * (exactly-once grants). The #45 framing adds ONLY presentation on the
+ * stage-map vocabulary: a Lesson → Self-Check → Mission CHALLENGE TRACK
+ * whose states the real reads speak, and the XP reward note swapping to the
+ * REAL ledger row (the caller's own `self_check_pass` event — amount and
+ * all) once the check has actually passed; pre-pass the shipped rule note
+ * stays (nothing claims a grant that has not landed, nothing renders twice
+ * after it has). `force-dynamic` because the page reads through the session
+ * JWT. Every state (`lesson.view.*`, `lesson.states.*`, `lesson.linkModule`,
+ * `lesson.fallbackSuspense`, `selfcheck.section.*`, `selfcheck.states.*`,
+ * `challenge.*`) has its own copy in `messages`.
  */
 export const dynamic = 'force-dynamic'
 
+// fallow-ignore-next-line complexity
 async function LessonView({ moduleKey, lessonKey }: { moduleKey: string; lessonKey: string }) {
   const t = await getTranslations('lesson')
   const tS = await getTranslations('selfcheck')
+  const tC = await getTranslations('challenge')
   const locale = await getLocale()
   const state = await readLessonsViaRpc(moduleKey)
   const row = state.lessons?.find((l) => l.lesson_key === lessonKey)
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
   const questions = await readSelfCheckQuestionsViaRpc(lessonKey)
+  const ctx = buildChallengeContext(moduleKey, await readChallengeReads(moduleKey))
+  const checkEvent = ledgerEvent(ctx.own, 'self_check_pass', lessonKey)
+  // the Lesson page walks the first three steps (the Result lives downstream).
+  const trackSteps = challengeTrackSteps(ctx, moduleKey, {
+    title: (key) => tC(`steps.${key}`),
+    state: (stateNow) => tC(`states.${stateNow}`),
+    current: tC('current'),
+  }, { limit: 3 })
   return (
     <section aria-label={t('viewTitle')}>
+      <ChallengeTrack label={tC('trackLabel')} steps={trackSteps} />
       {row
         ? (
           <>
@@ -78,10 +98,21 @@ async function LessonView({ moduleKey, lessonKey }: { moduleKey: string; lessonK
       {questions.status === 'unauthorized' ? <p>{tS('states.unauthorized')} {questions.detail}</p> : null}
       {questions.status === 'not-configured' ? <p>{tS('states.notConfigured')} {questions.detail}</p> : null}
       {questions.status === 'ok' ? (
-        <p>
-          <StatusPill tone="success" label={tS('passState')} />
-          <Badge text={tS('badgeNote')} tone="success" />
-        </p>
+        checkEvent ? (
+          <p>
+            <XpRewardChip
+              amount={checkEvent.amount}
+              eventAttr={ledgerEventAttr(checkEvent)}
+              label={tC('rewardNote')}
+            />{' '}
+            <Badge text={tS('badgeNote')} tone="success" />
+          </p>
+        ) : (
+          <p>
+            <StatusPill tone="success" label={tS('passState')} />
+            <Badge text={tS('badgeNote')} tone="success" />
+          </p>
+        )
       ) : null}
       <p>
         <Link href={{ pathname: '/course/[moduleKey]', params: { moduleKey } }}>{t('linkModule')}</Link>

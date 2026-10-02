@@ -131,6 +131,20 @@ export async function expectXpLine(page: Page, xp: number, xpToNext: number) {
   await expect(page.locator('body')).toContainText(`${xp} / ${xpToNext}`)
 }
 
+/**
+ * PPGA #41 stage 4: the XP reward chip the REAL ledger row makes visible —
+ * pinned by the ledger's own PK marker (`data-ppg-xp-event="event_type:
+ * event_ref"`), showing the row's own `+N XP`. The chip renders ONLY where
+ * a real grant landed, so the count-1 assertion is also the exactly-once
+ * gate: a granted XP never renders twice, and an absent grant renders
+ * nothing (the journey pairs it with a zero-count check pre-pass).
+ */
+export async function expectXpChip(page: Page, eventAttr: string, amount: number) {
+  const chip = page.locator(`[data-ppg-xp-event="${eventAttr}"]`)
+  await expect(chip).toHaveCount(1)
+  await expect(chip).toContainText(`+${amount} XP`)
+}
+
 /** The lock/unlock copy the course map shows per module card. */
 export function lockStateCopy(locale: string, open: boolean): string {
   return t(['course', 'states', open ? 'open' : 'locked'], locale)

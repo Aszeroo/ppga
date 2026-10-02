@@ -4,41 +4,66 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../../../lib/i18n/routing'
 
 import { readMissionViaRpc, readMissionHistoryViaRpc } from '../../../../../lib/sup/missions'
+import { readChallengeReads } from '../../../../../lib/sup/challenge'
+import { buildChallengeContext, challengeCopyFrom, challengePanelView, challengeTrackSteps } from '../../../../../lib/challengeStages'
 import { Card } from '../../../../../components/Card'
 import { Badge } from '../../../../../components/Badge'
 import { StatusPill } from '../../../../../components/StatusPill'
+import { ChallengeTrack } from '../../../../../components/ChallengeTrack'
+import { MissionPanel } from '../../../../../components/MissionPanel'
 
 /**
- * Ticket #11 Knowledge Mission attempt page: the Mission the module's
- * Lessons END into (the `ppg_read_mission` RPC — the bilingual
- * instructions + questions/options WITHOUT the answer key, gated
- * server-side: an ungated learner, a locked module or an un-passed
+ * Ticket #11 Knowledge Mission attempt page (#45 stage-4 framing on top):
+ * the Mission the module's Lessons END into (the `ppg_read_mission` RPC —
+ * the bilingual instructions + questions/options WITHOUT the answer key,
+ * gated server-side: an ungated learner, a locked module or an un-passed
  * Self-Check returns `empty`, never a hidden form), the retry form (the
  * native POST to /api/mission/submit runs the `ppg_submit_mission` RPC —
  * the DATABASE's own answer-key sum at the 70% pass threshold decides
  * pass/fail server-side; unlimited retries below the threshold), the
- * attempt history shown (the `ppg_mission_history` RPC — the score
- * history RETAINED append-only across attempts, the CALLER's own rows),
- * and the +100/Module-badge notes the ledger/award PKs speak (exactly-
- * once grants; the completion hook unlocks module N+1 server-side).
- * `force-dynamic` because the page reads through the session JWT. Every
- * state (`mission.section`, `mission.states.*`, `mission.linkModule`,
- * `mission.linkMap`, `mission.fallbackSuspense`) has its own copy in
- * `messages`.
+ * attempt history shown (the `ppg_mission_history` RPC — the score history
+ * RETAINED append-only across attempts, the CALLER's own rows), and the
+ * +100/Module-badge notes the ledger/award PKs speak (exactly-once grants;
+ * the completion hook unlocks module N+1 server-side). The #45 framing adds
+ * ONLY presentation on the stage-map vocabulary: the four-step CHALLENGE
+ * TRACK + a MissionPanel with `challenge | success | clear` states — the
+ * panel's reward chip rides the learner's OWN `knowledge_mission_pass`
+ * ledger row (amount, PK — no fake grants, no double render: the shipped
+ * rule note stays on the CHALLENGE state only), and the unlock band renders
+ * ONLY when the learner's own completion stands AND the course map already
+ * speaks the next module `open` (the SERVER's lock truth, never a claimed
+ * flag). `force-dynamic` because the page reads through the session JWT.
+ * Every state (`mission.section`, `mission.states.*`, `mission.linkModule`,
+ * `mission.linkMap`, `mission.fallbackSuspense`, `challenge.*`) has its own
+ * copy in `messages`.
  */
 export const dynamic = 'force-dynamic'
 
 async function MissionAttempt({ moduleKey }: { moduleKey: string }) {
   const t = await getTranslations('mission')
+  const tC = await getTranslations('challenge')
   const locale = await getLocale()
   const state = await readMissionViaRpc(moduleKey)
   const history = await readMissionHistoryViaRpc(moduleKey)
+  const ctx = buildChallengeContext(moduleKey, await readChallengeReads(moduleKey))
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
+  const copy = challengeCopyFrom(tC)
+  const view = challengePanelView(ctx, { status: state.status, hasContent: !!state.instructions }, copy, locale)
+  const trackSteps = challengeTrackSteps(ctx, moduleKey, copy)
   return (
     <section aria-label={t('section')}>
-      {state.status === 'ok' && state.instructions
+      <ChallengeTrack label={tC('trackLabel')} steps={trackSteps} />
+
+      {view.panel && state.instructions
         ? (
-          <>
+          <MissionPanel
+            state={view.panel}
+            stateCopy={view.stateCopy}
+            heading={t('section')}
+            panelLabel={t('section')}
+            reward={view.reward}
+            unlocked={view.unlocked}
+          >
             <Card
               heading={t('instructionsHeading')}
               body={pick(state.instructions.instructions_th, state.instructions.instructions_en)}
@@ -58,12 +83,18 @@ async function MissionAttempt({ moduleKey }: { moduleKey: string }) {
               <button type="submit">{t('submitLabel')}</button>
             </form>
             <p>{t('retryHint')}</p>
-            <p>
-              <StatusPill tone="success" label={t('passState')} />
-              <Badge text={t('badgeNote')} tone="success" />
-            </p>
-            <p>{t('failNote')}</p>
-          </>
+            {view.cleared
+              ? <Badge text={t('badgeNote')} tone="success" />
+              : (
+                <>
+                  <p>
+                    <StatusPill tone="success" label={t('passState')} />
+                    <Badge text={t('badgeNote')} tone="success" />
+                  </p>
+                  <p>{t('failNote')}</p>
+                </>
+              )}
+          </MissionPanel>
         )
         : null}
 

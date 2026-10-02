@@ -8,41 +8,72 @@ import {
   readSubmissionHistoryViaRpc,
 } from '../../../../../lib/sup/submissions'
 import { readLessonsViaRpc } from '../../../../../lib/sup/curriculum'
+import { readChallengeReads } from '../../../../../lib/sup/challenge'
+import { buildChallengeContext, challengeCopyFrom, challengePanelView, challengeTrackSteps } from '../../../../../lib/challengeStages'
 import { Card } from '../../../../../components/Card'
 import { Badge } from '../../../../../components/Badge'
 import { StatusPill } from '../../../../../components/StatusPill'
+import { ChallengeTrack } from '../../../../../components/ChallengeTrack'
+import { MissionPanel } from '../../../../../components/MissionPanel'
 
 /**
- * Ticket #13 practical mission attempt page: the Mission the module's Lessons END
- * into (the `ppg_read_practical` RPC — the bilingual scenario/requirements/expected
- * output, gated server-side: an ungated learner, a locked module returns `empty`,
- * never a hidden form), the upload form (the native POST to /api/submissions runs the
- * magic-byte + size gate SERVER-side; a wrong type / oversize yields the bilingual
- * error; the file + the reflection ride the private bucket + one row insert), the
- * submission history shown (the `ppg_submission_history` RPC — the version-preserving
- * append-only history, the CALLER's own rows only, each downloadable by the owner via
- * a short-lived signed URL), the status lifecycle notes (in_progress -> submitted ->
- * needs_improvement | approved; needs_improvement -> approved; the resubmit APPENDS a
- * NEW row; the +150 XP on approval is #14's job — this page states the seam, NEVER
- * awards now). `force-dynamic` because the page reads through the session JWT. Every
- * state (`practical.section`, `practical.states.*`, `practical.linkModule`,
- * `practical.linkMap`, `practical.fallbackSuspense`) has its own copy in `messages`.
+ * Ticket #13 practical mission attempt page (#45 stage-4 framing on top):
+ * the Mission the module's Lessons END into (the `ppg_read_practical` RPC —
+ * the bilingual scenario/requirements/expected output, gated server-side:
+ * an ungated learner, a locked module returns `empty`, never a hidden form),
+ * the upload form (the native POST to /api/submissions runs the magic-byte +
+ * size gate SERVER-side; a wrong type / oversize yields the bilingual error;
+ * the file + the reflection ride the private bucket + one row insert), the
+ * submission history shown (the `ppg_submission_history` RPC — the
+ * version-preserving append-only history, the CALLER's own rows only, each
+ * downloadable by the owner via a short-lived signed URL), the status
+ * lifecycle notes (in_progress -> submitted -> needs_improvement | approved;
+ * needs_improvement -> approved; the resubmit APPENDS a NEW row; the +150 XP
+ * on approval is a ledger event, never this page's doing). The #45 framing
+ * adds ONLY presentation on the stage-map vocabulary: the four-step
+ * CHALLENGE TRACK + a MissionPanel with `challenge | success | clear` states
+ * — the reward chip rides the learner's OWN approval/final-project LEDGER
+ * row (real amount, no fake grants: while a round merely awaits the Teacher
+ * the panel honestly stays CHALLENGE, and the shipped seam note never
+ * coexists with a rendered grant), and the unlock band renders ONLY when the
+ * learner's own completion stands AND the course map speaks the next module
+ * `open`. `force-dynamic` because the page reads through the session JWT.
+ * Every state (`practical.section`, `practical.states.*`,
+ * `practical.linkModule`, `practical.linkMap`, `practical.fallbackSuspense`,
+ * `challenge.*`) has its own copy in `messages`.
  */
 export const dynamic = 'force-dynamic'
 
-// fallow-ignore-next-line complexity
 async function PracticalAttempt({ moduleKey }: { moduleKey: string }) {
   const t = await getTranslations('practical')
+  const tC = await getTranslations('challenge')
   const locale = await getLocale()
   const state = await readPracticalMissionViaRpc(moduleKey)
   const history = await readSubmissionHistoryViaRpc(moduleKey)
   const lessons = await readLessonsViaRpc(moduleKey)
+  const ctx = buildChallengeContext(
+    moduleKey,
+    await readChallengeReads(moduleKey),
+    { submissionExists: history.status === 'ok' && (history.submissions ?? []).length > 0 },
+  )
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
+  const copy = challengeCopyFrom(tC)
+  const view = challengePanelView(ctx, { status: state.status, hasContent: !!state.mission }, copy, locale)
+  const trackSteps = challengeTrackSteps(ctx, moduleKey, copy)
   return (
     <section aria-label={t('section')}>
-      {state.status === 'ok' && state.mission
+      <ChallengeTrack label={tC('trackLabel')} steps={trackSteps} />
+
+      {view.panel && state.mission
         ? (
-          <>
+          <MissionPanel
+            state={view.panel}
+            stateCopy={view.stateCopy}
+            heading={t('section')}
+            panelLabel={t('section')}
+            reward={view.reward}
+            unlocked={view.unlocked}
+          >
             <Card heading={t('scenarioHeading')} body={pick(state.mission.scenario_th, state.mission.scenario_en)} status="available" />
             <Card heading={t('requirementsHeading')} body={pick(state.mission.requirements_th, state.mission.requirements_en)} status="available" />
             <Card heading={t('expectedHeading')} body={pick(state.mission.expected_out_th, state.mission.expected_out_en)} status="available" />
@@ -67,11 +98,13 @@ async function PracticalAttempt({ moduleKey }: { moduleKey: string }) {
               <button type="submit">{t('uploadLabel')}</button>
             </form>
             <p>{t('states.typeWrong')} {t('states.oversize')}</p>
-            <p>
-              <StatusPill tone="success" label={t('submittedState')} />
-              <Badge text={t('xpSeamNote')} tone="success" />
-            </p>
-          </>
+            {view.cleared ? null : (
+              <p>
+                <StatusPill tone="success" label={t('submittedState')} />
+                <Badge text={t('xpSeamNote')} tone="success" />
+              </p>
+            )}
+          </MissionPanel>
         )
         : null}
 

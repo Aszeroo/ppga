@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 
-import { accounts, LEARNER_UUID, deckFixture, signIn, signOut, submitForm, t, expectBadge, expectXpLine, lockStateCopy, clearedStateCopy, RAW_KEY_LEAK, expectShellNav, expectStandaloneScreen } from './helpers'
+import { accounts, LEARNER_UUID, deckFixture, signIn, signOut, submitForm, t, expectBadge, expectXpLine, expectXpChip, lockStateCopy, clearedStateCopy, RAW_KEY_LEAK, expectShellNav, expectStandaloneScreen } from './helpers'
 
 /**
  * PPGA #18 (the verification ticket): the critical journey, end to end,
@@ -164,12 +164,25 @@ test.describe('PPGA #18 critical journey', () => {
     // badge, the ledger/award PK's exactly-once grants.
     await page.goto(`/${locale}/course/module-01/module-01-lesson-01`)
     await expect(page.locator('body')).toContainText(t(['lesson', 'whatHeading'], locale))
+    // The #45 challenge framing BEFORE the pass: the Lesson → Self-Check →
+    // Mission track renders its states from the reads (check pending → the
+    // Mission step still LOCKED, stripes + `aria-disabled`, never a link)
+    // and ZERO reward chips — nothing claims a grant that has not landed.
+    await expect(page.locator('[data-ppg-challenge-track]')).toBeVisible()
+    await expect(page.locator('[data-ppg-challenge-step="mission"][data-ppg-stage-state="locked"]')).toHaveCount(1)
+    await expect(page.locator('[data-ppg-xp-event]')).toHaveCount(0)
     await page.locator('#answer_1_a').click()
     await page.locator('#answer_2_a').click()
     const selfCheck1 = await submitForm(page, '[data-ppg-self-check-form=selfcheck]', '/api/self-check/submit', true)
     expect(selfCheck1.outcome).toBe('pass')
     expect(selfCheck1.xpGranted).toBe(50)
     expect(selfCheck1.badgeGranted).toBe(true)
+    // The #45 framing AFTER the pass: the shipped rule note swapped for the
+    // REAL ledger row (the lesson's own `self_check_pass` PK, its own +50 —
+    // exactly once, and no success pill coexists with the rendered grant).
+    await page.goto(`/${locale}/course/module-01/module-01-lesson-01`)
+    await expectXpChip(page, 'self_check_pass:module-01-lesson-01', 50)
+    await expect(page.locator('.ppg-status-pill[data-ppg-tone="success"]')).toHaveCount(0)
 
     // XP/Level VISIBLE: the header's read of the learner's OWN ledger
     // (total = the SUM; level = floor(total/100)+1; never a client count).
@@ -200,12 +213,26 @@ test.describe('PPGA #18 critical journey', () => {
     // +100 + the `module_01_mission` badge; the completion unlocks Module 2.
     await page.goto(`/${locale}/course/module-01/mission`)
     await expect(page.locator('body')).toContainText(t(['mission', 'instructionsHeading'], locale))
+    // The #45 framing BEFORE the pass: the attempt panel is the CHALLENGE
+    // state (the SERVER's availability read says attemptable) with ZERO
+    // reward chips — the +100 the shipped note promises is NOT yet shown.
+    await expect(page.locator('[data-ppg-mission-panel="challenge"]')).toBeVisible()
+    await expect(page.locator('[data-ppg-xp-event]')).toHaveCount(0)
     await page.locator('#answer_1_a').click()
     await page.locator('#answer_2_a').click()
     await page.locator('#answer_3_a').click()
     const mission1 = await submitForm(page, '[data-ppg-mission-form=mission]', '/api/mission/submit', true)
     expect(mission1.outcome).toBe('pass')
     expect(mission1.xpGranted).toBe(100)
+    // The #45 framing AFTER the pass: the panel CLEARED by the learner's
+    // OWN `complete` Mission row, the chip the REAL +100 ledger row (its
+    // PK — never a schedule claim), and the unlock band pointing at Module 2
+    // because the course-map read ALREADY speaks it open (never invented).
+    await page.goto(`/${locale}/course/module-01/mission`)
+    await expect(page.locator('[data-ppg-mission-panel="clear"]')).toBeVisible()
+    await expectXpChip(page, 'knowledge_mission_pass:module-01', 100)
+    await expect(page.locator('[data-ppg-unlock="next-module"] a')).toHaveAttribute('href', new RegExp(`/${locale}/course/module-02$`))
+    await expect(page.locator('.ppg-status-pill[data-ppg-tone="success"]')).toHaveCount(0)
     await page.goto(`/${locale}`)
     await expectXpLine(page, 200, 100)
     await expectBadge(page, locale, 'module_01_mission')
@@ -323,11 +350,28 @@ test.describe('PPGA #18 critical journey', () => {
     await expectXpLine(page, 500, 100)
     await expectBadge(page, locale, 'module_08_mission')
 
+    // The #45 framing on the PRACTICAL after the approval: the panel CLEARED
+    // by the learner's OWN completion, the chip the REAL +150 approval row
+    // (the seam note never coexists with a rendered grant). And NO unlock
+    // band: the DEPLOYED rule (#9 as rewritten by #10) opens Module N+1 only
+    // on Module N's Mission complete AND its LAST Lesson's Self-Check passed
+    // — this journey uploads Module 8's practical straight (no Lesson-08
+    // checks), so Module 9 stays LOCKED and the band rides the MAP's `locked`
+    // by rendering nothing (never invented).
+    await page.goto(`/${locale}/course/module-08/practical`)
+    await expect(page.locator('[data-ppg-mission-panel="clear"]')).toBeVisible()
+    await expectXpChip(page, 'practical_approval:module-08', 150)
+    await expect(page.locator('[data-ppg-unlock="next-module"]')).toHaveCount(0)
+    await expect(page.locator('.ppg-status-pill[data-ppg-tone="success"]')).toHaveCount(0)
+
     // THE LEARNER SEES THE RESULT: the latest verdict + the SERVER total
     // 28/35 + the bilingual feedback + the append-only per-round history.
     await page.goto(`/${locale}/course/module-08/review`)
     await expect(page.locator('body')).toContainText(t(['review', 'approve'], locale))
     await expect(page.locator('body')).toContainText('28 / 35')
+    // The Result step's surface shows the SAME real grant (one ledger row,
+    // one chip — the verdict and the XP are the one approval event).
+    await expectXpChip(page, 'practical_approval:module-08', 150)
     await rawLeakCheck(page)
 
     // The close chain stays LOCKED (the Post-Test unlocks on the Final
@@ -396,6 +440,15 @@ test.describe('PPGA #18 critical journey', () => {
     await expectBadge(page, locale, 'course_complete')
     await expectBadge(page, locale, 'level_5')
     await expect(page.locator('body')).toContainText(`${t(['header', 'level'], locale)} 9`)
+
+    // The #45 framing on the FINAL Project's Result: the chip the real +300
+    // (`final_project` is the ledger's OWN type for this module — never a
+    // schedule claim), and NO unlock band: Module 11 is the last stage, the
+    // map read carries no next row, so nothing is invented.
+    await page.goto(`/${locale}/course/module-11/review`)
+    await expectXpChip(page, 'final_project:module-11', 300)
+    await expect(page.locator('[data-ppg-unlock="next-module"]')).toHaveCount(0)
+    await rawLeakCheck(page)
 
     // THE POST-TEST UNLOCKS (observable transition: the dashboard's link
     // appears iff the completion stands — before: the closeLocked copy;

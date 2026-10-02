@@ -8,10 +8,13 @@ import { useTranslations } from 'next-intl'
 import { Badge } from '../../../components/Badge'
 import { Button } from '../../../components/Button'
 import { Card } from '../../../components/Card'
+import { ChallengeTrack } from '../../../components/ChallengeTrack'
 import { MenuWrap } from '../../../components/MenuWrap'
+import { MissionPanel } from '../../../components/MissionPanel'
 import { ProgressBar } from '../../../components/ProgressBar'
 import { StageMap } from '../../../components/StageMap'
 import { StatusPill } from '../../../components/StatusPill'
+import { XpRewardChip } from '../../../components/XpRewardChip'
 import { XPBar } from '../../../components/XPBar'
 
 /**
@@ -36,6 +39,7 @@ export default function GalleryPage() {
   const tNav = useTranslations('nav')
   const tShell = useTranslations('shell')
   const tCourse = useTranslations('course')
+  const tChallenge = useTranslations('challenge')
 
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
@@ -125,6 +129,71 @@ export default function GalleryPage() {
               },
             ]}
           />
+        </section>
+
+        {/**
+         * PPGA #41 stage 4: the module surfaces' challenge framing demoed
+         * live — the CHALLENGE TRACK (Lesson → Self-Check → Mission → Result
+         * on the same stage-road vocabulary: cleared marks, the current-step
+         * chip, a semantically locked step with stripes + `aria-disabled`
+         * and NO link) + the MissionPanel `challenge | success | clear`
+         * states + the XP reward chip (the demo rides a DEMO event marker;
+         * the real surfaces render a chip ONLY from the learner's own
+         * `ppg_xp_ledger` row — no fake grants). The hrefs are inert
+         * `/course` routes (the live module pages link the real screens).
+         */}
+        <section>
+          <h2 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}>
+            {t('challengeDemo.heading')}
+          </h2>
+          <ChallengeTrack
+            label={tChallenge('trackLabel')}
+            steps={[
+              {
+                key: 'lesson',
+                orderIndex: 1,
+                title: tChallenge('steps.lesson'),
+                stateCopy: tChallenge('states.cleared'),
+                state: 'cleared',
+                href: '/course',
+              },
+              {
+                key: 'selfcheck',
+                orderIndex: 2,
+                title: tChallenge('steps.selfcheck'),
+                stateCopy: tChallenge('states.open'),
+                state: 'open',
+                isCurrent: true,
+                currentCopy: tChallenge('current'),
+                href: '/course',
+              },
+              {
+                key: 'mission',
+                orderIndex: 3,
+                title: tChallenge('steps.mission'),
+                stateCopy: tChallenge('states.locked'),
+                state: 'locked',
+              },
+              {
+                key: 'result',
+                orderIndex: 4,
+                title: tChallenge('steps.result'),
+                stateCopy: tChallenge('states.locked'),
+                state: 'locked',
+              },
+            ]}
+          />
+          <MissionPanel
+            state="clear"
+            stateCopy={tChallenge('states.clear')}
+            heading={t('challengeDemo.panel')}
+            panelLabel={t('challengeDemo.panel')}
+            reward={{ amount: 100, eventAttr: 'knowledge_mission_pass:demo-01', label: tChallenge('rewardNote') }}
+          >
+            <p>
+              <XpRewardChip amount={150} eventAttr="practical_approval:demo-02" label={tChallenge('rewardNote')} />
+            </p>
+          </MissionPanel>
         </section>
 
         {/**

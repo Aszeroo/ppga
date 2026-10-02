@@ -411,6 +411,10 @@
       "stage1": "ด่าน 1",
       "stage2": "ด่าน 2",
       "stage3": "ด่าน 3"
+    },
+    "challengeDemo": {
+      "heading": "กรอบการท้าทาย (บทเรียนถิงผลลัพธ์)",
+      "panel": "เดโมแผงภารกิจ"
     }
   },
   "header": {
@@ -595,5 +599,25 @@
     "footerAttribution": "PowerPoint Presentation Creation — การเรียนรู้การนำเสนอ / สำหรับนักเรียนระดับประกาศนียบัตรวิชาชีพชั้นปีที่ 2 (ปวช.2)",
     "footerAttributionEn": "PowerPoint Presentation Creation — Presentation-Production learning / for certificate-level vocational learners, Year 2 (Por Wor Sor 2)",
     "footerHealth": "สารภาพ"
+  },
+  "challenge": {
+    "trackLabel": "ลำดับการท้าทาย",
+    "steps": {
+      "lesson": "บทเรียน",
+      "selfcheck": "Self-Check",
+      "mission": "ภารกิจ",
+      "result": "ผลลัพธ์"
+    },
+    "states": {
+      "cleared": "ผ่านแล้ว",
+      "open": "เปิด — พร้อมสำหรับคุณ",
+      "locked": "ล็อก — ทำการท้าทายก่อนหน้าให้จบกอน",
+      "challenge": "ท้าทาย — ลองเลยตอนนี้",
+      "success": "สำเร็จ — รับรางวัลแล้ว",
+      "clear": "เคลียร์ — โมดูลน้ีจบแล้ว"
+    },
+    "current": "การท้าทายปัจจุบັນ",
+    "rewardNote": "จากบัญชี XP ของคุณ:",
+    "unlockNext": "เคลียร์แล้ว — โมดูลถัดไปเปิดแล้ว:"
   }
 }

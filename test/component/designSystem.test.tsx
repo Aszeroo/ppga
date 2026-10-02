@@ -210,7 +210,7 @@ test('Tokens live once in app/globals.css and the TA16BIT swap point is one vari
 
 test('No ad-hoc colour anywhere: every component colour resolves a token', async () => {
   const fs = await import('node:fs')
-  const sources = ['Button', 'Card', 'Badge', 'StatusPill', 'ProgressBar', 'XPBar', 'State', 'StageNode', 'StageMap'].map(
+  const sources = ['Button', 'Card', 'Badge', 'StatusPill', 'ProgressBar', 'XPBar', 'State', 'StageNode', 'StageMap', 'ChallengeTrack', 'MissionPanel', 'XpRewardChip'].map(
     (name) => fs.readFileSync(`components/${name}.tsx`, 'utf8'),
   )
   for (const src of sources as string[]) {

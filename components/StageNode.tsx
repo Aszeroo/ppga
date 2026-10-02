@@ -59,6 +59,49 @@ const CONNECTOR_BY_STATE: Record<StageState, string> = {
   locked: 'var(--ppg-status-locked)',
 }
 
+/**
+ * The stage vocabulary's TOKEN STYLES, exported for the #45 challenge
+ * framing (`ChallengeTrack` / `MissionPanel` render the SAME pixel road on
+ * the module pages): node, connector and chip surfaces per state, every
+ * colour a `var(--ppg-…)`. Pure style — no rules, no state derivation.
+ */
+export function stageNodeStyle(state: StageState): CSSProperties {
+  return {
+    backgroundColor: BG_BY_STATE[state],
+    color: state === 'locked' ? 'var(--ppg-state-locked-fg)' : 'var(--ppg-fg-heading)',
+    borderWidth: 'var(--ppg-border-2)',
+    borderColor: BORDER_BY_STATE[state],
+    borderStyle: 'solid',
+    boxShadow: state === 'locked' ? 'none' : 'var(--ppg-shadow-pixel-2)',
+    padding: 'var(--ppg-space-3)',
+  }
+}
+
+export function stageConnectorStyle(state: StageState): CSSProperties {
+  return {
+    display: 'block',
+    width: 'var(--ppg-border-3)',
+    height: 'var(--ppg-space-4)',
+    marginLeft: 'var(--ppg-space-3)',
+    backgroundColor: CONNECTOR_BY_STATE[state],
+  }
+}
+
+export function stageChipStyle(state: StageState): CSSProperties {
+  return {
+    display: 'inline-block',
+    fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+    fontSize: '0.8rem',
+    backgroundColor: 'var(--ppg-blue-100)',
+    color: 'var(--ppg-fg-heading)',
+    borderWidth: 'var(--ppg-border-1)',
+    borderColor: BORDER_BY_STATE[state],
+    borderStyle: 'solid',
+    boxShadow: 'var(--ppg-shadow-pixel-1)',
+    padding: 'var(--ppg-space-1) var(--ppg-space-2)',
+  }
+}
+
 export function StageNode({
   moduleKey,
   orderIndex,
@@ -73,43 +116,13 @@ export function StageNode({
 }: StageNodeProps) {
   const locked = state === 'locked'
 
-  const nodeStyle: CSSProperties = {
-    backgroundColor: BG_BY_STATE[state],
-    color: locked ? 'var(--ppg-state-locked-fg)' : 'var(--ppg-fg-heading)',
-    borderWidth: 'var(--ppg-border-2)',
-    borderColor: BORDER_BY_STATE[state],
-    borderStyle: 'solid',
-    boxShadow: locked ? 'none' : 'var(--ppg-shadow-pixel-2)',
-    padding: 'var(--ppg-space-3)',
-  }
-
-  const chipStyle: CSSProperties = {
-    display: 'inline-block',
-    fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
-    fontSize: '0.8rem',
-    backgroundColor: 'var(--ppg-blue-100)',
-    color: 'var(--ppg-fg-heading)',
-    borderWidth: 'var(--ppg-border-1)',
-    borderColor: BORDER_BY_STATE[state],
-    borderStyle: 'solid',
-    boxShadow: 'var(--ppg-shadow-pixel-1)',
-    padding: 'var(--ppg-space-1) var(--ppg-space-2)',
-  }
+  const nodeStyle = stageNodeStyle(state)
+  const chipStyle = stageChipStyle(state)
 
   return (
     <li className="ppg-stage-item">
       {isFirst ? null : (
-        <span
-          className="ppg-stage-connector"
-          aria-hidden="true"
-          style={{
-            display: 'block',
-            width: 'var(--ppg-border-3)',
-            height: 'var(--ppg-space-4)',
-            marginLeft: 'var(--ppg-space-3)',
-            backgroundColor: CONNECTOR_BY_STATE[state],
-          }}
-        />
+        <span className="ppg-stage-connector" aria-hidden="true" style={stageConnectorStyle(state)} />
       )}
       <section
         role="group"

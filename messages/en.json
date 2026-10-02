@@ -421,6 +421,10 @@
       "stage1": "Stage 1",
       "stage2": "Stage 2",
       "stage3": "Stage 3"
+    },
+    "challengeDemo": {
+      "heading": "Challenge framing (Lesson to Result)",
+      "panel": "Mission panel demo"
     }
   },
   "header": {
@@ -594,5 +598,25 @@
   "language": {
     "th": "Thai",
     "en": "English"
+  },
+  "challenge": {
+    "trackLabel": "Challenge sequence",
+    "steps": {
+      "lesson": "Lesson",
+      "selfcheck": "Self-Check",
+      "mission": "Mission",
+      "result": "Result"
+    },
+    "states": {
+      "cleared": "cleared — done",
+      "open": "open — ready for you",
+      "locked": "locked — finish the challenge before it first",
+      "challenge": "challenge — attempt it now",
+      "success": "success — the reward has landed",
+      "clear": "clear — the Module is complete"
+    },
+    "current": "current challenge",
+    "rewardNote": "From your XP ledger:",
+    "unlockNext": "Cleared — the next Module is open:"
   }
 }
