@@ -15,7 +15,7 @@ import { z } from 'zod'
 /** The login identifier scheme (see migration + README): a synthetic
  * `<handle>@ppga.local` email. Learners use their provisioned student-ID,
  * teachers/admin use `<role>@ppga.local`. We never require a real email. */
-export const studentIdLoginSchema = z
+const studentIdLoginSchema = z
   .string()
   .trim()
   .min(3)
@@ -47,21 +47,6 @@ export interface AuthResult {
 /** Synthetic email from a login handle — the whole point of the scheme. */
 export function syntheticEmail(handle: string): string {
   return `${handle.toLowerCase()}@ppga.local`
-}
-
-/**
- * Server-side session client. We do NOT use the service-role key for user
- * flows: the user's JWT (from the cookie) is the only authority a learner/
- * teacher/admin can have. The anon key is allowed server-side (Next ships the
- * NEXT_PUBLIC_* variables to the server build too).
- */
-export function createSupabaseSessionClient() {
-  const url = process.env.NEXT_PUBLIC_SUP_URL
-  const anonKey = process.env.NEXT_PUBLIC_SUP_ANON_KEY
-
-  if (!url || !anonKey) return null
-
-  return createClient(url, anonKey)
 }
 
 /** Raw HTTP call the Supabase Auth service expects (PUT /auth/user). */
@@ -118,50 +103,33 @@ export async function signOutViaSupaHttp(refreshToken: string): Promise<AuthResu
 }
 
 /**
- * Password sign-in for a student-ID handle through the server-side supa
- * client (no browser-side key material, no localStorage). Success returns the
- * token bundle the caller puts into an httpOnly cookie; failure carries a
- * message the UI renders verbatim.
- */
-export async function signInByHandle(
-  handle: string,
-  password: string,
-): Promise<{ ok: boolean; detail?: string; tokens?: { access_token: string; refresh_token: string } }> {
-  const sup = createSupabaseSessionClient()
-  if (!sup) return { ok: false, detail: 'not-configured' }
-
-  const { error, data } = await sup.auth.signInWithPassword({
-    email: syntheticEmail(handle),
-    password,
-  })
-
-  if (error) return { ok: false, detail: error.message }
-
-  if (!data) return { ok: false, detail: 'empty session' }
-
-  return {
-    ok: true,
-    tokens: {
-      access_token: data.session.access_token,
-      refresh_token: data.session.refresh_token,
-    },
-  }
-}
-
-/**
  * Supa-js `storage` written against the Next cookie jar (supa-v2 no longer
  * ships `cookieAdapter` — the session bundle is read/written through `storage`).
  * The tokens live in an httpOnly, SameSite=lax cookie on `/` so a learner's
  * refresh token never lands in localStorage, and the session is restored
  * server-side before any role-gated page is rendered.
+ *
+ * PPGA #18 (live journey, the consent-redirect finding): the adapter also
+ * carries an IN-REQUEST overlay. A session issued DURING the request (the
+ * login route's own `signInWithPassword`) must be readable by the later reads
+ * on the SAME client — supabase-js reads a server storage back on every token
+ * use, and a request whose incoming cookies predate the login would otherwise
+ * hand it `null`, running the login route's OWN gate read UNAUTHENTICATED
+ * (every re-login then read `consent = false` and bounced the learner off the
+ * Pre-Test). The overlay never widens any authority: every read it enables
+ * still rides the CALLER's own JWT through the very same RLS the browser's
+ * next request will hit; the durable copy of the session still lands in the
+ * httpOnly cookie the login route sets.
  */
 function nextStorage(req: NextRequest, res?: NextResponse) {
+  const overlay = new Map<string, string>()
   return {
     isServer: true as const,
     getItem(key: string) {
-      return req.cookies.get(key)?.value ?? null
+      return overlay.get(key) ?? req.cookies.get(key)?.value ?? null
     },
     setItem(key: string, value: string) {
+      overlay.set(key, value)
       res?.cookies.set(key, value, {
         path: '/',
         httpOnly: true,
@@ -171,6 +139,7 @@ function nextStorage(req: NextRequest, res?: NextResponse) {
       })
     },
     removeItem(key: string) {
+      overlay.delete(key)
       res?.cookies.set(key, '', { path: '/', maxAge: 0 })
     },
   }

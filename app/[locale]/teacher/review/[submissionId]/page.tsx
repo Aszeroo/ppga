@@ -34,8 +34,10 @@ interface RubricDescriptor {
 
 async function ReviewForm({
   submissionId,
+  learnerId,
 }: {
   submissionId: string
+  learnerId?: string
 }) {
   const t = await getTranslations('review')
 
@@ -68,6 +70,7 @@ async function ReviewForm({
         >
           <input name="moduleKey" defaultValue={moduleKey} hidden={true} />
           <input name="submissionSeq" defaultValue={submissionSeq} hidden={true} />
+          {learnerId ? <input name="learnerId" defaultValue={learnerId} hidden={true} /> : null}
 
           <fieldset>
             <legend>{t('rubricHeading')}</legend>
@@ -138,14 +141,21 @@ async function ReviewForm({
 
 export default async function TeacherReviewSubmissionPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ submissionId: string }>
+  searchParams: Promise<{ learner?: string | string[] }>
 }) {
   const t = await getTranslations('review')
   const { submissionId } = await params
+  // PPGA #18 finding #5: the queue's link carries the row's owner — the
+  // review must name the learner (the (mission, round) pair alone is not a
+  // submission identity across learners).
+  const learnerParam = (await searchParams).learner
+  const learnerId = typeof learnerParam === 'string' ? learnerParam : undefined
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <ReviewForm submissionId={submissionId} />
+      <ReviewForm submissionId={submissionId} learnerId={learnerId} />
     </Suspense>
   )
 }

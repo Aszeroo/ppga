@@ -24,13 +24,16 @@ import { z } from 'zod'
  * lands (the read RPC never carries `is_correct`). Missing environment
  * yields `not-configured` so the app shows the state, never crashes.
  */
-export const moduleKeySchema = z.string().regex(/^module-\d{2}$/i)
+const moduleKeySchema = z.string().regex(/^module-\d{2}$/i)
 
-export const answersSchema = z
+// PPGA #18 (the live-browser finding): `ppg_submit_mission(p_answers jsonb)`
+// reads `p_answers ->> q.order_index` — the payload must stay a JSON OBJECT
+// end to end. A `JSON.stringify` transform made supabase-js serialize it as
+// a JSON string, PostgREST bound it as a jsonb SCALAR, and the scorer read
+// NULL for every key (see lib/sup/prettest.ts for the full seam note).
+const answersSchema = z
   .object({
-    answers: z
-      .record(z.string(), z.string())
-      .transform((v) => JSON.stringify(v)),
+    answers: z.record(z.string(), z.string()),
   })
   .strict()
 

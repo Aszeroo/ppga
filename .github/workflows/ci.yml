@@ -37,3 +37,49 @@ jobs:
       - run: npm run test
       # Real-database tests are guarded by SUP_* env presence; CI passes without secrets.
       # Secrets live only as environment secrets on the Vercel/Supabase project, never committed here.
+
+  e2e:
+    name: Critical journey E2E (#18)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      # The local stack with the repo's own migrations + seeds; the keys are
+      # the deterministic dev keys `supabase start` prints (never secrets).
+      - name: Supabase local stack
+        run: |
+          supabase start
+          supabase status --output json | node -e '
+            const d = JSON.parse(require("fs").readFileSync(0, "utf8"));
+            console.log([
+              `NEXT_PUBLIC_SUP_URL=${d.API_URL}`,
+              `NEXT_PUBLIC_SUP_ANON_KEY=${d.ANON_KEY}`,
+              `SUP_URL=${d.API_URL}`,
+              `SUP_SERVICE_ROLE_KEY=${d.SERVICE_ROLE_KEY}`,
+            ].join("\n"));
+          ' > .env.local
+      # One fresh baseline: the workflow resets before the run; globalSetup
+      # skips its own reset via this env so CI pays for it exactly once.
+      - run: supabase db reset
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Playwright critical journey (th + en, single shard)
+        env:
+          PPG_E2E_SKIP_DB_RESET: "true"
+        run: npx playwright test --reporter=line
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          # The CI reporter is `line` (the config's HTML report is local-only),
+          # so on failure the traces/screenshots ride Playwright's own
+          # per-test folder — that is the artifact worth keeping.
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7

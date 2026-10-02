@@ -69,7 +69,19 @@ async function TeacherQueue() {
                       <Link
                         href={{
                           pathname: '/teacher/review/[submissionId]',
-                          params: { submissionId: `${item.mission_id}/${item.submission_seq}` },
+                          // PPGA #18 (production verification, finding #7): the
+                          // composite id's slash must ride PERCENT-ENCODED — a
+                          // raw `module-08/1` splits into two path segments and
+                          // the single-segment [submissionId] route 404s (the
+                          // queue's first live click was #18's journey). The
+                          // detail page's decodeURIComponent handles either
+                          // shape (Next may hand the param decoded already).
+                          params: { submissionId: encodeURIComponent(`${item.mission_id}/${item.submission_seq}`) },
+                          // PPGA #18 finding #5: (mission, round) is unique only
+                          // within one learner — the queue row knows its owner, so
+                          // the review screen rides the learner uuid alongside the
+                          // composite id (the submit form's hidden `learnerId`).
+                          query: { learner: item.learner_id },
                         }}
                       >
                         {t('review')}

@@ -16,6 +16,7 @@ import {
  */
 export const dynamic = 'force-dynamic'
 
+// fallow-ignore-next-line complexity
 export async function POST(req: NextRequest) {
   const body = await req
     .json()
@@ -49,5 +50,13 @@ export async function POST(req: NextRequest) {
   // logout's next login speaks its own flag read verbatim (no stale `1`
   // redirecting a new sign-in before anything else).
   res.cookies.set('ppga_must_change_password', '', { path: '/', maxAge: 0 })
+  // PPGA #18 (the live journey): the #8 gate flags ride the SAME login-time
+  // pattern, so the SAME rule applies — a logout clears them too and the next
+  // login re-reads the DATABASE's own flags (consent can be recorded/revoked,
+  // the Pre-Test submitted BETWEEN sessions; a stale `1` cookie must never
+  // keep a signed-out identity's gate state alive in the UI between logins).
+  res.cookies.set('ppga_consent', '', { path: '/', maxAge: 0 })
+  res.cookies.set('ppga_pretest_unlocked', '', { path: '/', maxAge: 0 })
+  res.cookies.set('ppga_pretest_submitted', '', { path: '/', maxAge: 0 })
   return res
 }

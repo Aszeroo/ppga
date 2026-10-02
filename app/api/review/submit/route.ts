@@ -28,6 +28,10 @@ export async function POST(req: NextRequest) {
   let decision: unknown
   let feedbackTh: unknown
   let feedbackEn: unknown
+  // PPGA #18 finding #5: the review row is (learner, mission, round) — the
+  // queue's own row knows its owner and the review screen carries that uuid
+  // through the form; without it the RPC could resolve a stranger's same round.
+  let learnerId: unknown
   let scores: Record<string, unknown> | null = null
 
   if (ct.includes('application/json')) {
@@ -39,6 +43,7 @@ export async function POST(req: NextRequest) {
     decision = body.decision
     feedbackTh = body.feedbackTh
     feedbackEn = body.feedbackEn
+    learnerId = body.learnerId
     scores = (body.scores as Record<string, unknown> | undefined) ?? null
   } else {
     const form = await req.formData().catch(() => new FormData() as never)
@@ -47,6 +52,7 @@ export async function POST(req: NextRequest) {
     decision = form.get('decision')
     feedbackTh = form.get('feedbackTh')
     feedbackEn = form.get('feedbackEn')
+    learnerId = form.get('learnerId')
     // the form's radios carry the DB criterion keys (ppg_rubric_criteria —
     // `powerpoint_tool_usage` among them); lib's `tool_usage` is the TS-side
     // alias the RPC mapping already speaks.
@@ -95,7 +101,8 @@ export async function POST(req: NextRequest) {
     },
     decision as 'approved' | 'needs_improvement',
     String(feedbackTh),
-    String(feedbackEn)
+    String(feedbackEn),
+    typeof learnerId === 'string' && learnerId.length > 0 ? learnerId : undefined
   )
   return NextResponse.json(result)
 }

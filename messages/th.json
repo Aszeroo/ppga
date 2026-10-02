@@ -256,7 +256,6 @@
       "fallbackSuspense": "กำลังโหลด..."
     }
   },
-
   "content": {
     "gateLabel": "ขั้ทกัาน์",
     "locked": "ขั้ทกัาน์",
@@ -448,12 +447,15 @@
     "expectedHeading": "เรย-ไป-เรย",
     "lessonsFlowNote": "คำสั่่ง-จาก-บทเรย:",
     "uploadLabel": "อัป-ไฟ-เรย(.pptx/.ppt) + คอย-คอย-คอย",
+    "fileLabel": "ไฟล์งานของคุณ (.pptx/.ppt)",
     "reflectionPlaceholder": "คอย-คอย-เรย-สึด",
     "submittedState": "ไป-เรย — ครู-ไป-เรย (#14 ไป XP-150 คก",
     "xpSeamNote": "XP-150 คก-เรย คก #14 (หน-หน; หน-หน)",
     "historySection": "ประวัต-ไป-เรย (-append-only)",
     "historyRound": "ครัง",
     "historyStatus": "เรท",
+    "historyAction": "ปฏบิ ัติการ",
+    "submitForReview": "ส่ง-เพือ-ตรวจ (เรย-เพือ-ครู-ตรวจ)",
     "historyDownload": "โหลด-เรย(-URL)",
     "linkModule": "มชนี้",
     "linkMap": "แผนผัง",

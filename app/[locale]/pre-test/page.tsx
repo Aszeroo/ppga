@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../lib/i18n/routing'
 
 import { readGateViaTable, readItemsViaTable } from '../../../lib/sup/prettest'
@@ -29,6 +29,7 @@ import { readGateViaTable, readItemsViaTable } from '../../../lib/sup/prettest'
  */
 export const dynamic = 'force-dynamic'
 
+// fallow-ignore-next-line complexity
 async function GateStatus() {
   const t = await getTranslations('pretest')
   const state = await readGateViaTable()
@@ -46,6 +47,7 @@ async function GateStatus() {
   )
 }
 
+// fallow-ignore-next-line complexity
 async function Items() {
   const t = await getTranslations('pretest')
   const state = await readItemsViaTable()
@@ -67,18 +69,19 @@ async function Items() {
   )
 }
 
-async function PreTestForm() {
+async function PreTestForm({ locale }: { locale: string }) {
   const t = await getTranslations('pretest')
   return (
     <section>
-      {/* The autosave + the single submit ride the forms' native elements so
-        the keyboard reaches the control (login page's pattern). The single
-        submit button posts the `ppg_prettest_submit` RPC once (the
-        `data-ppg-pretest-submit` attr marks the submit-call target; a
-        second submit reaches `already_submitted`, never a silent
-        overwrite). A real debounced autosave that persists on an
-        interrupted session is ticket #8 scope and does not exist yet —
-        this screen carries no fake save marker. */}
+      {/* The single submit rides the form's native elements so the keyboard
+        reaches the control (login page's pattern). The submit posts the
+        `ppg_prettest_submit` RPC once (the `data-ppg-pretest-submit` attr
+        marks the submit-call target; a second submit reaches
+        `already_submitted`, never a silent overwrite). PPGA #18: the gated
+        row start (`ppg_prettest_start` — the #15-starter pattern; idempotent)
+        rides first inside the submit route, so the response row the submit
+        function UPDATEs exists. The hidden language field records the taken
+        language with the row (ADR-0002) — the DATABASE re-validates th|en. */}
       <form
         data-ppg-pretest-form="prettest"
         data-ppg-pretest-submit="true"
@@ -87,7 +90,13 @@ async function PreTestForm() {
         action="/api/prettest/submit"
       >
         <label htmlFor="prettest_answer_item_1">{t('answerLabel')}</label>
-        <input id="prettest_answer_item_1" name="item_1" required pattern="^[ABCD]\{[A-Za-z0-9]+}?$" />
+        {/* PPGA #18 (finding #6): the shipped pattern `^[ABCD]\{...}?$` matched a
+          LITERAL brace — a plain letter (the answer shape the server accepts,
+          the same `^[A-D]$` the Post-Test carries) failed browser validation and
+          the native submit silently never fired. The letters + server key remain
+          the authority; this only lets the learner's click reach the route. */}
+        <input id="prettest_answer_item_1" name="item_1" required pattern="^[A-D]$" />
+        <input name="language" defaultValue={locale === 'th' ? 'th' : 'en'} hidden={true} />
         <button type="submit">{t('submitLabel')}</button>
       </form>
       <p>
@@ -102,11 +111,12 @@ async function PreTestForm() {
 
 export default async function PreTestPage() {
   const t = await getTranslations('pretest')
+  const locale = await getLocale()
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <GateStatus />
       <Items />
-      <PreTestForm />
+      <PreTestForm locale={locale} />
     </Suspense>
   )
 }

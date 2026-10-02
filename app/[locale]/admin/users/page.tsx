@@ -21,6 +21,7 @@ import { listUsersViaRpc, type UsersState } from '../../../../lib/sup/admin'
  */
 export const dynamic = 'force-dynamic'
 
+// fallow-ignore-next-line complexity
 async function UsersList() {
   const t = await getTranslations('admin')
   const state = await listUsersViaRpc(0)
@@ -44,6 +45,13 @@ async function UsersList() {
 
 async function RoleChangeControl() {
   const t = await getTranslations('admin')
+  // PPGA #18 (finding #6, second site): the uuid `pattern` as shipped demanded
+  // `[0-9a-f]{32}` as the LAST segment — no real uuid has 32 trailing hex
+  // digits, so the admin's target_id NEVER passed the browser's constraint
+  // validation, the native form submit silently never fired, and the consent
+  // POST never happened (the journey hung on the missing response). The shape
+  // is the standard 8-4-4-4-12 now; the RPC's own uuid cast stays the
+  // authority server-side, unchanged.
   return (
     <section>
       <form
@@ -53,7 +61,7 @@ async function RoleChangeControl() {
         action="/api/admin/role"
       >
         <label htmlFor="admin_target_id">{t('users.target')}</label>
-        <input id="admin_target_id" name="target_id" required pattern="^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{32}$" />
+        <input id="admin_target_id" name="target_id" required pattern="^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" />
         <label htmlFor="admin_new_role">{t('users.newRole')}</label>
         <select id="admin_new_role" name="new_role" required>
           <option value="learner">{t('roles.learner')}</option>
@@ -82,7 +90,7 @@ async function RoleChangeControl() {
         action="/api/admin/consent"
       >
         <label htmlFor="admin_consent_target_id">{t('users.target')}</label>
-        <input id="admin_consent_target_id" name="target_id" required pattern="^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{32}$" />
+        <input id="admin_consent_target_id" name="target_id" required pattern="^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" />
         <label htmlFor="admin_consent_flag">{t('users.consentFlag')}</label>
         <select id="admin_consent_flag" name="consent" required>
           <option value="true">{t('states.consentTrue')}</option>
@@ -103,7 +111,7 @@ async function RoleChangeControl() {
         action="/api/admin/override"
       >
         <label htmlFor="admin_override_target_id">{t('users.target')}</label>
-        <input id="admin_override_target_id" name="target_id" required pattern="^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{32}$" />
+        <input id="admin_override_target_id" name="target_id" required pattern="^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" />
         <button type="submit">{t('users.unlockSubmit')}</button>
       </form>
       <p>

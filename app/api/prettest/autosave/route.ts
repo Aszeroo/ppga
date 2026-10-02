@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   const ct = req.headers.get('content-type') ?? ''
-  let body: { autosave?: Record<string, unknown> | null }
+  let body: { autosave?: Record<string, unknown> | null; language?: string | null }
   if (ct.includes('application/json')) {
     body = await req
       .json()
@@ -29,12 +29,17 @@ export async function POST(req: NextRequest) {
       .catch(() => new FormData() as never)
     body = {
       autosave: Object.fromEntries([...form]) as Record<string, unknown> | null,
+      // The gated row start (PPGA #18) rides first inside the lib helper —
+      // the taken language comes with the save so the row it creates records
+      // it (ADR-0002; the DATABASE re-validates th|en).
+      language: form.get('language') as string | null,
     }
   }
 
   const parsed = prettestFormSchema.safeParse({
     answers: undefined,
     autosave: body.autosave ?? undefined,
+    language: body.language ?? undefined,
   })
 
   if (!parsed.success) {
@@ -44,6 +49,6 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  const result = await upsupertAutosaveViaRpc(parsed.data.autosave)
+  const result = await upsupertAutosaveViaRpc(parsed.data.autosave, parsed.data.language)
   return NextResponse.json(result)
 }

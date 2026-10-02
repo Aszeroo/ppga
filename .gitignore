@@ -4,6 +4,8 @@ node_modules/
 coverage/
 test-results/
 playwright/
+test/e2e/report/
+test/e2e/fixtures/
 dist/
 .vercel/
 tsconfig.tsbuildinfo
@@ -18,3 +20,4 @@ supabase/.temp/
 TA-16-Bit.zip
 TA-16-Bit.zip:Zone.Identifier
 *.zip:Zone.Identifier
+.vercel

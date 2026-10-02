@@ -127,9 +127,28 @@ export async function POST(req: NextRequest) {
   // locked-content placeholder (the override is what opened the gate,
   // not a submit).
   let gateRedirect = '/profile'
+  // PPGA #18 (production verification, finding #3, in one with the
+  // middleware's same scoping): the #8 consent gate is a LEARNER's gate —
+  // paper consent is the research-participant's own flag; every seeded
+  // Admin/Teacher holds `consent = false` by construction (the profile
+  // trigger's coalesce default — staff never sign participant papers), so
+  // the redirect as #8 shipped it lands EVERY unconsented user on `/` and
+  // the middleware then blocks EVERY other pathname from them (the admin
+  // could never reach `/admin/users` to SET the consent it is the admin's
+  // job to record). The role claim the GOTRUE issued here (the
+  // raw_user_meta_data the seeds write; the JWT's own claim rides the
+  // session cookie the middleware scopes the same rule) names the CALLER;
+  // a non-learner never rides the consent branch — `/profile` the neutral
+  // landing; the DATABASE's RLS keeps denying their writes/reads at the
+  // row level exactly as before.
+  const gateRole = (() => {
+    const meta = data.user.user_metadata
+    const claim = meta?.role
+    return typeof claim === 'string' ? claim : 'learner'
+  })()
   if (flag) gateRedirect = '/change-password'
-  else if (!consent) gateRedirect = '/'
-  else if (consent && !submitted && !override) gateRedirect = '/pre-test'
+  else if (gateRole === 'learner' && !consent) gateRedirect = '/'
+  else if (gateRole === 'learner' && consent && !submitted && !override) gateRedirect = '/pre-test'
   // The gate flags ride httpOnly cookies so the middleware can speak the
   // deeper redirect on any pathname, and the change-password/login pathname
   // is the allowlist the #3 guard already carries.
@@ -147,7 +166,22 @@ export async function POST(req: NextRequest) {
     redirect: gateRedirect,
   })
   // The refresh/access tokens ride httpOnly cookies set here, not in the body.
-  res.cookies.set('ppga_session', data.session.access_token, {
+  // PPGA #18 (production verification, finding #4): the session clients every
+  // server read builds (lib/sup/*, `storageKey: 'ppga_session'` + the request
+  // cookie jar as storage) hand the cookie VALUE to supabase-js's session
+  // parser — a raw JWT is NOT a parseable stored session, so every signed-in
+  // browser page ran UNAUTHORIZED while the seam tests (RPC-direct, service
+  // key) never saw it. The cookie now carries the stored-session JSON
+  // supabase-js itself writes (the browser seam's real contract; middleware's
+  // presence check + the role claim read parse it below). The WHOLE session
+  // object rides (the `user` too): a hand-picked subset parses but rebuilds a
+  // session with `user === undefined`, and every `session.session.user.id`
+  // read then threw inside the server components (#18's second live-browser
+  // round — the first round's UNAUTHORIZED became a 500 at the profile read).
+  res.cookies.set('ppga_session', JSON.stringify({
+    current_version: '1',
+    ...data.session,
+  }), {
     path: '/',
     httpOnly: true,
     secure: true,

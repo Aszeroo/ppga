@@ -32,7 +32,11 @@ async function createSupaSessionClient() {
   })
 }
 
-const moduleKeySchema = z.string().regex(/^module-(?:0[1-9]|10)$/)
+// PPGA #18 (finding: the Final Project's queue was unreachable): the shape
+// must cover module-11 — `/^module-(?:0[1-9]|10)$/` rejected it, so the
+// Teacher's queue rendered module-11 DENIED and the review sub-journey could
+// never start for the Final Project.
+const moduleKeySchema = z.string().regex(/^module-(?:0[1-9]|1[01])$/)
 
 // ─── queue ───────────────────────────────────────────────────────────────────
 
@@ -98,7 +102,11 @@ export async function submitReviewViaRpc(
   },
   decision: 'approved' | 'needs_improvement',
   feedbackTh: string | null,
-  feedbackEn: string | null
+  feedbackEn: string | null,
+  // PPGA #18 finding #5: the (mission, round) pair is unique only WITHIN a
+  // learner — the teacher's review must name the owner, or two learners at the
+  // same round make the RPC's row read resolve arbitrarily.
+  learnerId?: string
 ): Promise<SubmitReviewState> {
   const sup = await createSupaSessionClient()
   if (!sup) return { status: 'not-configured', detail: 'NEXT_PUBLIC_SUP_* missing' }
@@ -136,6 +144,7 @@ export async function submitReviewViaRpc(
     p_decision: decision,
     p_feedback_th: feedbackTh,
     p_feedback_en: feedbackEn,
+    p_learner_id: learnerId ?? null,
   } as never)
 
   if (error) {
