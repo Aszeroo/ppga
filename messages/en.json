@@ -191,8 +191,18 @@
       "unauthorized": "unauthorized",
       "notConfigured": "not-configured",
       "ok": "ok",
-      "fallbackSuspense": "Loading…"
-    }
+      "fallbackSuspense": "Loading…",
+      "inProgress": "in progress",
+      "submitted": "submitted — awaiting review",
+      "needsImprovement": "needs improvement — resubmit",
+      "approved": "approved"
+    },
+    "linkReviewStatus": "Check the Final Project review status (with the Teacher)",
+    "statusLabel": "Player status",
+    "courseProgress": "Course progress",
+    "missionCurrent": "Current mission",
+    "submissionLabel": "Submission",
+    "feedbackLabel": "Teacher feedback"
   },
   "pretest": {
     "gateLabel": "Pre-Test gate",

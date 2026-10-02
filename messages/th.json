@@ -178,8 +178,19 @@
       "unauthorized": "เมิลทู่",
       "notConfigured": "ลาทก์ก่กำล่ง",
       "ok": "ได้าสาย",
-      "fallbackSuspense": "กำลังโหลด..."
-    }
+      "fallbackSuspense": "กำลังโหลด...",
+      "inProgress": "กำลังทำ",
+      "submitted": "ส่งแล้ว รออาจารย์ตรวจ",
+      "needsImprovement": "ต้องแก้ไขแล้วส่งใหม่",
+      "approved": "อนุมัติแล้ว"
+    },
+    "linkReviewStatus": "ดูสถานะการตรวจ Final Project (อยู่กับอาจารย์)",
+    "statusLabel": "สถานะผู้เล่น",
+    "courseProgress": "ความคืบหน้าหลักสูตร",
+    "missionCurrent": "ภารกิจปัจจุบัน",
+    "submissionLabel": "การส่งงาน",
+    "feedbackLabel": "ข้อเสนอแนะจากอาจารย์",
+    "fallbackSuspense": "กำลังโหลด..."
   },
   "pretest": {
     "gateLabel": "ขั้ทกัาน์",

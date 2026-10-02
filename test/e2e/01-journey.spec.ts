@@ -45,6 +45,15 @@ test.describe('PPGA #18 critical journey', () => {
     }
     const criteria = ['content_structure', 'text_formatting', 'images_visual', 'slide_design', 'powerpoint_tool_usage', 'creativity', 'completeness']
 
+    // PPGA #43 (ticket #43): the Dashboard hub's observable pins — the ONE
+    // primary CTA (the `data-ppg-cta` marker renders exactly once) and the
+    // player-status summary region (real rows only; a missing datum renders
+    // no row). The AC chain: fresh → explanation, mid-course → the Course,
+    // the Final Project `submitted` → the review status, Post-Test eligible →
+    // the Post-Test, Survey eligible → the Survey, done → NO CTA.
+    const primaryCta = (target: Page) => target.locator('[data-ppg-cta="primary"]')
+    const hubStatus = (target: Page) => target.locator('[data-ppg-hub="status"]')
+
     // 0. The anonymous caller reaches the login page — the unauthorized
     // state is the login page, never a blank screen (/health is the public
     // deployment probe; /profile is the guard's protected pathname). The
@@ -62,6 +71,9 @@ test.describe('PPGA #18 critical journey', () => {
     // DATABASE's RLS denies the items read at the row level, independently).
     await signIn(page, locale, learner, '/')
     await expect(page.locator('body')).toContainText(t(['home', 'states', 'noConsent'], locale))
+    // The fresh state's ONE primary CTA is the respectful consent explanation.
+    await expect(primaryCta(page)).toHaveCount(1)
+    await expect(primaryCta(page)).toHaveText(t(['home', 'nextActionExplanation'], locale))
     // The learner's Dashboard rides the persistent Shell frame — the
     // learner's nav (Dashboard, Course, Badges, Leaderboard, Profile)
     // appears exactly (the issue's story #3/#11: destinations a Learner
@@ -154,6 +166,14 @@ test.describe('PPGA #18 critical journey', () => {
     await page.goto(`/${locale}`)
     await expectXpLine(page, 50, 50)
     await expectBadge(page, locale, 'first_steps')
+    // The hub summary (ticket #43): course progress = the learner's OWN
+    // complete Mission rows (0 yet — module-01's Mission is not passed), and
+    // the CURRENT Mission is module-01's, linked to the real screen. The
+    // gate-open mid-course CTA is the Course map.
+    await expect(hubStatus(page)).toContainText(`${t(['home', 'courseProgress'], locale)} 0 / 11`)
+    await expect(hubStatus(page)).toContainText(t(['home', 'missionCurrent'], locale))
+    await expect(page.locator('[data-ppg-hub="status"] a[href*="module-01/mission"]')).toBeVisible()
+    await expect(primaryCta(page)).toHaveText(t(['home', 'linkCourse'], locale))
 
     // 7. Lesson 2 (panes & views) — the SECOND +50 rides the ledger PK's
     // own per-lesson `event_ref`; the header re-reads the SUM live.
@@ -179,6 +199,8 @@ test.describe('PPGA #18 critical journey', () => {
     await page.goto(`/${locale}`)
     await expectXpLine(page, 200, 100)
     await expectBadge(page, locale, 'module_01_mission')
+    // Course progress moved to the learner's ONE real completion.
+    await expect(hubStatus(page)).toContainText(`${t(['home', 'courseProgress'], locale)} 1 / 11`)
 
     // UNLOCK OBSERVED (the transition, never a claimed flag): the course
     // map re-read — Module 2 now OPEN (the previous `complete` + the
@@ -204,6 +226,9 @@ test.describe('PPGA #18 critical journey', () => {
     await page.goto(`/${locale}`)
     await expectXpLine(page, 350, 50)
     await expectBadge(page, locale, 'module_02_mission')
+    // Two real completions; the CURRENT Mission moved on to module-03.
+    await expect(hubStatus(page)).toContainText(`${t(['home', 'courseProgress'], locale)} 2 / 11`)
+    await expect(page.locator('[data-ppg-hub="status"] a[href*="module-03/mission"]')).toBeVisible()
     await page.goto(`/${locale}/course`)
     expect(await lockCopyCount(false, page)).toBe(8)
     expect(await lockCopyCount(true, page)).toBe(3)
@@ -224,6 +249,13 @@ test.describe('PPGA #18 critical journey', () => {
     await submitForm(page, '[data-ppg-submission-status-form]', '/api/submissions/status', true)
     await page.goto(`/${locale}/course/module-08/practical`)
     await expect(page.locator('body')).toContainText('submitted')
+    // The hub surfaces the Submission status (ticket #43 AC): the module-08
+    // round rides `submitted` — awaiting the Teacher. Mid-course the CTA
+    // stays the Course (the awaiting-review CTA is the FINAL round's own).
+    await page.goto(`/${locale}`)
+    await expect(hubStatus(page)).toContainText('module-08 #1')
+    await expect(hubStatus(page)).toContainText('(submitted)')
+    await expect(primaryCta(page)).toHaveText(t(['home', 'linkCourse'], locale))
 
     // Teacher SEAM: the queue reads `submitted` rows ONLY; the rubric 7×
     // (score 4 radios — the SERVER computes 28/35, never a client count) +
@@ -287,6 +319,10 @@ test.describe('PPGA #18 critical journey', () => {
     // Project's acceptance, never earlier).
     await page.goto(`/${locale}`)
     await expect(page.locator('body')).toContainText(t(['home', 'states', 'closeLocked'], locale))
+    // The hub: the latest round moved to `approved` and the Teacher's REAL
+    // bilingual notes (this journey filled them) render as relevant feedback.
+    await expect(hubStatus(page)).toContainText('(approved)')
+    await expect(hubStatus(page)).toContainText('rubric 4 each')
 
     // 11. THE FINAL PROJECT (Module 11, practical): upload round 1 + the
     // `in_progress → submitted` move + the Teacher's rubric 5× (the
@@ -305,6 +341,14 @@ test.describe('PPGA #18 critical journey', () => {
     await page.goto(`/${locale}/course/module-11/practical`)
     await expect(page.locator('body')).toContainText('in_progress')
     await submitForm(page, '[data-ppg-submission-status-form]', '/api/submissions/status', true)
+    // THE AWAITING-REVIEW STATE (the AC): the FINAL Project's own round is
+    // now with the Teacher — the ONE primary CTA checks that review status.
+    await page.goto(`/${locale}`)
+    await expect(primaryCta(page)).toHaveCount(1)
+    await expect(primaryCta(page)).toHaveText(t(['home', 'linkReviewStatus'], locale))
+    await expect(primaryCta(page)).toHaveAttribute('href', new RegExp(`/${locale}/course/module-11/review$`))
+    await expect(hubStatus(page)).toContainText('module-11 #1')
+    await expect(hubStatus(page)).toContainText('(submitted)')
     await teacher.goto(`/${locale}/teacher/review`)
     await teacher.locator('section').filter({ hasText: 'module-11' }).filter({ hasText: accounts.learners[locale] }).locator('a[href*="/teacher/review/"]').first().click()
     for (const key of criteria)
@@ -344,6 +388,9 @@ test.describe('PPGA #18 critical journey', () => {
     await page.goto(`/${locale}`)
     await rawLeakCheck(page)
     await expect(page.locator('body')).toContainText(t(['home', 'linkPostTest'], locale))
+    // The CTA chain (AC): the Post-Test-eligible state's ONE CTA is the
+    // Post-Test itself.
+    await expect(primaryCta(page)).toHaveText(t(['home', 'linkPostTest'], locale))
 
     // 12. The Post-Test (single-attempt, the answer `A` the key; NO XP,
     // NO badge — a research instrument grants NOTHING, ADR-0001).
@@ -358,12 +405,15 @@ test.describe('PPGA #18 critical journey', () => {
     // submitted — the observable link transition again).
     await page.goto(`/${locale}`)
     await expect(page.locator('body')).toContainText(t(['home', 'linkSurvey'], locale))
+    await expect(primaryCta(page)).toHaveText(t(['home', 'linkSurvey'], locale))
     await page.goto(`/${locale}/survey`)
     await page.locator('#survey_answer_item_1').fill('B')
     await page.locator('#survey_answer_item_2').fill('C')
     await submitForm(page, '[data-ppg-survey-form=survey]', '/api/survey/submit', true)
     await page.goto(`/${locale}`)
     await expect(page.locator('body')).toContainText(t(['home', 'states', 'closeDone'], locale))
+    // Nothing left to do: the closeDone state renders NO primary CTA.
+    await expect(primaryCta(page)).toHaveCount(0)
     await rawLeakCheck(page)
 
     // SINGLE-ATTEMPT OBSERVED: the second Pre-Test submit reaches
