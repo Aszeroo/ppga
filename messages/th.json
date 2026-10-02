@@ -11,9 +11,9 @@
     "adminProvisioning": "จัด roster",
     "course": "แผนท่ีหนว่ย",
     "badges": "ช่ออ-กิ่",
-    "leaderboard": "ชื่ิง-XP",
+    "leaderboard": "กระดานผู้ำ",
     "reviewQueue": "คิว-ตรวจ",
-    "coursePublication": "แผน-หนว่ย-publish",
+    "coursePublication": "เผยแพร่หลักสูตร",
     "adminExport": "ส่งออกแบบุูลวิจัย"
   },
   "admin": {
