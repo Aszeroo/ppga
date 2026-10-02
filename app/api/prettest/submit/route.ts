@@ -20,7 +20,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   const ct = req.headers.get('content-type') ?? ''
-  let body: { answers?: Record<string, string> | null }
+  let body: { answers?: Record<string, string> | null; language?: string | null }
   // The console's submit form posts form-encoded (the native submit); the
   // later export UIs may post JSON; both ride the same RPC gate.
   if (ct.includes('application/json')) {
@@ -35,12 +35,16 @@ export async function POST(req: NextRequest) {
       answers: Object.fromEntries(
         [...form].filter(([k]) => k.startsWith('item_')),
       ) as Record<string, string> | null,
+      // The hidden language field records the taken language with the row
+      // (ADR-0002) — the DATABASE re-validates th|en in the gated row start.
+      language: form.get('language') as string | null,
     }
   }
 
   const parsed = prettestFormSchema.safeParse({
     answers: body.answers ?? undefined,
     autosave: undefined,
+    language: body.language ?? undefined,
   })
 
   if (!parsed.success) {
@@ -50,6 +54,6 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  const result = await submitViaRpc(parsed.data.answers)
+  const result = await submitViaRpc(parsed.data.answers, parsed.data.language)
   return NextResponse.json(result)
 }

@@ -15,7 +15,10 @@ test('auth flows: session tokens ride httpOnly cookies server-side', () => {
   const auth = read('lib/sup/auth.ts')
   expect(auth.includes('httpOnly: true')) .toBe(true)
   expect(auth.includes('sameSite')).toBe(true)
-  expect(auth.includes('signInWithPassword')).toBe(true)
+  // PPGA #18: the dead `signInByHandle` copy was removed from the module —
+  // the real sign-in runs in the login route (`sup.auth.signInWithPassword`);
+  // the guard reads the observable authority where it actually lives.
+  expect(read('app/api/auth/login/route.ts').includes('signInWithPassword')).toBe(true)
   expect(auth.includes('PUT') && auth.includes('/user')).toBe(true)
   expect(auth.includes('/logout')).toBe(true)
 })

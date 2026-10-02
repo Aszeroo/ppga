@@ -20,14 +20,12 @@ import { z } from 'zod'
  */
 export const surveyFormSchema = z
   .object({
-    answers: z
-      .record(z.string(), z.string())
-      .optional()
-      .transform((v) => JSON.stringify(v ?? {})),
-    autosave: z
-      .record(z.string(), z.unknown())
-      .default({})
-      .transform((v) => JSON.stringify(v)),
+    // PPGA #18 (the live-browser finding): the `jsonb` params stay JSON
+    // OBJECTS end to end — a `JSON.stringify` transform made PostgREST bind
+    // a jsonb SCALAR string and the server-side reads died (see
+    // lib/sup/prettest.ts for the full seam note).
+    answers: z.record(z.string(), z.string()).optional(),
+    autosave: z.record(z.string(), z.unknown()).default({}),
     language: z.enum(['th', 'en']),
   })
   .strict()
@@ -113,9 +111,6 @@ export async function readSurveyState(): Promise<SurveyState> {
   }
 }
 
-const toPayload = (v: Record<string, unknown> | string): string =>
-  typeof v === 'string' ? v : JSON.stringify(v ?? {})
-
 /** The gate error vocabulary the #15 Survey RPCs raise
  * (`posttest_not_submitted` = early access, server-side). */
 function mapSurveyError(message: string): string | null {
@@ -149,7 +144,7 @@ async function startSurveyRow(
  * `submitted_at IS NULL`); a post-submit call reaches the immutable trigger.
  * The gated row start rides first (idempotent). */
 export async function upsertSurveyAutosaveViaRpc(
-  autosave: Record<string, unknown> | string,
+  autosave: Record<string, unknown>,
   language: 'th' | 'en',
 ): Promise<SurveyUpsertResult> {
   const sup = await createSupaSessionClient()
@@ -163,7 +158,7 @@ export async function upsertSurveyAutosaveViaRpc(
 
   const { error } = await sup.rpc(
     'ppg_survey_upsert',
-    { p_autosave: toPayload(autosave) } as never,
+    { p_autosave: autosave } as never,
   )
 
   if (error) {
@@ -180,7 +175,7 @@ export async function upsertSurveyAutosaveViaRpc(
  * (ADR-0001 + satisfaction is not an assessment).
  */
 export async function submitSurveyViaRpc(
-  answers: Record<string, string> | string,
+  answers: Record<string, string> | undefined,
   language: 'th' | 'en',
 ): Promise<SurveySubmitResult> {
   const sup = await createSupaSessionClient()
@@ -194,7 +189,7 @@ export async function submitSurveyViaRpc(
 
   const { error } = await sup.rpc(
     'ppg_survey_submit',
-    { p_answers: toPayload(answers) } as never,
+    { p_answers: answers ?? {} } as never,
   )
 
   if (error) {

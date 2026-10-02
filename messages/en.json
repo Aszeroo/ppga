@@ -11,6 +11,7 @@
     "adminProvisioning": "Provision roster"
   },
   "admin": {
+    "fallbackSuspense": "Preparing the console…",
     "heading": "Admin console",
     "users": {
       "list": "User list",
@@ -147,6 +148,7 @@
     "fallbackSuspense": "Checking Supabase Postgres…"
   },
   "home": {
+    "fallbackSuspense": "Preparing the dashboard…",
     "scaffold": "PPGA scaffold is up.",
     "healthLink": "Health page",
     "nextAction": "Next action",
@@ -445,12 +447,15 @@
     "expectedHeading": "The expected output",
     "lessonsFlowNote": "The instructions flow from your lessons:",
     "uploadLabel": "Upload my .pptx/.ppt file + a short reflection",
+    "fileLabel": "Your work file (.pptx/.ppt)",
     "reflectionPlaceholder": "A short reflection on what you learned",
     "submittedState": "Submitted — a Teacher reviews it (#14 awards +150 XP on approval)",
     "xpSeamNote": "The +150 XP seam on approval is ticket #14's job — this page states it, never awards now",
     "historySection": "Your submission history (append-only, version-preserving)",
     "historyRound": "Round",
     "historyStatus": "Status",
+    "historyAction": "Action",
+    "submitForReview": "Submit this round for review",
     "historyDownload": "Download my file (a short-lived signed URL)",
     "linkModule": "This module",
     "linkMap": "Course map",

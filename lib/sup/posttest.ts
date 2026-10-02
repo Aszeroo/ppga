@@ -20,14 +20,12 @@ import { z } from 'zod'
  */
 export const posttestFormSchema = z
   .object({
-    answers: z
-      .record(z.string(), z.string())
-      .optional()
-      .transform((v) => JSON.stringify(v ?? {})),
-    autosave: z
-      .record(z.string(), z.unknown())
-      .default({})
-      .transform((v) => JSON.stringify(v)),
+    // PPGA #18 (the live-browser finding): the `jsonb` params stay JSON
+    // OBJECTS end to end — a `JSON.stringify` transform made PostgREST bind
+    // a jsonb SCALAR string and the scorer's `jsonb_each_text` died (see
+    // lib/sup/prettest.ts for the full seam note).
+    answers: z.record(z.string(), z.string()).optional(),
+    autosave: z.record(z.string(), z.unknown()).default({}),
     language: z.enum(['th', 'en']),
   })
   .strict()
@@ -122,9 +120,6 @@ export async function readPosttestState(): Promise<PosttestState> {
   }
 }
 
-const toPayload = (v: Record<string, unknown> | string): string =>
-  typeof v === 'string' ? v : JSON.stringify(v ?? {})
-
 /** The gate error vocabulary the #15 RPCs raise (`final_project_not_accepted`
  * = early access, server-side; the rest mirror the #8 engine's words). */
 function mapPosttestError(message: string): string | null {
@@ -163,7 +158,7 @@ async function startPosttestRow(
  * The gated row start rides first (idempotent).
  */
 export async function upsertPosttestAutosaveViaRpc(
-  autosave: Record<string, unknown> | string,
+  autosave: Record<string, unknown>,
   language: 'th' | 'en',
 ): Promise<PosttestUpsertResult> {
   const sup = await createSupaSessionClient()
@@ -177,7 +172,7 @@ export async function upsertPosttestAutosaveViaRpc(
 
   const { error } = await sup.rpc(
     'ppg_posttest_upsert',
-    { p_autosave: toPayload(autosave) } as never,
+    { p_autosave: autosave } as never,
   )
 
   if (error) {
@@ -195,7 +190,7 @@ export async function upsertPosttestAutosaveViaRpc(
  * The gated row start rides first (idempotent).
  */
 export async function submitPosttestViaRpc(
-  answers: Record<string, string> | string,
+  answers: Record<string, string> | undefined,
   language: 'th' | 'en',
 ): Promise<PosttestSubmitResult> {
   const sup = await createSupaSessionClient()
@@ -209,7 +204,7 @@ export async function submitPosttestViaRpc(
 
   const { data, error } = await sup.rpc(
     'ppg_posttest_submit',
-    { p_answers: toPayload(answers) } as never,
+    { p_answers: answers ?? {} } as never,
   )
 
   if (error) {

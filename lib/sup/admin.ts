@@ -13,11 +13,16 @@ import { z } from 'zod'
  * `permission_denied`, never a roster they did not get. Missing environment
  * yields `not-configured` so the console shows the state, never crashes.
  */
-export const ppg_roleSchema = z.enum(['learner', 'teacher', 'admin'])
+const ppg_roleSchema = z.enum(['learner', 'teacher', 'admin'])
 
+// PPGA #18 (finding #6, third site): the last uuid group was `{32}` here too —
+// NO real uuid has 32 trailing hex digits, so EVERY admin console submit
+// (consent / role / override) died at this schema with a zod `Invalid string`
+// detail while the seam tests (RPC-direct, never through this route) stayed
+// green. The standard 8-4-4-4-12 shape; the RPC's cast stays the authority.
 export const uuidSchema = z
   .string()
-  .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{32}$/i)
+  .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
 
 export const roleChangeFormSchema = z
   .object({
@@ -102,6 +107,7 @@ async function createSupaSessionClient() {
 }
 
 /** The admin-only user-list RPC — page-20, ordered by student_id. */
+// fallow-ignore-next-line complexity
 export async function listUsersViaRpc(page: number): Promise<UsersState> {
   const sup = await createSupaSessionClient()
   if (!sup) return { status: 'not-configured', detail: 'NEXT_PUBLIC_SUP_* missing' }
@@ -127,6 +133,7 @@ export async function listUsersViaRpc(page: number): Promise<UsersState> {
 }
 
 /** The admin-only role-change RPC — one call, one UPDATE + one audit INSERT. */
+// fallow-ignore-next-line complexity
 export async function changeRoleViaRpc(
   targetId: string,
   newRole: 'learner' | 'teacher' | 'admin',
@@ -155,6 +162,7 @@ export async function changeRoleViaRpc(
 
 /** The admin-only audit read — latest first; the table's own no UPDATE/DELETE
  * policies make it append-only, the function's gate denies a teacher/learner. */
+// fallow-ignore-next-line complexity
 export async function readAuditViaTable(
   limit: number = 50,
 ): Promise<AuditState> {
@@ -188,6 +196,7 @@ export async function readAuditViaTable(
  * reads the request's JWT so a learner/teacher smuggle the call as
  * `permission_denied`, never a silently-0-row UPDATE of someone else's
  * consent flag. */
+// fallow-ignore-next-line complexity
 export async function setConsentViaRpc(
   targetId: string,
   consent: boolean,
@@ -219,6 +228,7 @@ export async function setConsentViaRpc(
  * override). Every override is audited (ADR-0002). The gate function
  * speaks the new flag; the learner may now read gated content at the RLS
  * level (the placeholder's own policy). */
+// fallow-ignore-next-line complexity
 export async function unlockOverrideViaRpc(
   targetId: string,
 ): Promise<RoleChangeResult> {

@@ -18,13 +18,20 @@ import { z } from 'zod'
  */
 export const prettestFormSchema = z
   .object({
-    answers: z
-      .record(z.string(), z.string())
-      .transform((v) => JSON.stringify(v)),
-    autosave: z
-      .record(z.string(), z.unknown())
-      .default({})
-      .transform((v) => JSON.stringify(v)),
+    // PPGA #18 (the live-browser finding): the RPC's `p_answers`/`p_autosave`
+    // params are `jsonb` and the scorers read `jsonb_each_text`/`->>` on
+    // them — the payload must stay a JSON OBJECT end to end. A
+    // `JSON.stringify` transform made supabase-js serialize the payload as a
+    // JSON string, PostgREST bound it as a jsonb SCALAR string, and every
+    // submit died at `cannot call jsonb_each_text on a non-object` (the
+    // RPC-direct seam tests cast the literal `'{"item_1":"A"}'::jsonb` and
+    // never saw it).
+    answers: z.record(z.string(), z.string()).optional(),
+    autosave: z.record(z.string(), z.unknown()).default({}),
+    // PPGA #18 (the #15-starter pattern): the hidden language field records
+    // the taken language with the row (ADR-0002) — the DATABASE re-validates
+    // th|en inside `ppg_prettest_start`.
+    language: z.enum(['th', 'en']),
   })
   .strict()
 
@@ -161,30 +168,64 @@ export async function readGateViaTable(): Promise<GateState> {
  * A post-submit upsupert reaches PostgREST as `already_submitted`, never a
  * silent overwrite.
  */
-const toPayload = (v: Record<string, unknown> | string): string =>
-  typeof v === 'string' ? v : JSON.stringify(v ?? {})
+/**
+ * PPGA #18 (the #15-starter pattern): the gated row start rides first —
+ * idempotent. #8 shipped the submit requiring an EXISTING response row while
+ * nothing ever created one (the upsert is UPDATE-only), so every UI submit
+ * died at `response_missing`. `ppg_prettest_start` is the DB's own gate
+ * (learner-only, consent first, the CURRENT instrument version recorded
+ * server-side); a call whose gate fails reaches its exception verbatim.
+ */
+/** The RPC's gate-code error mapped to its failure detail verbatim (PPGA #18,
+ * one mapper — the RPC's own gate name is the detail's prefix and the service
+ * message its body; anything unmapped rides verbatim, never swallowed). */
+function rpcFailureDetail(error: { message: string }, codes: readonly string[]): { ok: false; detail: string } {
+  const lower = error.message.toLowerCase()
+  for (const code of codes)
+    if (lower.includes(code)) return { ok: false, detail: `${code}: ${error.message}` }
+  return { ok: false, detail: error.message }
+}
 
-export async function upsupertAutosaveViaRpc(
-  autosave: Record<string, unknown> | string,
-): Promise<UpsertResult> {
+async function startPrettestRow(
+  sup: NonNullable<Awaited<ReturnType<typeof createSupaSessionClient>>>,
+  language: 'th' | 'en',
+): Promise<{ ok: true } | { ok: false; detail: string }> {
+  const { error } = await sup.rpc('ppg_prettest_start', { p_language: language } as never)
+  if (error) return rpcFailureDetail(error, ['consent_not_yet', 'permission_denied'])
+  return { ok: true }
+}
+
+/** The session-open + idempotent row start the autosave and the submit share
+ * (PPGA #18): `not-configured`, `no session`, or a row-start gate failure
+ * come back as the failure object verbatim — the caller returns it as-is. */
+// fallow-ignore-next-line complexity
+async function openStartedPrettest(language: 'th' | 'en'): Promise<
+  { ok: true; sup: NonNullable<Awaited<ReturnType<typeof createSupaSessionClient>>> } | { ok: false; detail: string }
+> {
   const sup = await createSupaSessionClient()
   if (!sup) return { ok: false, detail: 'not-configured' }
 
   const { data: session } = await sup.auth.getSession()
-  if (!session || !session.session) return { ok: false, detail: 'no session' }
+  if (!session?.session) return { ok: false, detail: 'no session' }
 
-  const { error } = await sup.rpc(
+  const started = await startPrettestRow(sup, language)
+  if (!started.ok) return started
+  return { ok: true, sup }
+}
+
+export async function upsupertAutosaveViaRpc(
+  autosave: Record<string, unknown>,
+  language: 'th' | 'en',
+): Promise<UpsertResult> {
+  const opened = await openStartedPrettest(language)
+  if (!opened.ok) return opened
+
+  const { error } = await opened.sup.rpc(
     'ppg_prettest_upsert',
-    { p_autosave: toPayload(autosave) } as never,
+    { p_autosave: autosave } as never,
   )
 
-  if (error) {
-    if (error.message.toLowerCase().includes('already_submitted'))
-      return { ok: false, detail: `already_submitted: ${error.message}` }
-    if (error.message.toLowerCase().includes('permission_denied'))
-      return { ok: false, detail: `permission_denied: ${error.message}` }
-    return { ok: false, detail: error.message }
-  }
+  if (error) return rpcFailureDetail(error, ['already_submitted', 'permission_denied'])
   return { ok: true, detail: 'autosave stored pre-submission (your own row only)' }
 }
 
@@ -192,31 +233,24 @@ export async function upsupertAutosaveViaRpc(
  * The submit: the score is computed SERVER-side from the answer key (never
  * client-decided), `submitted_at` stamps atomically. A second call cannot
  * find the function's UPDATE of an un-submitted row — the response reaches
- * `already_submitted_or_missing`, never a silently-overwritten row.
+ * `already_submitted_or_missing`, never a silently-overwritten row. The gated
+ * row start rides first (idempotent — PPGA #18; a learner whose row never
+ * existed no longer dies at `response_missing`).
  */
-export async function submitViaRpc(answers: Record<string, string> | string): Promise<SubmitResult> {
-  const sup = await createSupaSessionClient()
-  if (!sup) return { ok: false, detail: 'not-configured' }
+export async function submitViaRpc(
+  answers: Record<string, string> | undefined,
+  language: 'th' | 'en',
+): Promise<SubmitResult> {
+  const opened = await openStartedPrettest(language)
+  if (!opened.ok) return opened
 
-  const { data: session } = await sup.auth.getSession()
-  if (!session || !session.session) return { ok: false, detail: 'no session' }
-
-  const { data, error } = await sup.rpc(
+  const { data, error } = await opened.sup.rpc(
     'ppg_prettest_submit',
-    { p_answers: toPayload(answers) } as never,
+    { p_answers: answers ?? {} } as never,
   )
 
-  if (error) {
-    if (error.message.toLowerCase().includes('consent_not_yet'))
-      return { ok: false, detail: `consent_not_yet: ${error.message}` }
-    if (error.message.toLowerCase().includes('already_submitted'))
-      return { ok: false, detail: `already_submitted: ${error.message}` }
-    if (error.message.toLowerCase().includes('permission_denied'))
-      return { ok: false, detail: `permission_denied: ${error.message}` }
-    if (error.message.toLowerCase().includes('response_missing'))
-      return { ok: false, detail: `response_missing: ${error.message}` }
-    return { ok: false, detail: error.message }
-  }
+  if (error)
+    return rpcFailureDetail(error, ['consent_not_yet', 'already_submitted', 'permission_denied', 'response_missing'])
   return {
     ok: true,
     score: typeof data === 'number' ? (data as number) : undefined,

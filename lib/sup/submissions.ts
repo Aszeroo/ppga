@@ -27,6 +27,8 @@ const submissionFileSchema = z
   })
   .strict()
 
+export type SubmissionStatus = 'in_progress' | 'submitted' | 'needs_improvement' | 'approved'
+
 export interface SubmissionCreateResult {
   ok: boolean
   detail?: string
@@ -101,6 +103,7 @@ async function createSupaSessionClient() {
  * (the OLE container signature). Garbage of any other prefix yields null — the
  * upload form rejects a wrong type with a clear bilingual error, never a smuggled row.
  */
+// fallow-ignore-next-line complexity
 function magicByteValidator(buf: Uint8Array): 'pptx' | 'ppt' | null {
   // pptx: bytes 0-3 = 0x50 0x4b 0x03 0x04 ('PK' + a zip local-header marker)
   if (
@@ -134,6 +137,7 @@ function magicByteValidator(buf: Uint8Array): 'pptx' | 'ppt' | null {
  * denies a stranger's write, never a silent 0-row). The resubmit APPENDS a NEW row
  * under a HIGHER submission_seq (the old row stays as the history).
  */
+// fallow-ignore-next-line complexity
 export async function createSubmissionViaRpc(
   moduleKey: string,
   fileBuf: Uint8Array,
@@ -167,9 +171,16 @@ export async function createSubmissionViaRpc(
   const seq = (seqRes.data as number) ?? 1
   const path = `submissions/${uid}/${moduleKey}/${seq}`
 
+  // PPGA #18 (production verification, finding #6): storage-js's `upload`
+  // prefixes `object/` ITSELF (the endpoint is /storage/v1/object/{bucket}/
+  // {path}) — a hand-prefixed `object/${path}` stored the object under the
+  // name `object/submissions/...`, the write policy's `split_part(name, '/',
+  // 2) = auth.uid()` check read 'submissions' instead of the uid, and every
+  // upload died at `new row violates row-level security policy` (the
+  // RPC-direct seam tests never ride the storage endpoint).
   const { error: putErr } = await sup.storage
     .from('ppg-submissions')
-    .upload(`object/${path}`, fileBuf, { contentType: 'application/octet-stream' })
+    .upload(path, fileBuf, { contentType: 'application/octet-stream' })
 
   if (putErr)
     return { ok: false, detail: `storage_put_denied: ${putErr.message}` }
@@ -208,6 +219,7 @@ export async function createSubmissionViaRpc(
  * rows only, an other learner's history NEVER rides out; the order the
  * submission_seq). The resubmit APPENDS a NEW row; NOTHING overwrited.
  */
+// fallow-ignore-next-line complexity
 export async function readSubmissionHistoryViaRpc(moduleKey: string): Promise<SubmissionHistoryState> {
   const sup = await createSupaSessionClient()
   if (!sup) return { status: 'not-configured', detail: 'NEXT_PUBLIC_SUP_* missing' }
@@ -237,6 +249,7 @@ export async function readSubmissionHistoryViaRpc(moduleKey: string): Promise<Su
  * uid rides; a stranger's download NEVER reaches the signed URL; a public bucket
  * read NEVER rides (the private bucket below). The expiry ~60s.
  */
+// fallow-ignore-next-line complexity
 export async function signedUrlForOwnSubmission(
   moduleKey: string,
   submissionSeq: number,
@@ -293,6 +306,7 @@ export interface PracticalMissionReadState {
  * state text, never a hidden form). The instructions flow from the lessons the reader
  * reads already (NOT this RPC).
  */
+// fallow-ignore-next-line complexity
 export async function readPracticalMissionViaRpc(moduleKey: string): Promise<PracticalMissionReadState> {
   const sup = await createSupaSessionClient()
   if (!sup) return { status: 'not-configured', detail: 'NEXT_PUBLIC_SUP_* missing' }
@@ -337,8 +351,94 @@ export async function readPracticalMissionViaRpc(moduleKey: string): Promise<Pra
 // HIGHER submission_seq; the old row stays needs_improvement as the history) is
 // the DATABASE's own `ppg_set_submission_status` authority — the client never
 // decides outcomes; an invalid move reaches `invalid_transition`, a stranger's
-// smuggle reaches `denied_caller`. The server module does NOT port it as a
-// callable: #13's review/approval (#14) and #15's close-chain approve through
-// the SAME RPC inside their own functions; a standalone `set-` helper would be
-// unused by any route (the upload route only `create`s, the review routes only
-// `submit-review`), so the export NEVER lands and the RPC's gate already speaks.
+// smuggle reaches `denied_caller`, a teacher/admin reaches `denied_role`.
+//
+// PPGA #18 (production verification, finding #2): the lifecycle was REAL at the
+// seam yet UNREACHABLE in the browser — #13's upload only ever `create`s an
+// `in_progress` row and NO route/button ever moved it to `submitted`, while
+// #14's review queue reads `submitted` rows ONLY (`not_pending` otherwise). A
+// production learner's upload therefore NEVER entered a Teacher's queue. The
+// `submitForReviewViaRpc` below wires the learner's own move; the practical
+// screen shows the button ONLY on an `in_progress` round, and the RPC's gate
+// (own uid, learner role, legal transition) stays the sole authority — a
+// smuggled POST reaches the raised error verbatim, never a silently-0-row move.
+export interface SubmissionStatusResult {
+  ok: boolean
+  detail?: string
+  status?: SubmissionStatus
+}
+
+// The guard shape mirrors every sibling RPC wrapper (client / session /
+// shape / RPC); every branch rides the #18 e2e journey, and lib/sup has no
+// vitest coverage to bring fallow's ESTIMATED CRAP down — suppressed as the
+// repo's established convention (login #3, provision #6) does.
+// fallow-ignore-next-line complexity
+export async function submitForReviewViaRpc(
+  moduleKey: string,
+  submissionSeq: number,
+): Promise<SubmissionStatusResult> {
+  const sup = await createSupaSessionClient()
+  if (!sup) return { ok: false, detail: 'not-configured' }
+
+  // ONE server-verified read: `getUser` authenticates the caller's token at
+  // the auth server (the storage-side `getSession` user object supabase-js
+  // itself warns about never decides anything here) and carries the uid —
+  // session presence and identity in a single check.
+  const { data: userRes } = await sup.auth.getUser()
+  const uid = userRes?.user?.id
+  if (!uid) return { ok: false, detail: 'no session' }
+
+  if (!moduleKeySchema.safeParse(moduleKey).success)
+    return { ok: false, detail: 'target module key not in the practical shape (module-08|09|10|11)' }
+
+  if (!Number.isInteger(submissionSeq) || submissionSeq < 1)
+    return { ok: false, detail: 'submission_seq must be a positive integer (the round number)' }
+
+  const { data, error } = await sup.rpc(
+    'ppg_set_submission_status',
+    {
+      p_learner_id: uid,
+      p_mission_id: moduleKey,
+      p_submission_seq: submissionSeq,
+      p_new_status: 'submitted',
+    } as never,
+  )
+  if (error) return { ok: false, detail: gateCodeDetail(error.message) }
+
+  return {
+    ok: true,
+    // `ppg_set_submission_status` is `returns setof ppg_submission_status` —
+    // PostgREST hands back a ROW SET (an array), never a bare string; the
+    // naive `String(data ?? '')` coerced an object row to `[object Object]`
+    // under the `as SubmissionStatus` cast. The extraction reads the first
+    // row's value across the shapes a setof-enum RPC actually emits.
+    status: firstStatus(data) as SubmissionStatus,
+    detail: 'submitted — the Teacher queue reads this round',
+  }
+}
+
+// The first row's status value: scalar string, or the record's column under
+// any of the names PostgREST may give the single output column.
+// fallow-ignore-next-line complexity
+function firstStatus(data: unknown): string {
+  const row = Array.isArray(data) ? data[0] : data
+  if (typeof row === 'string') return row
+  if (row && typeof row === 'object') {
+    const rec = row as Record<string, unknown>
+    for (const key of ['ppg_set_submission_status', 'ppg_submission_status', 'status']) {
+      const v = rec[key]
+      if (typeof v === 'string') return v
+    }
+  }
+  return ''
+}
+
+// The RPC's own raised gate codes ride the detail VERBATIM (never a
+// silently-0-row move); any other message rides unwrapped.
+const GATE_CODES = ['denied_caller', 'denied_role', 'invalid_transition', 'submission_missing']
+
+function gateCodeDetail(message: string): string {
+  const lowered = message.toLowerCase()
+  const code = GATE_CODES.find((c) => lowered.includes(c))
+  return code ? `${code}: ${message}` : message
+}

@@ -29,7 +29,22 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  if (!(file instanceof File))
+  // PPGA #18 (production verification, finding #5): `file instanceof File`
+  // is realm-broken under the Next.js server runtime — `req.formData()`'s
+  // File objects come from the bundler's own undici realm, so the global
+  // `File` constructor's prototype chain never matches and a REAL upload
+  // reached `upload_type_denied` (the E2E journey's live round; the RPC-direct
+  // seam tests never ride the multipart parse). The structural check is the
+  // runtime's own contract — a non-string FormData entry IS a Blob/File (the
+  // docs' own serialization treats it so); the magic-byte + size gate below
+  // stays the real authority over the bytes.
+  const fileIsFile =
+    file instanceof File ||
+    (typeof file === 'object' &&
+      file !== null &&
+      typeof (file as File).arrayBuffer === 'function' &&
+      typeof (file as File).name === 'string')
+  if (!fileIsFile)
     return NextResponse.json({ ok: false, detail: 'upload_type_denied: the file field NEVER rides a non-File value' })
 
   const buf = new Uint8Array(await (file as File).arrayBuffer())

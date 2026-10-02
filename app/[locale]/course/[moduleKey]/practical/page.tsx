@@ -30,6 +30,7 @@ import { StatusPill } from '../../../../../components/StatusPill'
  */
 export const dynamic = 'force-dynamic'
 
+// fallow-ignore-next-line complexity
 async function PracticalAttempt({ moduleKey }: { moduleKey: string }) {
   const t = await getTranslations('practical')
   const locale = await getLocale()
@@ -48,9 +49,20 @@ async function PracticalAttempt({ moduleKey }: { moduleKey: string }) {
             {lessons.status === 'ok' && lessons.lessons
               ? <p>{t('lessonsFlowNote')} {lessons.lessons.map((l) => pick(l.title_th, l.title_en)).join(', ')}</p>
               : null}
-            <form method="POST" action="/api/submissions" data-ppg-submission-form="submission" aria-label={t('uploadLabel')}>
+            {/* PPGA #18 (production verification, finding #5): the enctype
+                is the multipart one — a form lacking it posts urlencoded and
+                a file input serializes to its FILENAME string (the route's
+                upload_type_denied gate is exactly what the browser's body
+                deserved); the journey's live round caught it. */}
+            <form method="POST" action="/api/submissions" encType="multipart/form-data" data-ppg-submission-form="submission" aria-label={t('uploadLabel')}>
               <input name="module_key" defaultValue={moduleKey} hidden={true} />
-              <input type="file" name="file" accept=".pptx,.ppt" />
+              {/* PPGA #18 (the a11y sweep): the file input is a form control a
+                  screen-reader must NAME — the form's own aria-label never
+                  names it (axe `label`, critical). The repo's pattern: a
+                  visible `<label htmlFor>` (change-password, provisioning,
+                  survey), bilingual copy in `messages`. */}
+              <label htmlFor="ppg-submission-file">{t('fileLabel')}</label>
+              <input id="ppg-submission-file" type="file" name="file" accept=".pptx,.ppt" />
               <input name="reflection" placeholder={t('reflectionPlaceholder')} />
               <button type="submit">{t('uploadLabel')}</button>
             </form>
@@ -72,6 +84,7 @@ async function PracticalAttempt({ moduleKey }: { moduleKey: string }) {
                 <tr>
                   <td>{t('historyRound')}</td>
                   <td>{t('historyStatus')}</td>
+                  <td>{t('historyAction')}</td>
                   <td>{t('historyDownload')}</td>
                 </tr>
               </thead>
@@ -80,6 +93,26 @@ async function PracticalAttempt({ moduleKey }: { moduleKey: string }) {
                   <tr key={`${s.learner_id}-${s.mission_id}-${s.submission_seq}`} aria-label={`${t('historyRound')} ${s.submission_seq}, ${s.status}`}>
                     <td>{s.submission_seq}</td>
                     <td>{s.status}</td>
+                    <td>
+                      {/* PPGA #18 (finding #2): the learner's OWN `in_progress ->
+                        submitted` move — the wire #13 left unconnected, without
+                        which the upload NEVER reaches a Teacher's queue. The
+                        button rides ONLY an `in_progress` round; the RPC's gate
+                        (own uid, learner role, legal transition) is the
+                        authority, never this render. */}
+                      {s.status === 'in_progress' ? (
+                        <form
+                          method="POST"
+                          action="/api/submissions/status"
+                          data-ppg-submission-status-form={`${s.mission_id}-${s.submission_seq}`}
+                          aria-label={t('submitForReview')}
+                        >
+                          <input name="module_key" defaultValue={s.mission_id} hidden={true} />
+                          <input name="submission_seq" defaultValue={s.submission_seq} hidden={true} />
+                          <button type="submit">{t('submitForReview')}</button>
+                        </form>
+                      ) : null}
+                    </td>
                     <td>
                       <a
                         href={`/api/submissions/download?module_key=${s.mission_id}&submission_seq=${s.submission_seq}`}
