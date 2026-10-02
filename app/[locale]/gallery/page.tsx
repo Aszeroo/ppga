@@ -8,6 +8,7 @@ import { useTranslations } from 'next-intl'
 import { Badge } from '../../../components/Badge'
 import { Button } from '../../../components/Button'
 import { Card } from '../../../components/Card'
+import { MenuWrap } from '../../../components/MenuWrap'
 import { ProgressBar } from '../../../components/ProgressBar'
 import { StatusPill } from '../../../components/StatusPill'
 import { XPBar } from '../../../components/XPBar'
@@ -31,6 +32,8 @@ import { XPBar } from '../../../components/XPBar'
  */
 export default function GalleryPage() {
   const t = useTranslations('gallery')
+  const tNav = useTranslations('nav')
+  const tShell = useTranslations('shell')
 
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
@@ -72,6 +75,49 @@ export default function GalleryPage() {
         <section>
           <ProgressBar value={68} />
           <XPBar xp={138} level={2} />
+        </section>
+
+        {/**
+         * PPGA #41 stages 1–2: the Shell's new primitives demoed live — the
+         * role-gated nav item face (`.ppg-nav-item`) + the accessible mobile
+         * collapse (`MenuWrap`: the `#ppg-menu-toggle` button carries
+         * `aria-expanded`, keyboard-operable with the token focus ring; the
+         * items hide on small screens until it opens — never colour-only).
+         * The demo items are inert spans (the real nav links the role list
+         * server-side — this is the design-system demo).
+         */}
+        <section>
+          <nav aria-label={tShell('navLabel')} id="ppg-nav-menu-demo">
+            <MenuWrap
+              menuId="ppg-nav-menu-demo"
+              toggleId="ppg-menu-toggle-demo"
+              labels={{
+                menuLabel: tShell('menuLabel'),
+                openLabel: tShell('menuOpenLabel'),
+                closeLabel: tShell('menuCollapseLabel'),
+              }}
+            >
+              {(['home', 'course', 'badges', 'leaderboard', 'profile'] as const).map((key) => (
+                <span
+                  key={key}
+                  className="ppg-nav-item"
+                  style={{
+                    display: 'inline-block',
+                    fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+                    color: 'var(--ppg-fg-heading)',
+                    padding: 'var(--ppg-space-2) var(--ppg-space-3)',
+                    borderWidth: 'var(--ppg-border-2)',
+                    borderColor: 'var(--ppg-blue-300)',
+                    borderStyle: 'solid',
+                    boxShadow: 'var(--ppg-shadow-pixel-1)',
+                    backgroundColor: 'var(--ppg-state-available-bg)',
+                  }}
+                >
+                  {tNav(key)}
+                </span>
+              ))}
+            </MenuWrap>
+          </nav>
         </section>
 
         <section>

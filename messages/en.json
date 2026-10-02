@@ -1,6 +1,12 @@
 {
   "nav": {
     "home": "Home",
+    "course": "Course",
+    "badges": "Badges",
+    "leaderboard": "Leaderboard",
+    "reviewQueue": "Review Queue",
+    "coursePublication": "Course / Publication",
+    "adminExport": "Export",
     "login": "Login",
     "logout": "Logout",
     "profile": "Profile",
@@ -9,6 +15,17 @@
     "adminUsers": "User list",
     "adminAudit": "Audit stream",
     "adminProvisioning": "Provision roster"
+  },
+  "shell": {
+    "identity": "PPGA — Gamified PowerPoint Learning Platform",
+    "start": "Press START to begin the learning game",
+    "navLabel": "Primary navigation",
+    "menuLabel": "Open the navigation menu",
+    "menuCollapseLabel": "Close the navigation menu",
+    "menuOpenLabel": "Open the navigation menu",
+    "footerAttribution": "PowerPoint Presentation Creation — การเรียนรู้การนำเสนอ / สำหรับนักเรียนระดับประกาศนียบัตรวิชาชีพชั้นปีที่ 2 (ปวช.2)",
+    "footerAttributionEn": "PowerPoint Presentation Creation — Presentation-Production learning / for certificate-level vocational learners, Year 2 (Por Wor Sor 2)",
+    "footerHealth": "Health"
   },
   "admin": {
     "fallbackSuspense": "Preparing the console…",

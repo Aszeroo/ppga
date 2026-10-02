@@ -7,9 +7,6 @@ import { NextIntlClientProvider } from 'next-intl'
 import localFont from 'next/font/local'
 import { Mitr } from 'next/font/google'
 
-import { LanguageSelector } from '../components/LanguageSelector'
-import { Header } from '../components/Header'
-
 import './globals.css'
 
 /**
@@ -70,11 +67,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       className={ta16bit.variable}
     >
       <body className={mitr.variable}>
-        <NextIntlClientProvider>
-          <LanguageSelector />
-          <Header />
-          {children}
-        </NextIntlClientProvider>
+        <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>
   )

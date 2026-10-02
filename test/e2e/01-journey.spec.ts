@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 
-import { accounts, LEARNER_UUID, deckFixture, signIn, signOut, submitForm, t, expectBadge, expectXpLine, lockStateCopy, RAW_KEY_LEAK } from './helpers'
+import { accounts, LEARNER_UUID, deckFixture, signIn, signOut, submitForm, t, expectBadge, expectXpLine, lockStateCopy, RAW_KEY_LEAK, expectShellNav, expectStandaloneScreen } from './helpers'
 
 /**
  * PPGA #18 (the verification ticket): the critical journey, end to end,
@@ -47,17 +47,26 @@ test.describe('PPGA #18 critical journey', () => {
 
     // 0. The anonymous caller reaches the login page — the unauthorized
     // state is the login page, never a blank screen (/health is the public
-    // deployment probe; /profile is the guard's protected pathname).
+    // deployment probe; /profile is the guard's protected pathname). The
+    // login is the STANDALONE 8-bit title/start screen OUTSIDE the Shell
+    // frame (the issue: the login/logout render standalone): the Shell's
+    // title copy is present and the learner's nav destinations never.
     await page.goto(`/${locale}/profile`)
     await expect(page).toHaveURL(RegExp(`/${locale}/login$`))
     await expect(page.locator('body')).toContainText(t(['login', 'submit'], locale))
     await rawLeakCheck(page)
+    await expectStandaloneScreen(page, locale)
 
     // 1. Sign in WITHOUT consent → the dashboard's respectful explanation;
     // the gate guard denies the Pre-Test pathname (the UI's state; the
     // DATABASE's RLS denies the items read at the row level, independently).
     await signIn(page, locale, learner, '/')
     await expect(page.locator('body')).toContainText(t(['home', 'states', 'noConsent'], locale))
+    // The learner's Dashboard rides the persistent Shell frame — the
+    // learner's nav (Dashboard, Course, Badges, Leaderboard, Profile)
+    // appears exactly (the issue's story #3/#11: destinations a Learner
+    // reaches, nothing another-role's destination).
+    await expectShellNav(page, locale, 'learner')
     await page.goto(`/${locale}/pre-test`)
     await expect(page).toHaveURL(RegExp(`/${locale}$`))
 
@@ -70,6 +79,11 @@ test.describe('PPGA #18 critical journey', () => {
     const admin = await adminCtx.newPage()
     await signIn(admin, locale, accounts.admin, '/profile')
     await admin.goto(`/${locale}/admin/users`)
+    // The Admin's console rides the same Shell frame — the admin's nav
+    // (Dashboard, Course / Publication, User list, Audit stream, Provision
+    // roster, Export, Health, Profile) appears exactly; the learner's
+    // Course/Badges/Leaderboard destinations never render for this role.
+    await expectShellNav(admin, locale, 'admin')
     await admin.locator('#admin_consent_target_id').fill(uuid)
     await admin.locator('#admin_consent_flag').selectOption('true')
     await submitForm(admin, '[data-ppg-admin-form=consent]', '/api/admin/consent', true)
@@ -221,6 +235,10 @@ test.describe('PPGA #18 critical journey', () => {
     const teacher = await teacherCtx.newPage()
     await signIn(teacher, locale, accounts.teacher, '/profile')
     await teacher.goto(`/${locale}/teacher/review`)
+    // The Teacher's queue rides the same Shell frame — the teacher's nav
+    // (Dashboard, Review Queue, Profile) appears exactly; the learner's
+    // Course/Badges/Leaderboard destinations never render for this role.
+    await expectShellNav(teacher, locale, 'teacher')
     await expect(teacher.locator('body')).toContainText(`${accounts.learners[locale]}`)
     // The queue row is pinned by BOTH the module and THIS learner's student
     // ID: the projects share one database across the invocation (one global
@@ -228,7 +246,7 @@ test.describe('PPGA #18 critical journey', () => {
     // queue holds a second `module-08` section — `.first()` alone would let
     // the `en` teacher re-review the `th` learner's already-reviewed row
     // (the RPC answers `error`, and CI runs both projects in one go).
-    await teacher.locator('section').filter({ hasText: 'module-08' }).filter({ hasText: accounts.learners[locale] }).locator('a').first().click()
+    await teacher.locator('section').filter({ hasText: 'module-08' }).filter({ hasText: accounts.learners[locale] }).locator('a[href*="/teacher/review/"]').first().click()
     for (const key of criteria)
       await teacher.locator(`input[type=radio][name=score_${key}]`).nth(3).click()
     await teacher.locator('#review_feedback_th').fill('โครงสร้างสไลด + text + image + SmartArt + transition ครบทกทักษะ — สไลด teaching; deliverable ครบ. (rubric 4 each) #18 journey round.')
@@ -288,7 +306,7 @@ test.describe('PPGA #18 critical journey', () => {
     await expect(page.locator('body')).toContainText('in_progress')
     await submitForm(page, '[data-ppg-submission-status-form]', '/api/submissions/status', true)
     await teacher.goto(`/${locale}/teacher/review`)
-    await teacher.locator('section').filter({ hasText: 'module-11' }).filter({ hasText: accounts.learners[locale] }).locator('a').first().click()
+    await teacher.locator('section').filter({ hasText: 'module-11' }).filter({ hasText: accounts.learners[locale] }).locator('a[href*="/teacher/review/"]').first().click()
     for (const key of criteria)
       await teacher.locator(`input[type=radio][name=score_${key}]`).nth(4).click()
     await teacher.locator('#review_feedback_th').fill('พรeezenตครบ 8สไลดทกทกษ — Final Boss round. (rubric 5 each) #18 journey.')

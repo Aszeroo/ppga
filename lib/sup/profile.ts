@@ -55,11 +55,19 @@ export async function readOwnProfile(): Promise<ProfileState> {
   })
 
   const { data: session } = await sup.auth.getSession()
-  if (!session) return { status: 'unauthorized', detail: 'no session' }
+  const uid = session.session?.user.id
+  if (!uid) return { status: 'unauthorized', detail: 'no session' }
 
+  // OWN row, by the session's own user id: the `ppg_profiles_select` policy
+  // lets a teacher/admin see the WHOLE table (the queue/provisioning reads),
+  // so an unfiltered `limit(1)` would hand back SOMEONE ELSE's row (the
+  // first by physical order — the admin) — Ticket #41 stage 1's Shell role
+  // read proved this: a Teacher rendered the admin's nav. The id filter is
+  // the function's OWN name: `readOwnProfile`.
   const { data, error } = await sup
     .from('ppg_profiles')
     .select('id, student_id, full_name, role, locale')
+    .eq('id', uid)
     .limit(1)
 
   if (error) return { status: 'error', detail: error.message }

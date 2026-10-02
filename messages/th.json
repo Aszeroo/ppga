@@ -8,7 +8,13 @@
     "health": "สารภาพ",
     "adminUsers": "ผู่้่ผู้ใชั้",
     "adminAudit": "สารชู่้",
-    "adminProvisioning": "จัด roster"
+    "adminProvisioning": "จัด roster",
+    "course": "แผนท่ีหนว่ย",
+    "badges": "ช่ออ-กิ่",
+    "leaderboard": "ชื่ิง-XP",
+    "reviewQueue": "คิว-ตรวจ",
+    "coursePublication": "แผน-หนว่ย-publish",
+    "adminExport": "ส่งออกแบบุูลวิจัย"
   },
   "admin": {
     "heading": "ผู่้่ผู้ใชั้",
@@ -557,5 +563,16 @@
   "language": {
     "th": "ไทย",
     "en": "English"
+  },
+  "shell": {
+    "identity": "P PGA - ระบบส้างแบบุู PowerPoint",
+    "start": "กด เริ่่ม",
+    "navLabel": "นาทาง-หลัก",
+    "menuLabel": "เปิด-นาทาง",
+    "menuCollapseLabel": "ปิด-นาทาง",
+    "menuOpenLabel": "เปิด-นาทาง",
+    "footerAttribution": "PowerPoint Presentation Creation — การเรียนรู้การนำเสนอ / สำหรับนักเรียนระดับประกาศนียบัตรวิชาชีพชั้นปีที่ 2 (ปวช.2)",
+    "footerAttributionEn": "PowerPoint Presentation Creation — Presentation-Production learning / for certificate-level vocational learners, Year 2 (Por Wor Sor 2)",
+    "footerHealth": "สารภาพ"
   }
 }
