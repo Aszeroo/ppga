@@ -8,7 +8,13 @@
     "health": "สารภาพ",
     "adminUsers": "ผู่้่ผู้ใชั้",
     "adminAudit": "สารชู่้",
-    "adminProvisioning": "จัด roster"
+    "adminProvisioning": "จัด roster",
+    "course": "แผนท่ีหนว่ย",
+    "badges": "ช่ออ-กิ่",
+    "leaderboard": "กระดานผู้นำ",
+    "reviewQueue": "คิว-ตรวจ",
+    "coursePublication": "เผยแพร่หลักสูตร",
+    "adminExport": "ส่งออกแบบุูลวิจัย"
   },
   "admin": {
     "heading": "ผู่้่ผู้ใชั้",
@@ -172,8 +178,19 @@
       "unauthorized": "เมิลทู่",
       "notConfigured": "ลาทก์ก่กำล่ง",
       "ok": "ได้าสาย",
-      "fallbackSuspense": "กำลังโหลด..."
-    }
+      "fallbackSuspense": "กำลังโหลด...",
+      "inProgress": "กำลังทำ",
+      "submitted": "ส่งแล้ว รออาจารย์ตรวจ",
+      "needsImprovement": "ต้องแก้ไขแล้วส่งใหม่",
+      "approved": "อนุมัติแล้ว"
+    },
+    "linkReviewStatus": "ดูสถานะการตรวจ Final Project (อยู่กับอาจารย์)",
+    "statusLabel": "สถานะผู้เล่น",
+    "courseProgress": "ความคืบหน้าหลักสูตร",
+    "missionCurrent": "ภารกิจปัจจุบัน",
+    "submissionLabel": "การส่งงาน",
+    "feedbackLabel": "ข้อเสนอแนะจากอาจารย์",
+    "fallbackSuspense": "กำลังโหลด..."
   },
   "pretest": {
     "gateLabel": "ขั้ทกัาน์",
@@ -291,8 +308,12 @@
       "denied": "ปฏฏิลทู่",
       "unauthorized": "ต้องลงชื่อก่อน",
       "notConfigured": "ยังไม่ได้ configuring",
-      "ok": "ได้สาย"
-    }
+      "ok": "ได้สาย",
+      "cleared": "ผ่านแล้ว — จบ มิชชันนี้แล้ว"
+    },
+    "currentStage": "ด่านถัดไป",
+    "continueStage": "ไปต่อ",
+    "progressCleared": "ด่านที่ผ่านแล้ว"
   },
   "lesson": {
     "list": "หน่วนย่อย",
@@ -384,6 +405,16 @@
       "error": "ความผิด",
       "locked": "มถก",
       "neutral": "กลาง"
+    },
+    "stageMap": {
+      "heading": "แผนที่ด่าน",
+      "stage1": "ด่าน 1",
+      "stage2": "ด่าน 2",
+      "stage3": "ด่าน 3"
+    },
+    "challengeDemo": {
+      "heading": "กรอบการท้าทาย (บทเรียนถิงผลลัพธ์)",
+      "panel": "เดโมแผงภารกิจ"
     }
   },
   "header": {
@@ -557,5 +588,36 @@
   "language": {
     "th": "ไทย",
     "en": "English"
+  },
+  "shell": {
+    "identity": "P PGA - ระบบส้างแบบุู PowerPoint",
+    "start": "กด เริ่่ม",
+    "navLabel": "นาทาง-หลัก",
+    "menuLabel": "เปิด-นาทาง",
+    "menuCollapseLabel": "ปิด-นาทาง",
+    "menuOpenLabel": "เปิด-นาทาง",
+    "footerAttribution": "PowerPoint Presentation Creation — การเรียนรู้การนำเสนอ / สำหรับนักเรียนระดับประกาศนียบัตรวิชาชีพชั้นปีที่ 2 (ปวช.2)",
+    "footerAttributionEn": "PowerPoint Presentation Creation — Presentation-Production learning / for certificate-level vocational learners, Year 2 (Por Wor Sor 2)",
+    "footerHealth": "สารภาพ"
+  },
+  "challenge": {
+    "trackLabel": "ลำดับการท้าทาย",
+    "steps": {
+      "lesson": "บทเรียน",
+      "selfcheck": "Self-Check",
+      "mission": "ภารกิจ",
+      "result": "ผลลัพธ์"
+    },
+    "states": {
+      "cleared": "ผ่านแล้ว",
+      "open": "เปิด — พร้อมสำหรับคุณ",
+      "locked": "ล็อก — ทำการท้าทายก่อนหน้าให้จบกอน",
+      "challenge": "ท้าทาย — ลองเลยตอนนี้",
+      "success": "สำเร็จ — รับรางวัลแล้ว",
+      "clear": "เคลียร์ — โมดูลน้ีจบแล้ว"
+    },
+    "current": "การท้าทายปัจจุบັນ",
+    "rewardNote": "จากบัญชี XP ของคุณ:",
+    "unlockNext": "เคลียร์แล้ว — โมดูลถัดไปเปิดแล้ว:"
   }
 }

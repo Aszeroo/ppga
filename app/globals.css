@@ -118,10 +118,35 @@ body {
   --ppg-focus-thickness: var(--ppg-border-2);
 }
 
+/* Visible focus: a thickened border + ring (never hue-shifted only). */
 :where(.ppg-button, .ppg-card, .ppg-badge, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar):focus-visible {
   outline: var(--ppg-focus-ring);
   outline-offset: var(--ppg-focus-offset);
   border-width: var(--ppg-border-2);
+}
+
+/*
+ * Ticket #41 stage 1: the Shell's FOCUSABLE surfaces — the nav links + the
+ * mobile menu toggle (the frame's own sections, header/footer/title-screen,
+ * carry no tabIndex, so a focus rule on them would be dead CSS: there is
+ * nothing to focus). Same ring + thickened border as the primitives, listed
+ * here as its own short rule.
+ */
+:where(.ppg-nav-item, .ppg-menu-toggle):focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+  border-width: var(--ppg-border-2);
+}
+
+/*
+ * Ticket #41 stage 3: the Course Map's stage-road link (the title of a
+ * cleared/open stage node, `components/StageNode.tsx`). Same token ring as
+ * every other focusable surface; a locked stage renders NO link at all
+ * (semantically locked), so it never takes focus.
+ */
+.ppg-stage-link:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
 }
 
 /* Respect the reduced-motion signal: no stepped shadow animation, no bar easing. */
@@ -129,5 +154,98 @@ body {
   :where(.ppg-button, .ppg-card, .ppg-badge, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar) {
     animation-duration: 0s;
     transition-duration: 0s;
+  }
+  /*
+   * Ticket #46: the XP/progress FILLS carry their stepped 0.3s fill as an
+   * INLINE style (the primitives' inline-token convention) — only
+   * `!important` outranks an inline declaration, so the reduced-motion drop
+   * needs its own rule here. Without it the fill keeps easing under
+   * `prefers-reduced-motion: reduce` (the 02-a11y live scan catches it).
+   */
+  :where(.ppg-xp-fill, .ppg-progress-fill) {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+  }
+}
+
+/*
+ * PPGA #41 stage 1: the standalone 8-bit title/start screen's form controls —
+ * the login/logout inputs + submit ride the SAME token discipline as the
+ * primitives (pixel border + stepped shadow + the token surface; the
+ * `.ppg-button` / `.ppg-input` classes are the focus-ring + reduced-motion
+ * targets, so the title screen's controls are keyboard-visible, never
+ * colour-only).
+ */
+.ppg-input {
+  font-family: var(--font-mitr);
+  background-color: var(--ppg-bg-body);
+  color: var(--ppg-fg-body);
+  border: var(--ppg-border-2) solid var(--ppg-blue-300);
+  box-shadow: var(--ppg-shadow-pixel-1);
+  padding: var(--ppg-space-2);
+}
+
+/*
+ * The focus ring is OUTLINE-ONLY here on purpose: bumping `border-width` on
+ * focus reflows the input (content-box inputs grow by the border delta), and
+ * reflow BETWEEN the login submit button's mousedown and mouseup moves the
+ * button out from under the pointer — the browser then dispatches `click` on
+ * the shared ancestor (the form), the submit handler never runs and the
+ * learner's click does nothing (proved at 360px, Ticket #41 stage 1).
+ */
+:where(.ppg-input):focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+/*
+ * PPGA #41 stage 2: the mobile collapse. SAME Shell concept on small screens
+ * (the issue: "primary nav collapses into a compact accessible menu; the
+ * learner status stays visible; no sidebar"). The MOBILE collapsed menu hides
+ * the nav links (`display: none` — never Tab-trapable, so Tab lands on the
+ * `.ppg-menu-toggle` button, which is the focusable affordance with the
+ * `aria-expanded` state); the OPEN menu shows them (`the wrapper's
+ * `.ppg-nav-open` class from `components/MenuWrap.tsx`). The toggle itself is
+ * the menu affordance on mobile and is HIDDEN at desktop (the items are always
+ * inline there — the issue's desktop composition: CENTER = primary nav).
+ * The `XPHud` is NEVER inside the collapsible content: the Shell's right
+ * cluster keeps the HUD + the selector + logout on every width (story #9).
+ */
+@media (max-width: 767px) {
+  .ppg-menu-wrap .ppg-nav-item {
+    display: none;
+  }
+  .ppg-menu-wrap.ppg-nav-open .ppg-nav-item {
+    display: block;
+  }
+}
+
+@media (min-width: 768px) {
+  .ppg-menu-toggle {
+    display: none;
+  }
+  .ppg-menu-wrap .ppg-nav-item {
+    display: block;
+  }
+}
+
+/*
+ * Ticket #46: the phone-width overflow the LIVE sweep caught on the review
+ * page (scrollWidth 463 vs 360): the SERVER-authored feedback text is real
+ * data with an unbreakable token (the `fonts/colors/graphics/transition`
+ * string) and the history's `<table>` is content-sized — one word (one
+ * token) stretches the table + the `.ppg-card-text` line out of the
+ * viewport. Character-level breaking keeps the REAL record readable inside
+ * the width (never clipping it away); fixed layout stops the table from
+ * content-sizing itself. The `table` element is the shipped review/queue/
+ * history tables (there are no other `table`s on the app).
+ */
+@media (max-width: 767px) {
+  table {
+    width: 100%;
+    table-layout: fixed;
+  }
+  :where(.ppg-card-text, table td) {
+    word-break: break-all;
   }
 }

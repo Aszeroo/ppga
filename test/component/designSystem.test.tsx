@@ -26,6 +26,7 @@ import { Button } from '../../components/Button'
 import { Card } from '../../components/Card'
 import { LockedState, AvailableState } from '../../components/State'
 import { ProgressBar } from '../../components/ProgressBar'
+import { StageMap } from '../../components/StageMap'
 import { StatusPill } from '../../components/StatusPill'
 import { XPBar } from '../../components/XPBar'
 
@@ -205,11 +206,16 @@ test('Tokens live once in app/globals.css and the TA16BIT swap point is one vari
   expect(css).toContain('var(--font-ta16bit)')
   // Reduced-motion is respected in the token module.
   expect(css).toContain('prefers-reduced-motion')
+  // PPGA #46: the XP/progress FILLS carry their stepped transition as an
+  // INLINE style (components' convention) — a stylesheet rule can only
+  // outrank inline with `!important`, and it must target the FILL classes
+  // (the parent bar's class alone never overrode the child's inline rule).
+  expect(css).toMatch(/\.ppg-xp-fill,[^}]*transition-duration: 0s !important/)
 })
 
 test('No ad-hoc colour anywhere: every component colour resolves a token', async () => {
   const fs = await import('node:fs')
-  const sources = ['Button', 'Card', 'Badge', 'StatusPill', 'ProgressBar', 'XPBar', 'State'].map(
+  const sources = ['Button', 'Card', 'Badge', 'StatusPill', 'ProgressBar', 'XPBar', 'State', 'StageNode', 'StageMap', 'ChallengeTrack', 'MissionPanel', 'XpRewardChip'].map(
     (name) => fs.readFileSync(`components/${name}.tsx`, 'utf8'),
   )
   for (const src of sources as string[]) {
@@ -217,4 +223,76 @@ test('No ad-hoc colour anywhere: every component colour resolves a token', async
     // resolves a `var(--ppg-…)` token from `app/globals.css`.
     expect(src).not.toMatch(/#[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]/)
   }
+})
+
+test('StageMap renders the ordered stage road: cleared marks, the current node, a semantically locked no-link stage', () => {
+  const { container } = render(
+    <NextIntlClientProvider locale="en" messages={enMessages}>
+      <StageMap
+        mapLabel="Course map"
+        stages={[
+          {
+            moduleKey: 'module-01',
+            orderIndex: 1,
+            title: 'Opening PowerPoint',
+            summary: 'The first stage.',
+            state: 'cleared',
+            stateCopy: 'cleared-copy',
+            href: '/course',
+          },
+          {
+            moduleKey: 'module-02',
+            orderIndex: 2,
+            title: 'Slides & layouts',
+            summary: 'The frontier stage.',
+            state: 'open',
+            stateCopy: 'open-copy',
+            isNext: true,
+            nextCopy: 'next-stage-copy',
+            href: '/course',
+          },
+          {
+            moduleKey: 'module-03',
+            orderIndex: 3,
+            title: 'Text & fonts',
+            summary: 'Not yet reachable.',
+            state: 'locked',
+            stateCopy: 'locked-copy',
+          },
+        ]}
+      />
+    </NextIntlClientProvider>,
+  )
+
+  const list = container.querySelector('ol.ppg-stage-map')
+  expect(list?.getAttribute('aria-label')).toBe('Course map')
+  const items = Array.from(container.querySelectorAll('.ppg-stage-item'))
+  expect(items).toHaveLength(3)
+  // The ORDER is the map's semantics: the DATABASE's `order_index`.
+  expect(
+    items.map((li) => li.querySelector('[data-ppg-stage-state]')?.getAttribute('data-ppg-stage-module')),
+  ).toEqual(['module-01', 'module-02', 'module-03'])
+
+  // Cleared: the real state copy + the clear mark + a keyboard link.
+  const cleared = items[0].querySelector('.ppg-stage-node') as HTMLElement
+  expect(cleared.getAttribute('data-ppg-stage-state')).toBe('cleared')
+  expect(cleared.querySelector('.ppg-stage-clear-mark')).toBeTruthy()
+  expect(cleared.getAttribute('aria-label')).toContain('cleared-copy')
+
+  // The frontier: the `data-ppg-stage-current` marker + the next chip copy.
+  const frontier = items[1].querySelector('.ppg-stage-node') as HTMLElement
+  expect(frontier.getAttribute('data-ppg-stage-current')).toBe('true')
+  expect(frontier.textContent).toContain('next-stage-copy')
+  expect(frontier.querySelector('a.ppg-stage-link')).toBeTruthy()
+
+  // Locked: visible AND semantic — copy + stripes + aria-disabled, and NO
+  // link anywhere in the node (never hidden, never fake-unlocked).
+  const locked = items[2].querySelector('.ppg-stage-node') as HTMLElement
+  expect(locked.getAttribute('aria-disabled')).toBe('true')
+  expect(locked.className).toContain('ppg-state-locked')
+  expect(locked.getAttribute('aria-label')).toContain('locked-copy')
+  expect(locked.querySelector('a')).toBeNull()
+  // The connectors join the road (the first node has none).
+  expect(items[0].querySelector('.ppg-stage-connector')).toBeNull()
+  expect(items[2].querySelector('.ppg-stage-connector')).toBeTruthy()
 })

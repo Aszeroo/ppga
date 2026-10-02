@@ -4,30 +4,57 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../../../lib/i18n/routing'
 
 import { readLatestReviewViaRpc } from '../../../../../lib/sup/reviews'
+import { readSubmissionHistoryViaRpc } from '../../../../../lib/sup/submissions'
+import { readChallengeReads } from '../../../../../lib/sup/challenge'
+import { buildChallengeContext, challengeTrackSteps, rewardChipProps } from '../../../../../lib/challengeStages'
 import { Card } from '../../../../../components/Card'
 import { StatusPill } from '../../../../../components/StatusPill'
+import { ChallengeTrack } from '../../../../../components/ChallengeTrack'
+import { XpRewardChip } from '../../../../../components/XpRewardChip'
 
 /**
- * Ticket #14 the LEARNER's review result page: the latest review verdict on the
- * Mission (the decision approved | needs_improvement, the 7 criterion scores
- * 1–5 each, the SERVER-computed total 7–35, the bilingual written feedback) +
- * the append-only per-round history (`ppg_read_latest_review` — the CALLER's
- * own rows ONLY; an other learner's reviews NEVER ride out; ADR-0002 the past
- * rows NEVER move). `force-dynamic` because the read rides the session JWT.
- * Every state (`review.latestResultHeading`, `review.states.*`) has its own
- * copy in `messages/{en,th}.json`.
+ * Ticket #14 the LEARNER's review result page (#45 stage-4 framing on top):
+ * the latest review verdict on the Mission (the decision approved |
+ * needs_improvement, the 7 criterion scores 1–5 each, the SERVER-computed
+ * total 7–35, the bilingual written feedback) + the append-only per-round
+ * history (`ppg_read_latest_review` — the CALLER's own rows ONLY; an other
+ * learner's reviews NEVER ride out; ADR-0002 the past rows NEVER move). The
+ * #45 framing adds ONLY presentation on the stage-map vocabulary: the
+ * Lesson → Self-Check → Mission → Result CHALLENGE TRACK (the Result step is
+ * the surface the learner stands on — cleared only by the REAL approval,
+ * open while a real round awaits the Teacher) + the XP reward chip riding
+ * the learner's OWN approval/final-project LEDGER row (real amount — a
+ * needs_improvement round shows NO grant, because none landed).
+ * `force-dynamic` because the read rides the session JWT. Every state
+ * (`review.latestResultHeading`, `review.states.*`, `challenge.*`) has its
+ * own copy in `messages/{en,th}.json`.
  */
 export const dynamic = 'force-dynamic'
 
 async function LearnerReviewResult({ moduleKey }: { moduleKey: string }) {
   const t = await getTranslations('review')
+  const tC = await getTranslations('challenge')
   const locale = await getLocale()
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
 
   const latest = await readLatestReviewViaRpc(moduleKey)
+  const history = await readSubmissionHistoryViaRpc(moduleKey)
+  const ctx = buildChallengeContext(
+    moduleKey,
+    await readChallengeReads(moduleKey),
+    { submissionExists: history.status === 'ok' && (history.submissions ?? []).length > 0 },
+  )
+  // the learner STANDS on the Result step here — it wears no self-link.
+  const trackSteps = challengeTrackSteps(ctx, moduleKey, {
+    title: (key) => tC(`steps.${key}`),
+    state: (stateNow) => tC(`states.${stateNow}`),
+    current: tC('current'),
+  }, { unlinkedStep: 'result' })
+  const reward = rewardChipProps(ctx, tC('rewardNote'))
 
   return (
     <section aria-label={t('latestResultHeading')}>
+      <ChallengeTrack label={tC('trackLabel')} steps={trackSteps} />
       <h1 className="ppg-heading">{t('latestResultHeading')}</h1>
 
       {latest.status === 'ok' && latest.latest ? (
@@ -37,6 +64,13 @@ async function LearnerReviewResult({ moduleKey }: { moduleKey: string }) {
             body={`${t('totalScore')}: ${latest.latest.total_score} / 35 — ${pick(latest.latest.feedback_th ?? '', latest.latest.feedback_en ?? '')}`}
             status="available"
           />
+          {reward
+            ? (
+              <p>
+                <XpRewardChip {...reward} />
+              </p>
+            )
+            : null}
           <section aria-label={t('historyHeading')}>
             <h2>{t('historyHeading')}</h2>
             <table>

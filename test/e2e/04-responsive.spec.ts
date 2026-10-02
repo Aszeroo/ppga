@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test'
 
 import { accounts, signIn } from './helpers'
+import { t } from './helpers'
 
 /**
  * PPGA #18 (the verification ticket): the responsive sweep. Rides BOTH
@@ -16,7 +17,13 @@ import { accounts, signIn } from './helpers'
  * - the language selector stays reachable at every width (the ticket's
  *   #60 "works on phone/tablet" claim).
  *
- * The widths: 360x640 (phone), 768x1024 (tablet), 1280x800 (desktop).
+ * PPGA #41 stage 2 (the issue's responsive pass, story #8/#9): the SAME Shell
+ * concept on small screens — the nav collapses into a compact accessible
+ * menu (the `#ppg-menu-toggle` affordance, keyboard-operable +
+ * `aria-expanded` state) while the learner's status stays preserved in the
+ * HUD (`header.progress`'s copy is visible at every width); the desktop
+ * composition shows every destination inline, no sidebar (the issue). The
+ * widths: 360x640 (phone), 768x1024 (tablet), 1280x800 (desktop).
  */
 const widths = [
   ['mobile', 360, 640],
@@ -37,8 +44,17 @@ test.describe('PPGA #18 responsive sweep', () => {
       // Sign in at the width (the gate's redirect is observable).
       await signIn(page, locale, learner, '/profile')
 
-      // No horizontal overflow on the dashboard, the course map, a lesson.
-      for (const path of ['/', '/course', '/course/module-01/module-01-lesson-01']) {
+      // No horizontal overflow on the dashboard, the course map, a lesson —
+      // and (PPGA #46) on the Shell epic's challenge-framing surfaces: the
+      // module page's challenge track, the practical panel, the review panel.
+      for (const path of [
+        '/',
+        '/course',
+        '/course/module-01/module-01-lesson-01',
+        '/course/module-01',
+        '/course/module-08/practical',
+        '/course/module-08/review',
+      ]) {
         await page.goto(`/${locale}${path}`)
         const scroll = await page.evaluate(() => ({
           scrollW: document.documentElement.scrollWidth,
@@ -57,6 +73,38 @@ test.describe('PPGA #18 responsive sweep', () => {
       expect(box).toBeTruthy()
       expect(box!.x).toBeGreaterThanOrEqual(0)
       expect(box!.x + box!.width).toBeLessThanOrEqual(width + 1)
+
+      // PPGA #41 stage 2: the learner's status (the HUD's `header.progress`
+      // copy) is preserved at every width (story #9: the learner never loses
+      // bearings when the nav collapses).
+      await page.goto(`/${locale}`)
+      await expect(page.locator('body')).toContainText(t(['header', 'progress'], locale))
+
+      // PPGA #41 stage 2: the mobile collapse (story #8/#10) — the compact
+      // ACCESSIBLE menu affordance on small screens (the `#ppg-menu-toggle`
+      // button, keyboard-operable + the `aria-expanded` state visible), the
+      // nav items hide until the toggle opens them; on desktop (≥768px) the
+      // toggle hides itself and every destination shows inline (the issue's
+      // desktop composition: CENTER = primary navigation, no sidebar). The
+      // proof rides the nav LANDMARK's links (a page's own copy may repeat a
+      // label — the landmark cannot).
+      const nav = page.getByRole('navigation', { name: t(['shell', 'navLabel'], locale) })
+      const courseLink = nav.getByRole('link', { name: t(['nav', 'course'], locale), exact: true })
+      const toggle = page.locator('#ppg-menu-toggle')
+      const collapsed = width < 768
+      if (collapsed) {
+        await expect(toggle).toBeVisible()
+        expect(await toggle.getAttribute('aria-expanded')).toBe('false')
+        await expect(courseLink).toBeHidden()
+        await toggle.click()
+        expect(await toggle.getAttribute('aria-expanded')).toBe('true')
+        await expect(courseLink).toBeVisible()
+      } else {
+        // The desktop toggle hides itself (the `min-width: 768px` media rule
+        // removes it from the layout + the AX tree; the items stay inline).
+        await expect(toggle).toBeHidden()
+        await expect(courseLink).toBeVisible()
+      }
 
       await context.close()
     })

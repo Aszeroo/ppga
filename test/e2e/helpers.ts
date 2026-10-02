@@ -42,8 +42,11 @@ export function t(path: string[], locale: string): string {
 
 /** The raw-key-leak regex: the key namespace + a dot + a letter/dot tail.
  * The legit copy has dots only inside numerals/parens (`(8.1-8.4)`,
- * `Total 28 / 35`) — never a letter-prefixed `word.word`. */
-export const RAW_KEY_LEAK = /(?:login|logout|home|course|pretest|posttest|survey|lesson|selfcheck|mission|practical|review|header|leaderboard|badges|gallery|profile|change|admin|content|health)\.[a-z.]+/i
+ * `Total 28 / 35`) — never a letter-prefixed `word.word`. Ticket #46 adds the
+ * Shell epic's namespaces (`shell`/`nav`/`challenge`) — the Shell frame + the
+ * stage/challenge framing ride EVERY signed-in page, so their keys leak there
+ * first. */
+export const RAW_KEY_LEAK = /(?:login|logout|home|course|pretest|posttest|survey|lesson|selfcheck|mission|practical|review|header|leaderboard|badges|gallery|profile|change|admin|content|health|shell|nav|challenge)\.[a-z.]+/i
 
 export const accounts = {
   admin: 'admin',
@@ -131,7 +134,71 @@ export async function expectXpLine(page: Page, xp: number, xpToNext: number) {
   await expect(page.locator('body')).toContainText(`${xp} / ${xpToNext}`)
 }
 
+/**
+ * PPGA #41 stage 4: the XP reward chip the REAL ledger row makes visible —
+ * pinned by the ledger's own PK marker (`data-ppg-xp-event="event_type:
+ * event_ref"`), showing the row's own `+N XP`. The chip renders ONLY where
+ * a real grant landed, so the count-1 assertion is also the exactly-once
+ * gate: a granted XP never renders twice, and an absent grant renders
+ * nothing (the journey pairs it with a zero-count check pre-pass).
+ */
+export async function expectXpChip(page: Page, eventAttr: string, amount: number) {
+  const chip = page.locator(`[data-ppg-xp-event="${eventAttr}"]`)
+  await expect(chip).toHaveCount(1)
+  await expect(chip).toContainText(`+${amount} XP`)
+}
+
 /** The lock/unlock copy the course map shows per module card. */
 export function lockStateCopy(locale: string, open: boolean): string {
   return t(['course', 'states', open ? 'open' : 'locked'], locale)
+}
+
+/** The CLEARED copy the #44 stage map shows per cleared Module stage. */
+export function clearedStateCopy(locale: string): string {
+  return t(['course', 'states', 'cleared'], locale)
+}
+
+/**
+ * PPGA #41 stage 2: the role→nav-items mapping, verbatim (the issue's lists —
+ * the journey's observable proof that every destination a role can reach
+ * appears in the Shell, and nothing another-role's destination does). The
+ * copy rides the `nav.*` keys: the learner sees Dashboard, Course, Badges,
+ * Leaderboard, Profile; the teacher sees Dashboard, Review Queue, Profile;
+ * the admin sees Dashboard, Course / Publication, User list, Audit stream,
+ * Provision roster, Export, Health, Profile.
+ */
+const NAV_BY_ROLE = {
+  learner: ['home', 'course', 'badges', 'leaderboard', 'profile'] as string[],
+  teacher: ['home', 'reviewQueue', 'profile'] as string[],
+  admin: ['home', 'coursePublication', 'adminUsers', 'adminAudit', 'adminProvisioning', 'adminExport', 'health', 'profile'] as string[],
+}
+
+/** The Shell's nav shows EXACTLY the session role's destinations — asserted
+ * on the NAV LANDMARK itself (never body text: a page's own copy may repeat a
+ * label, the landmark cannot lie about which links the Shell renders). The
+ * link count is the exactness gate: the learner's five, the teacher's three,
+ * the admin's eight — nothing another-role's destination renders. */
+export async function expectShellNav(page: Page, locale: string, role: 'learner' | 'teacher' | 'admin') {
+  const nav = page.getByRole('navigation', { name: t(['shell', 'navLabel'], locale) })
+  await expect(nav).toBeVisible()
+  for (const key of NAV_BY_ROLE[role]) {
+    await expect(nav.getByRole('link', { name: t(['nav', key], locale), exact: true })).toBeVisible()
+  }
+  await expect(nav.getByRole('link')).toHaveCount(NAV_BY_ROLE[role].length)
+}
+
+/**
+ * PPGA #41 stage 1: the login/logout standalone 8-bit title screen OUTSIDE the
+ * Shell frame — the journey's observable proof rides the LANDMARKS: the
+ * title-screen copy (`shell.identity` + `shell.start`) is present while the
+ * Shell's landmarks are ABSENT — no `navigation` landmark named
+ * `shell.navLabel`, no `contentinfo` footer (the logout page's copy may
+ * contain words like "profile" verbatim, so a body-text absence check would
+ * be a false alarm — the landmark is the honest observable).
+ */
+export async function expectStandaloneScreen(page: Page, locale: string) {
+  await expect(page.locator('body')).toContainText(t(['shell', 'start'], locale))
+  await expect(page.locator('body')).toContainText(t(['shell', 'identity'], locale))
+  await expect(page.getByRole('navigation', { name: t(['shell', 'navLabel'], locale) })).toHaveCount(0)
+  await expect(page.getByRole('contentinfo')).toHaveCount(0)
 }

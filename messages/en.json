@@ -1,6 +1,12 @@
 {
   "nav": {
     "home": "Home",
+    "course": "Course",
+    "badges": "Badges",
+    "leaderboard": "Leaderboard",
+    "reviewQueue": "Review Queue",
+    "coursePublication": "Course / Publication",
+    "adminExport": "Export",
     "login": "Login",
     "logout": "Logout",
     "profile": "Profile",
@@ -9,6 +15,17 @@
     "adminUsers": "User list",
     "adminAudit": "Audit stream",
     "adminProvisioning": "Provision roster"
+  },
+  "shell": {
+    "identity": "PPGA — Gamified PowerPoint Learning Platform",
+    "start": "Press START to begin the learning game",
+    "navLabel": "Primary navigation",
+    "menuLabel": "Open the navigation menu",
+    "menuCollapseLabel": "Close the navigation menu",
+    "menuOpenLabel": "Open the navigation menu",
+    "footerAttribution": "PowerPoint Presentation Creation — การเรียนรู้การนำเสนอ / สำหรับนักเรียนระดับประกาศนียบัตรวิชาชีพชั้นปีที่ 2 (ปวช.2)",
+    "footerAttributionEn": "PowerPoint Presentation Creation — Presentation-Production learning / for certificate-level vocational learners, Year 2 (Por Wor Sor 2)",
+    "footerHealth": "Health"
   },
   "admin": {
     "fallbackSuspense": "Preparing the console…",
@@ -174,8 +191,18 @@
       "unauthorized": "unauthorized",
       "notConfigured": "not-configured",
       "ok": "ok",
-      "fallbackSuspense": "Loading…"
-    }
+      "fallbackSuspense": "Loading…",
+      "inProgress": "in progress",
+      "submitted": "submitted — awaiting review",
+      "needsImprovement": "needs improvement — resubmit",
+      "approved": "approved"
+    },
+    "linkReviewStatus": "Check the Final Project review status (with the Teacher)",
+    "statusLabel": "Player status",
+    "courseProgress": "Course progress",
+    "missionCurrent": "Current mission",
+    "submissionLabel": "Submission",
+    "feedbackLabel": "Teacher feedback"
   },
   "pretest": {
     "gateLabel": "Pre-Test gate",
@@ -291,8 +318,12 @@
       "denied": "denied",
       "unauthorized": "unauthorized",
       "notConfigured": "not-configured",
-      "ok": "ok"
-    }
+      "ok": "ok",
+      "cleared": "cleared — Mission complete"
+    },
+    "currentStage": "next stage",
+    "continueStage": "Continue",
+    "progressCleared": "Stages cleared"
   },
   "lesson": {
     "list": "Lessons",
@@ -384,6 +415,16 @@
       "error": "Error",
       "locked": "Locked",
       "neutral": "Neutral"
+    },
+    "stageMap": {
+      "heading": "Stage map",
+      "stage1": "Stage 1",
+      "stage2": "Stage 2",
+      "stage3": "Stage 3"
+    },
+    "challengeDemo": {
+      "heading": "Challenge framing (Lesson to Result)",
+      "panel": "Mission panel demo"
     }
   },
   "header": {
@@ -557,5 +598,25 @@
   "language": {
     "th": "Thai",
     "en": "English"
+  },
+  "challenge": {
+    "trackLabel": "Challenge sequence",
+    "steps": {
+      "lesson": "Lesson",
+      "selfcheck": "Self-Check",
+      "mission": "Mission",
+      "result": "Result"
+    },
+    "states": {
+      "cleared": "cleared — done",
+      "open": "open — ready for you",
+      "locked": "locked — finish the challenge before it first",
+      "challenge": "challenge — attempt it now",
+      "success": "success — the reward has landed",
+      "clear": "clear — the Module is complete"
+    },
+    "current": "current challenge",
+    "rewardNote": "From your XP ledger:",
+    "unlockNext": "Cleared — the next Module is open:"
   }
 }
