@@ -155,6 +155,17 @@ body {
     animation-duration: 0s;
     transition-duration: 0s;
   }
+  /*
+   * Ticket #46: the XP/progress FILLS carry their stepped 0.3s fill as an
+   * INLINE style (the primitives' inline-token convention) — only
+   * `!important` outranks an inline declaration, so the reduced-motion drop
+   * needs its own rule here. Without it the fill keeps easing under
+   * `prefers-reduced-motion: reduce` (the 02-a11y live scan catches it).
+   */
+  :where(.ppg-xp-fill, .ppg-progress-fill) {
+    animation-duration: 0s !important;
+    transition-duration: 0s !important;
+  }
 }
 
 /*
@@ -215,5 +226,26 @@ body {
   }
   .ppg-menu-wrap .ppg-nav-item {
     display: block;
+  }
+}
+
+/*
+ * Ticket #46: the phone-width overflow the LIVE sweep caught on the review
+ * page (scrollWidth 463 vs 360): the SERVER-authored feedback text is real
+ * data with an unbreakable token (the `fonts/colors/graphics/transition`
+ * string) and the history's `<table>` is content-sized — one word (one
+ * token) stretches the table + the `.ppg-card-text` line out of the
+ * viewport. Character-level breaking keeps the REAL record readable inside
+ * the width (never clipping it away); fixed layout stops the table from
+ * content-sizing itself. The `table` element is the shipped review/queue/
+ * history tables (there are no other `table`s on the app).
+ */
+@media (max-width: 767px) {
+  table {
+    width: 100%;
+    table-layout: fixed;
+  }
+  :where(.ppg-card-text, table td) {
+    word-break: break-all;
   }
 }

@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-import { accounts, signIn, signOut } from './helpers'
-import { t } from './helpers'
+import { accounts, signIn, signOut, t, RAW_KEY_LEAK } from './helpers'
 
 /**
  * PPGA #18 (the verification ticket): the language selection + persistence
@@ -56,7 +55,7 @@ test.describe('PPGA #18 language selection & persistence', () => {
     // letter-prefixed `word.word`).
     await page.goto(`/${other}/course`)
     const text = await page.locator('body').textContent()
-    expect(/(?:login|logout|home|course|pretest|posttest|survey|lesson|selfcheck|mission|practical|review|header|leaderboard|badges|gallery|profile|change|admin|content|health)\.[a-z.]+/i.exec(text ?? '')).toBeFalsy()
+    expect(RAW_KEY_LEAK.exec(text ?? '')).toBeFalsy()
 
     // 5. The screen-reader-visible cue: the current option carries
     // `aria-current="true"` (state never by colour alone) and the switch's
@@ -75,6 +74,6 @@ test.describe('PPGA #18 language selection & persistence', () => {
       await expect(nav.getByRole('link', { name: t(['nav', key], other), exact: true })).toBeVisible()
     }
     const textOther = await page.locator('body').textContent()
-    expect(/(?:login|logout|home|course|pretest|posttest|survey|lesson|selfcheck|mission|practical|review|header|leaderboard|badges|gallery|profile|change|admin|content|health)\.[a-z.]+/i.exec(textOther ?? '')).toBeFalsy()
+    expect(RAW_KEY_LEAK.exec(textOther ?? '')).toBeFalsy()
   })
 })

@@ -206,6 +206,11 @@ test('Tokens live once in app/globals.css and the TA16BIT swap point is one vari
   expect(css).toContain('var(--font-ta16bit)')
   // Reduced-motion is respected in the token module.
   expect(css).toContain('prefers-reduced-motion')
+  // PPGA #46: the XP/progress FILLS carry their stepped transition as an
+  // INLINE style (components' convention) — a stylesheet rule can only
+  // outrank inline with `!important`, and it must target the FILL classes
+  // (the parent bar's class alone never overrode the child's inline rule).
+  expect(css).toMatch(/\.ppg-xp-fill,[^}]*transition-duration: 0s !important/)
 })
 
 test('No ad-hoc colour anywhere: every component colour resolves a token', async () => {

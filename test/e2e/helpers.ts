@@ -42,8 +42,11 @@ export function t(path: string[], locale: string): string {
 
 /** The raw-key-leak regex: the key namespace + a dot + a letter/dot tail.
  * The legit copy has dots only inside numerals/parens (`(8.1-8.4)`,
- * `Total 28 / 35`) — never a letter-prefixed `word.word`. */
-export const RAW_KEY_LEAK = /(?:login|logout|home|course|pretest|posttest|survey|lesson|selfcheck|mission|practical|review|header|leaderboard|badges|gallery|profile|change|admin|content|health)\.[a-z.]+/i
+ * `Total 28 / 35`) — never a letter-prefixed `word.word`. Ticket #46 adds the
+ * Shell epic's namespaces (`shell`/`nav`/`challenge`) — the Shell frame + the
+ * stage/challenge framing ride EVERY signed-in page, so their keys leak there
+ * first. */
+export const RAW_KEY_LEAK = /(?:login|logout|home|course|pretest|posttest|survey|lesson|selfcheck|mission|practical|review|header|leaderboard|badges|gallery|profile|change|admin|content|health|shell|nav|challenge)\.[a-z.]+/i
 
 export const accounts = {
   admin: 'admin',
