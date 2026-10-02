@@ -138,6 +138,17 @@ body {
   border-width: var(--ppg-border-2);
 }
 
+/*
+ * Ticket #41 stage 3: the Course Map's stage-road link (the title of a
+ * cleared/open stage node, `components/StageNode.tsx`). Same token ring as
+ * every other focusable surface; a locked stage renders NO link at all
+ * (semantically locked), so it never takes focus.
+ */
+.ppg-stage-link:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
 /* Respect the reduced-motion signal: no stepped shadow animation, no bar easing. */
 @media (prefers-reduced-motion: reduce) {
   :where(.ppg-button, .ppg-card, .ppg-badge, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar) {

@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test'
 
-import { accounts, LEARNER_UUID, deckFixture, signIn, signOut, submitForm, t, expectBadge, expectXpLine, lockStateCopy, RAW_KEY_LEAK, expectShellNav, expectStandaloneScreen } from './helpers'
+import { accounts, LEARNER_UUID, deckFixture, signIn, signOut, submitForm, t, expectBadge, expectXpLine, lockStateCopy, clearedStateCopy, RAW_KEY_LEAK, expectShellNav, expectStandaloneScreen } from './helpers'
 
 /**
  * PPGA #18 (the verification ticket): the critical journey, end to end,
@@ -37,11 +37,16 @@ test.describe('PPGA #18 critical journey', () => {
     // The count reads the RENDERED text only: `innerText` excludes the
     // <script> payloads (the i18n messages bootstrap + the RSC flight data
     // carry every message string verbatim — textContent counted the open
-    // copy 3× on a 1-open map). The wait rides the Card's own
-    // `data-ppg-state` — the count never races the map's Suspense fallback.
+    // copy 3× on a 1-open map). The wait rides the #44 stage node's own
+    // `data-ppg-stage-state` — the count never races the map's Suspense
+    // fallback (stages: cleared | open | locked, the copy per state node).
     const lockCopyCount = async (open: boolean, target: Page) => {
-      await expect(target.locator('[data-ppg-state]').first()).toBeVisible()
+      await expect(target.locator('[data-ppg-stage-state]').first()).toBeVisible()
       return ((await target.locator('body').innerText())?.match(RegExp(lockStateCopy(locale, open), 'g'))?.length ?? 0)
+    }
+    const clearedCopyCount = async (target: Page) => {
+      await expect(target.locator('[data-ppg-stage-state]').first()).toBeVisible()
+      return ((await target.locator('body').innerText())?.match(RegExp(clearedStateCopy(locale), 'g'))?.length ?? 0)
     }
     const criteria = ['content_structure', 'text_formatting', 'images_visual', 'slide_design', 'powerpoint_tool_usage', 'creativity', 'completeness']
 
@@ -136,13 +141,18 @@ test.describe('PPGA #18 critical journey', () => {
     await signOut(page, locale)
     await signIn(page, locale, learner, '/profile')
 
-    // 5. The Course map BEFORE the work: Module 1 OPEN (the gate alone),
-    // Module 2..11 LOCKED (the linear rule's `incomplete` + the un-passed
-    // LAST-lesson check). The lock copy never a colour-only cue (the Card
-    // carries the text + `data-ppg-state` + aria-label).
+    // 5. The Course map BEFORE the work, as the #44 STAGE MAP: Module 1 OPEN
+    // (the gate alone) + the next-stage direction pointing at it, Module
+    // 2..11 LOCKED (the linear rule's `incomplete` + the un-passed LAST-
+    // lesson check). The lock copy never a colour-only cue: every locked
+    // stage node carries the copy + `data-ppg-stage-state="locked"` +
+    // `aria-disabled` + the stripes, visible, never hidden, never linked.
     await page.goto(`/${locale}/course`)
     expect(await lockCopyCount(true, page)).toBe(1)
     expect(await lockCopyCount(false, page)).toBe(10)
+    expect(await clearedCopyCount(page)).toBe(0)
+    expect(await page.locator('[data-ppg-stage-state="locked"][aria-disabled="true"]').count()).toBe(10)
+    await expect(page.locator('[data-ppg-stage-direction="next"] a')).toHaveAttribute('href', new RegExp(`/${locale}/course/module-01$`))
     await rawLeakCheck(page)
 
     // 6. Lesson 1 (Opening PowerPoint): the WHAT/WHY/BODY/WITH-NEXT
@@ -202,13 +212,16 @@ test.describe('PPGA #18 critical journey', () => {
     // Course progress moved to the learner's ONE real completion.
     await expect(hubStatus(page)).toContainText(`${t(['home', 'courseProgress'], locale)} 1 / 11`)
 
-    // UNLOCK OBSERVED (the transition, never a claimed flag): the course
-    // map re-read — Module 2 now OPEN (the previous `complete` + the
-    // LAST Lesson's pass); Module 3..11 still LOCKED.
+    // UNLOCK OBSERVED (the transition, never a claimed flag): the stage map
+    // re-read — Module 1 now CLEARED (its own `complete` Mission row),
+    // Module 2 OPEN and the direction pointing at it; Module 3..11 still
+    // LOCKED.
     await page.goto(`/${locale}/course`)
     await rawLeakCheck(page)
-    expect(await lockCopyCount(true, page)).toBe(2)
+    expect(await lockCopyCount(true, page)).toBe(1)
     expect(await lockCopyCount(false, page)).toBe(9)
+    expect(await clearedCopyCount(page)).toBe(1)
+    await expect(page.locator('[data-ppg-stage-direction="next"] a')).toHaveAttribute('href', new RegExp(`/${locale}/course/module-02$`))
 
     // 9. The loop AGAIN for Module 2 — the Self-Check questions of
     // Module 2's Lesson #18's completion seed made the linear rule
@@ -231,7 +244,9 @@ test.describe('PPGA #18 critical journey', () => {
     await expect(page.locator('[data-ppg-hub="status"] a[href*="module-03/mission"]')).toBeVisible()
     await page.goto(`/${locale}/course`)
     expect(await lockCopyCount(false, page)).toBe(8)
-    expect(await lockCopyCount(true, page)).toBe(3)
+    expect(await lockCopyCount(true, page)).toBe(1)
+    expect(await clearedCopyCount(page)).toBe(2)
+    await expect(page.locator('[data-ppg-stage-direction="next"] a')).toHaveAttribute('href', new RegExp(`/${locale}/course/module-03$`))
 
     // 10. THE PRACTICAL (Module 8) + the Teacher-review sub-journey INSIDE
     // the critical journey. Upload: the REAL .pptx fixture (`PK\x03\x04`

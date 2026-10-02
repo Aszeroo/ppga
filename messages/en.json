@@ -318,8 +318,12 @@
       "denied": "denied",
       "unauthorized": "unauthorized",
       "notConfigured": "not-configured",
-      "ok": "ok"
-    }
+      "ok": "ok",
+      "cleared": "cleared — Mission complete"
+    },
+    "currentStage": "next stage",
+    "continueStage": "Continue",
+    "progressCleared": "Stages cleared"
   },
   "lesson": {
     "list": "Lessons",
@@ -411,6 +415,12 @@
       "error": "Error",
       "locked": "Locked",
       "neutral": "Neutral"
+    },
+    "stageMap": {
+      "heading": "Stage map",
+      "stage1": "Stage 1",
+      "stage2": "Stage 2",
+      "stage3": "Stage 3"
     }
   },
   "header": {

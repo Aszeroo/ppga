@@ -308,8 +308,12 @@
       "denied": "ปฏฏิลทู่",
       "unauthorized": "ต้องลงชื่อก่อน",
       "notConfigured": "ยังไม่ได้ configuring",
-      "ok": "ได้สาย"
-    }
+      "ok": "ได้สาย",
+      "cleared": "ผ่านแล้ว — จบ มิชชันนี้แล้ว"
+    },
+    "currentStage": "ด่านถัดไป",
+    "continueStage": "ไปต่อ",
+    "progressCleared": "ด่านที่ผ่านแล้ว"
   },
   "lesson": {
     "list": "หน่วนย่อย",
@@ -401,6 +405,12 @@
       "error": "ความผิด",
       "locked": "มถก",
       "neutral": "กลาง"
+    },
+    "stageMap": {
+      "heading": "แผนที่ด่าน",
+      "stage1": "ด่าน 1",
+      "stage2": "ด่าน 2",
+      "stage3": "ด่าน 3"
     }
   },
   "header": {

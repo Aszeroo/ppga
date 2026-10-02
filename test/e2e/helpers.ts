@@ -136,6 +136,11 @@ export function lockStateCopy(locale: string, open: boolean): string {
   return t(['course', 'states', open ? 'open' : 'locked'], locale)
 }
 
+/** The CLEARED copy the #44 stage map shows per cleared Module stage. */
+export function clearedStateCopy(locale: string): string {
+  return t(['course', 'states', 'cleared'], locale)
+}
+
 /**
  * PPGA #41 stage 2: the role→nav-items mapping, verbatim (the issue's lists —
  * the journey's observable proof that every destination a role can reach

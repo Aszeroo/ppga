@@ -20,9 +20,12 @@ export interface ProgressBarProps {
   value: number
   min?: number
   max?: number
+  /** Optional region name override (the Course Map names its own progress:
+   * `course.progressCleared`); the gallery default stays `gallery.progress.label`. */
+  label?: string
 }
 
-export function ProgressBar({ value, min = 0, max = 100 }: ProgressBarProps) {
+export function ProgressBar({ value, min = 0, max = 100, label }: ProgressBarProps) {
   const t = useTranslations('gallery')
 
   const style: CSSProperties = {
@@ -42,7 +45,7 @@ export function ProgressBar({ value, min = 0, max = 100 }: ProgressBarProps) {
       aria-valuenow={value}
       aria-valuemin={min}
       aria-valuemax={max}
-      aria-label={t('progress.label')}
+      aria-label={label ?? t('progress.label')}
       tabIndex={0}
       aria-valuetext={`${t('progress.value')} ${value}/${max}`}
       style={style}

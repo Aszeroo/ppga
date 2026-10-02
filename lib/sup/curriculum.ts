@@ -136,6 +136,46 @@ export async function readCourseMapViaRpc(): Promise<CourseMapState> {
 }
 
 /**
+ * Ticket #44 (#41 stage 3): the CLEARED data the stage map merges — the raw
+ * `ppg_module_missions` rows whose status the DATABASE's own completion
+ * writes carry (`complete` — the same authority the linear unlock rule reads:
+ * a knowledge pass and a practical approval both UPSERT it) + the CALLER's
+ * uid. This is a plain read-only
+ * SELECT through the caller's session JWT (the shipped
+ * `ppg_module_missions_select` policy decides the rows; no service-role, no
+ * rule, no write). The OWN-row filter runs in the caller of this read
+ * (`ownCompletedModuleKeys`): a learner's policy already returns only their
+ * rows, while a teacher/admin's policy sees EVERY learner's — the Course map
+ * has no single-learner context, so only rows whose `learner_id` IS the
+ * caller may mark a stage cleared. Missing env yields `not-configured`, a
+ * missing session `unauthorized` — the page speaks the state, never a fake.
+ */
+export interface CompletedMissionRead {
+  status: 'ok' | 'error' | 'not-configured' | 'unauthorized'
+  detail?: string
+  uid?: string
+  rows?: Array<{ module_key: string; learner_id: string }>
+}
+
+export async function readOwnCompletedModuleKeysViaTable(): Promise<CompletedMissionRead> {
+  const sup = await createSupaSessionClient()
+  if (!sup) return { status: 'not-configured', detail: 'NEXT_PUBLIC_SUP_* missing' }
+
+  const { data: session } = await sup.auth.getSession()
+  const uid = session?.session?.user.id
+  if (!session || !session.session || !uid)
+    return { status: 'unauthorized', detail: 'no session' }
+
+  const { data, error } = await sup
+    .from('ppg_module_missions')
+    .select('module_key, learner_id')
+    .eq('status', 'complete')
+
+  if (error) return { status: 'error', detail: error.message }
+  return { status: 'ok', uid, rows: (data ?? []) as CompletedMissionRead['rows'] }
+}
+
+/**
  * The module detail read: the lessons a SEE-ABLE module shows (published +
  * the gate + the module OPEN for a learner; all incl draft/arched for
  * teacher/admin). A locked module returns `[]` server-side — the learner

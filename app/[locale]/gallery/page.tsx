@@ -10,6 +10,7 @@ import { Button } from '../../../components/Button'
 import { Card } from '../../../components/Card'
 import { MenuWrap } from '../../../components/MenuWrap'
 import { ProgressBar } from '../../../components/ProgressBar'
+import { StageMap } from '../../../components/StageMap'
 import { StatusPill } from '../../../components/StatusPill'
 import { XPBar } from '../../../components/XPBar'
 
@@ -34,6 +35,7 @@ export default function GalleryPage() {
   const t = useTranslations('gallery')
   const tNav = useTranslations('nav')
   const tShell = useTranslations('shell')
+  const tCourse = useTranslations('course')
 
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
@@ -75,6 +77,54 @@ export default function GalleryPage() {
         <section>
           <ProgressBar value={68} />
           <XPBar xp={138} level={2} />
+        </section>
+
+        {/**
+         * PPGA #41 stage 3: the Course Map's stage-road primitives demoed
+         * live — the ordered `.ppg-stage-map` of `.ppg-stage-node`s in all
+         * three states (a cleared node with its mark, the open frontier node
+         * with the `data-ppg-stage-current` marker + next chip, a locked node
+         * with the stripes + `aria-disabled` and NO link). The demo carries
+         * the real `course.states.*` copy; the hrefs are inert `/course`
+         * routes (the live map links each stage's own module).
+         */}
+        <section>
+          <h2 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}>
+            {t('stageMap.heading')}
+          </h2>
+          <StageMap
+            mapLabel={tCourse('mapLabel')}
+            stages={[
+              {
+                moduleKey: 'demo-01',
+                orderIndex: 1,
+                title: t('stageMap.stage1'),
+                summary: t('card.body'),
+                state: 'cleared',
+                stateCopy: tCourse('states.cleared'),
+                href: '/course',
+              },
+              {
+                moduleKey: 'demo-02',
+                orderIndex: 2,
+                title: t('stageMap.stage2'),
+                summary: t('card.body'),
+                state: 'open',
+                stateCopy: tCourse('states.open'),
+                isNext: true,
+                nextCopy: tCourse('currentStage'),
+                href: '/course',
+              },
+              {
+                moduleKey: 'demo-03',
+                orderIndex: 3,
+                title: t('stageMap.stage3'),
+                summary: t('card.body'),
+                state: 'locked',
+                stateCopy: tCourse('states.locked'),
+              },
+            ]}
+          />
         </section>
 
         {/**
