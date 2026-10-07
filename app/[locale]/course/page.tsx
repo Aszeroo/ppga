@@ -57,12 +57,12 @@ async function CourseStageMap() {
     <section aria-label={t('mapLabel')}>
       {view.status === 'ok' ? (
         <>
-          <h1 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}>
+          <h1 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}>
             {t('title')}
           </h1>
           <p className="ppg-card-text">
             {t('progressCleared')}{' '}
-            <span className="ppg-xp-numeral" style={{ fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}>
+            <span className="ppg-xp-numeral" style={{ fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}>
               {view.cleared} / {view.total}
             </span>
           </p>
@@ -76,7 +76,7 @@ async function CourseStageMap() {
                   params: { moduleKey: view.next.module_key },
                 }}
                 className="ppg-button"
-                style={{ display: 'inline-block', fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}
+                style={{ display: 'inline-block', fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}
               >
                 {String(view.next.order_index).padStart(2, '0')}. {pick(view.next.title_th, view.next.title_en)}
               </Link>

@@ -59,7 +59,7 @@ export default function LogoutPage() {
           className="ppg-button"
           onClick={handleClick}
           style={{
-            fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+            fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
             borderWidth: 'var(--ppg-border-2)',
             borderStyle: 'solid',
             borderColor: 'var(--ppg-status-error)',

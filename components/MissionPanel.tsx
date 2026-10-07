@@ -83,7 +83,7 @@ export function MissionPanel({
           <Link
             href={unlocked.href}
             className="ppg-button"
-            style={{ display: 'inline-block', fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}
+            style={{ display: 'inline-block', fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}
           >
             {unlocked.title}
           </Link>

@@ -177,9 +177,9 @@ test('AvailableState is focusable and names the available state by text', () => 
 /**
  * Source-assertions (reading `node:fs` works under jsdom too): the tokens are
  * defined once, the palette is not ad-hoc, and the single-token swap point for
- * TA16BIT exists as one CSS variable.
+ * the V3 type pair exists as two CSS variables.
  */
-test('Tokens live once in app/globals.css and the TA16BIT swap point is one variable', async () => {
+test('Tokens live once in app/globals.css and the V3 font swap points are two variables', async () => {
   const fs = await import('node:fs')
   const css = fs.readFileSync('app/globals.css', 'utf8')
   const layout = fs.readFileSync('app/layout.tsx', 'utf8')
@@ -198,12 +198,16 @@ test('Tokens live once in app/globals.css and the TA16BIT swap point is one vari
   ] as string[]) {
     expect(css).toContain(token)
   }
-  // The single-token swap point: the TA16BIT family is declared once as the
-  // `--font-ta16bit` CSS variable (`app/layout.tsx`'s `variable:`) and every
-  // heading / button / badge / XP-numeral role resolves it only — a swap in
-  // one place re-tunes the whole app's heading face.
-  expect(layout).toContain("variable: '--font-ta16bit'")
-  expect(css).toContain('var(--font-ta16bit)')
+  // The single-token swap point: the V3 type pair is declared once by
+  // `next/font/google` in `app/layout.tsx` (the `variable:` names) and every
+  // heading / button / badge / XP-numeral role resolves the pair only — a
+  // swap in one place re-tunes the whole app's type. Ticket #50 / ADR-0004:
+  // the display role is Press Start 2P (`--font-ppg-display`, ASCII-only),
+  // the body role Noto Sans Thai (`--font-ppg-body`).
+  expect(layout).toContain("variable: '--font-ppg-display'")
+  expect(layout).toContain("variable: '--font-ppg-body'")
+  expect(css).toContain('var(--font-ppg-display)')
+  expect(css).toContain('var(--font-ppg-body)')
   // Reduced-motion is respected in the token module.
   expect(css).toContain('prefers-reduced-motion')
   // PPGA #46: the XP/progress FILLS carry their stepped transition as an
@@ -215,7 +219,7 @@ test('Tokens live once in app/globals.css and the TA16BIT swap point is one vari
 
 test('No ad-hoc colour anywhere: every component colour resolves a token', async () => {
   const fs = await import('node:fs')
-  const sources = ['Button', 'Card', 'Badge', 'StatusPill', 'ProgressBar', 'XPBar', 'State', 'StageNode', 'StageMap', 'ChallengeTrack', 'MissionPanel', 'XpRewardChip'].map(
+  const sources = ['Button', 'Card', 'Badge', 'StatusPill', 'ProgressBar', 'XPBar', 'State', 'StageNode', 'StageMap', 'ChallengeTrack', 'MissionPanel', 'XpRewardChip', 'TokenSheet'].map(
     (name) => fs.readFileSync(`components/${name}.tsx`, 'utf8'),
   )
   for (const src of sources as string[]) {

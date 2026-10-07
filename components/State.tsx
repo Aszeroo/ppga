@@ -31,7 +31,7 @@ export function LockedState({ label, children }: StateProps) {
     color: 'var(--ppg-state-locked-fg)',
     borderWidth: 'var(--ppg-border-2)',
     borderStyle: 'solid',
-    fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+    fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
   }
 
   return (
@@ -56,7 +56,7 @@ export function AvailableState({ label, children }: StateProps) {
     borderWidth: 'var(--ppg-border-2)',
     borderColor: 'var(--ppg-pink-accent)',
     borderStyle: 'solid',
-    fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+    fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
   }
 
   return (

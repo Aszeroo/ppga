@@ -90,7 +90,7 @@ export function stageConnectorStyle(state: StageState): CSSProperties {
 export function stageChipStyle(state: StageState): CSSProperties {
   return {
     display: 'inline-block',
-    fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+    fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
     fontSize: '0.8rem',
     backgroundColor: 'var(--ppg-blue-100)',
     color: 'var(--ppg-fg-heading)',

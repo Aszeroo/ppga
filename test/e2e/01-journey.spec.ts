@@ -74,7 +74,10 @@ test.describe('PPGA #18 critical journey', () => {
     // 1. Sign in WITHOUT consent → the dashboard's respectful explanation;
     // the gate guard denies the Pre-Test pathname (the UI's state; the
     // DATABASE's RLS denies the items read at the row level, independently).
-    await signIn(page, locale, learner, '/')
+    // V3 wiring: the post-login landing redirects `/ → 307 /en/` (the `ppga-locale`
+    // cookie + the request config), so the expectation is the empty pathname (the
+    // helper's `/${locale}` fallback), never the bare `/` of the pre-cookie era.
+    await signIn(page, locale, learner, '')
     await expect(page.locator('body')).toContainText(t(['home', 'states', 'noConsent'], locale))
     // The fresh state's ONE primary CTA is the respectful consent explanation.
     await expect(primaryCta(page)).toHaveCount(1)
@@ -85,7 +88,7 @@ test.describe('PPGA #18 critical journey', () => {
     // reaches, nothing another-role's destination).
     await expectShellNav(page, locale, 'learner')
     await page.goto(`/${locale}/pre-test`)
-    await expect(page).toHaveURL(RegExp(`/${locale}$`))
+    await expect(page).toHaveURL(RegExp(`/${locale}/?$`))
 
     // 2. The Admin records the paper consent OFFLINE (the admin console —
     // #18 unblocked this pathname for staff; one RPC call = one profile

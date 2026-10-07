@@ -39,7 +39,7 @@ import { Card } from './Card'
  *
  * Tokens only: every colour / border / shadow / font below resolves a
  * `var(--ppg-…)` custom property from `app/globals.css` (no ad-hoc colours);
- * the `--ppg-*` ramp + the `--font-ta16bit` / `--font-mitr` single-token
+ * the `--ppg-*` ramp + the `--font-ppg-display` / `--font-ppg-body` single-token
  * swap points are the only palette. Reduced-motion + keyboard access: the
  * `.ppg-shell-*` classes are the focus-ring + reduced-motion targets there.
  */
@@ -63,7 +63,7 @@ export async function Shell({ role, contextTitle, standalone, children }: ShellP
   const navT = await getTranslations('nav')
 
   const style: CSSProperties = {
-    fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+    fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
   }
 
   /** The 8-bit title/start screen — the login/logout frame. */
@@ -84,7 +84,7 @@ export async function Shell({ role, contextTitle, standalone, children }: ShellP
           padding: 'var(--ppg-space-5)',
         }}
       >
-        <h1 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}>
+        <h1 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}>
           {t('identity')}
         </h1>
         <p className="ppg-card-text">{t('start')}</p>
@@ -110,7 +110,7 @@ export async function Shell({ role, contextTitle, standalone, children }: ShellP
       >
         {/** LEFT: the pixel identity + the contextual Course/Module title. */}
         <section className="ppg-shell-identity">
-          <h1 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}>
+          <h1 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}>
             {t('identity')}
           </h1>
           {contextTitle ? <p className="ppg-context-title">{contextTitle}</p> : null}

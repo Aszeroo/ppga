@@ -109,7 +109,7 @@ function HubNextActionView({ tCopy, lines, cta }: NextActionViewProps) {
             data-ppg-cta="primary"
             href={ctaTarget(cta.href)}
             style={{
-              fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+              fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
               display: 'inline-block',
               borderWidth: 'var(--ppg-border-2)',
               borderStyle: 'solid',

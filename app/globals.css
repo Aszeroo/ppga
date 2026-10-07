@@ -1,41 +1,67 @@
 /*
- * Ticket #5 design tokens — declared once, consumed by every pixel component.
+ * PPGA design tokens — declared once, consumed by every pixel component.
  * No ad-hoc colors anywhere: a component may only use `var(--ppg-…)`.
  *
- * Pastel pink/blue 8-bit pastel game world. The 8-bit rules: 1px "pixel"
- * borders, stepped pixel shadows, no smoothing, and a visible focus ring that
- * never relies on colour alone.
+ * ADR-0004 / ticket #50: the palette VALUES are the owner-authored V3 design
+ * system ("Cute 8-bit PowerPoint Learning Adventure" — bright pastel arcade:
+ * pink/blue primaries with purple/mint/gold support, white rounded cards on a
+ * light-blue page). Token NAMES are unchanged from the previous sheet (the CI
+ * token-purity suite asserts them); only the values moved. Literal colors
+ * live ONLY in this file.
  */
 /*
- * The `--font-ta16bit` / `--font-mitr` variables come from
- * `next/font/local` + `next/font/google` in `app/layout.tsx`. Do NOT hardcode
- * `TA16BIT-Regular` in a component — that breaks the single-token swap point
- * (see `app/fonts/LICENSE-TA16BIT.md`).
+ * The `--font-ppg-display` / `--font-ppg-body` variables come from
+ * `next/font/google` in `app/layout.tsx`. Do NOT hardcode a font file or
+ * family name in a component — the variables are the single-token swap
+ * points.
  *
- * Thai fallback rides the family stack itself (`--font-ta16bit, --font-mitr`):
- * TA16BIT's `cmap`/`glyf` (per `app/fonts/LICENSE-TA16BIT.md`) is Latin+digits
- * only, so a missing Thai glyph falls to the next family natively in the
- * browser. No extra `@font-face` is needed here — a documented no-op face only
- * confuses the parser, so the fallback note lives in the comment alone.
+ * Thai fallback rides the family stack itself
+ * (`--font-ppg-display, --font-ppg-body`): Press Start 2P is ASCII-only, so a
+ * missing Thai glyph falls to Noto Sans Thai natively in the browser. No
+ * extra `@font-face` is needed here.
  */
 :root {
-  /* ── palette: pastel pink/blue ────────────────────────────────────────── */
-  --ppg-pink-100: #fff4e3;
-  --ppg-pink-200: #fde6ce;
-  --ppg-pink-300: #d7b6bc;
-  --ppg-pink-500: #b3836f;
-  --ppg-blue-100: #e8e9f1;
-  --ppg-blue-200: #d7d5e2;
-  --ppg-blue-300: #b9a2bd;
-  --ppg-blue-500: #57426b;
-  --ppg-pink-accent: #f472b4;
-  --ppg-blue-accent: #6b9ec9;
+  /* ── palette: V3 pastel arcade ───────────────────────────────────────── */
+  --ppg-pink-100: #ffeeec; /* V3 pink tint */
+  --ppg-pink-200: #ffd9e6; /* derived: V3 pink light surface */
+  --ppg-pink-300: #ff6da0; /* V3 pink primary */
+  --ppg-pink-500: #e65090; /* V3 pink deep */
+  --ppg-blue-100: #e1f0ff; /* V3 blue tint */
+  --ppg-blue-200: #eaf2ff; /* V3 page background blue */
+  --ppg-blue-300: #6db4ff; /* V3 blue primary */
+  --ppg-blue-500: #1a202c; /* V3 ink */
+  --ppg-pink-accent: #ff6da0; /* V3 pink primary (brief-mandated retained name) */
+  --ppg-blue-accent: #6db4ff; /* V3 blue primary (brief-mandated retained name) */
 
   /* surfaces */
-  --ppg-bg-body: var(--ppg-pink-100);
-  --ppg-bg-surface: var(--ppg-blue-100);
+  --ppg-bg-body: var(--ppg-blue-200);
+  --ppg-bg-surface: #ffffff; /* V3 white card surface */
   --ppg-fg-heading: var(--ppg-blue-500);
-  --ppg-fg-body: var(--ppg-blue-500);
+  --ppg-fg-body: #4a5568; /* V3 muted text */
+
+  /* extended V3 palette (new tokens) */
+  --ppg-purple: #b46dff;
+  --ppg-purple-tint: #f0e1ff;
+  --ppg-mint: #6dffb4;
+  --ppg-mint-tint: #e1ffec;
+  --ppg-yellow: #fff06d;
+  --ppg-yellow-tint: #fff6d6;
+  --ppg-peach: #ffb46d;
+  --ppg-gold: #ffd700;
+  --ppg-gold-deep: #ffa500;
+  --ppg-gold-deepest: #ff8c00;
+  --ppg-success-soft: #48bb78;
+  --ppg-error-deep: #c53030;
+  --ppg-ink: #1a202c;
+  --ppg-muted: #4a5568;
+  --ppg-faint: #6b7684;
+  --ppg-line: #dfe2e7;
+  --ppg-locked: #99a3b0;
+  --ppg-gray-100: #f1f3f6;
+  --ppg-gray-300: #cbd5e0;
+  --ppg-gray-500: #a0aec0;
+  --ppg-gray-700: #718096;
+  --ppg-cream: #fffbf0;
 
   /* ── spacing scale (8px base — the pixel unit) ─────────────────────────
    *─ */
@@ -45,60 +71,68 @@
   --ppg-space-4: 24px;
   --ppg-space-5: 32px;
 
-  /* ── borders / pixel shadows ──────────────────────────────────────────
-   *─ */
+  /* ── radii / borders / shadows ────────────────────────────────────────── */
+  --ppg-radius-1: 8px;
+  --ppg-radius-2: 16px;
+  --ppg-radius-3: 24px;
   --ppg-border-1: 1px;
   --ppg-border-2: 2px;
   --ppg-border-3: 4px;
-  --ppg-shadow-pixel-1: 2px 2px 0 var(--ppg-blue-300);
-  --ppg-shadow-pixel-2: 4px 4px 0 var(--ppg-blue-300);
-  --ppg-shadow-pixel-3: 6px 6px 0 var(--ppg-blue-500);
+  /*
+   * V3 shadows are soft lift shadows (the token sheet's 3 levels), not the
+   * previous stepped pixel offsets; the token names are unchanged.
+   */
+  --ppg-shadow-pixel-1: 0 1px 2px rgba(26, 32, 44, 0.08);
+  --ppg-shadow-pixel-2: 0 4px 8px rgba(26, 32, 44, 0.1);
+  --ppg-shadow-pixel-3: 0 8px 16px rgba(26, 32, 44, 0.12);
 
   /* ── focus ring (never colour alone: + a border-thickened) ─────────────────
    *─ */
   --ppg-focus-visible: 1;
-  --ppg-focus-ring: 4px solid var(--ppg-blue-accent);
+  --ppg-focus-ring: 4px solid var(--ppg-blue-300);
   --ppg-focus-offset: 2px;
 
   /* ── status colours (success / warning / error / locked) ─────────────────
    *─ */
-  --ppg-status-success: #6ec06e;
-  --ppg-status-warning: #f4c941;
-  --ppg-status-error: #b3366f;
-  --ppg-status-locked: #57426b;
+  --ppg-status-success: #38a169; /* V3 success deep (WCAG on white) */
+  --ppg-status-warning: #ffa500; /* V3 gold mid */
+  --ppg-status-error: #e53e3e; /* V3 red */
+  --ppg-status-locked: #99a3b0; /* V3 locked gray-blue */
 
   /* ── component state surfaces (locked / available) ──────────────────
    *─ */
-  --ppg-state-locked-bg: var(--ppg-blue-200);
+  --ppg-state-locked-bg: var(--ppg-gray-100);
   --ppg-state-locked-fg: var(--ppg-status-locked);
   --ppg-state-locked-stripe: repeating-linear-gradient(
     45deg,
-    var(--ppg-blue-200) 0,
+    var(--ppg-gray-100) 0,
     var(--ppg-status-locked) 2px,
-    var(--ppg-blue-200) 4px
+    var(--ppg-gray-100) 4px
   );
-  --ppg-state-available-bg: var(--ppg-pink-200);
-  --ppg-state-available-fg: var(--ppg-blue-500);
+  --ppg-state-available-bg: var(--ppg-pink-100);
+  --ppg-state-available-fg: var(--ppg-pink-500);
 }
 
-/* Body role — Mitr for long-form Thai readability. */
+/* Body role — Noto Sans Thai for long-form Thai readability. */
 body {
-  font-family: var(--font-mitr);
+  font-family: var(--font-ppg-body);
+  background-color: var(--ppg-bg-body);
+  color: var(--ppg-fg-body);
 }
 
 /*
- * Heading / button / badge / XP-numeral role — TA16BIT first, Mitr next.
- * TA16BIT is Latin+digits-only, so a Thai heading falls to Mitr per glyph
- * (the browser's family fallback chain). The stack is the single-token swap
- * point: changing `--font-ta16bit` (see `app/layout.tsx` +
- * `app/fonts/LICENSE-TA16BIT.md`) re-tunes every heading at once.
+ * Heading / button / badge / XP-numeral role — the display font first, body
+ * next. Press Start 2P is ASCII-only, so a Thai heading falls to Noto Sans
+ * Thai per glyph (the browser's family fallback chain). The stack is the
+ * single-token swap point: changing `--font-ppg-display` (see
+ * `app/layout.tsx`) re-tunes every heading at once.
  */
 :where(.ppg-heading, .ppg-heading-text, .ppg-button-label, .ppg-badge-text, .ppg-xp-numeral) {
-  font-family: var(--font-ta16bit), var(--font-mitr);
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
 }
 
 :where(.ppg-card-text, .ppg-progress-text, .ppg-status-pill-text) {
-  font-family: var(--font-mitr);
+  font-family: var(--font-ppg-body);
 }
 
 /*
@@ -149,14 +183,14 @@ body {
   outline-offset: var(--ppg-focus-offset);
 }
 
-/* Respect the reduced-motion signal: no stepped shadow animation, no bar easing. */
+/* Respect the reduced-motion signal: no shadow animation, no bar easing. */
 @media (prefers-reduced-motion: reduce) {
   :where(.ppg-button, .ppg-card, .ppg-badge, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar) {
     animation-duration: 0s;
     transition-duration: 0s;
   }
   /*
-   * Ticket #46: the XP/progress FILLS carry their stepped 0.3s fill as an
+   * Ticket #46: the XP/progress FILLS carry their fill transition as an
    * INLINE style (the primitives' inline-token convention) — only
    * `!important` outranks an inline declaration, so the reduced-motion drop
    * needs its own rule here. Without it the fill keeps easing under
@@ -169,16 +203,15 @@ body {
 }
 
 /*
- * PPGA #41 stage 1: the standalone 8-bit title/start screen's form controls —
+ * PPGA #41 stage 1: the standalone title/start screen's form controls —
  * the login/logout inputs + submit ride the SAME token discipline as the
- * primitives (pixel border + stepped shadow + the token surface; the
- * `.ppg-button` / `.ppg-input` classes are the focus-ring + reduced-motion
- * targets, so the title screen's controls are keyboard-visible, never
- * colour-only).
+ * primitives (border + soft shadow + the token surface; the `.ppg-button` /
+ * `.ppg-input` classes are the focus-ring + reduced-motion targets, so the
+ * title screen's controls are keyboard-visible, never colour-only).
  */
 .ppg-input {
-  font-family: var(--font-mitr);
-  background-color: var(--ppg-bg-body);
+  font-family: var(--font-ppg-body);
+  background-color: var(--ppg-bg-surface);
   color: var(--ppg-fg-body);
   border: var(--ppg-border-2) solid var(--ppg-blue-300);
   box-shadow: var(--ppg-shadow-pixel-1);
@@ -239,13 +272,26 @@ body {
  * the width (never clipping it away); fixed layout stops the table from
  * content-sizing itself. The `table` element is the shipped review/queue/
  * history tables (there are no other `table`s on the app).
+ *
+ * Ticket #50: the SAME class of fix, one surface later — the HUD's earned
+ * badge chips AND the display-font roles riding `--font-ppg-display`
+ * (`Press_Start_2P`'s ~1em advance). The `badge_key` is SERVER-authored data
+ * whose underscore tokens (`module_02_mission`) are unbreakable words, and
+ * the #50 display face widens a chip / a heading / a button label past the
+ * phone viewport — the LIVE sweep caught scrollWidth 395 vs 360 on every
+ * signed-in page in EN (TH escaped only because Thai script breaks between
+ * clusters); the mobile responsive sweep caught 381 vs 360 on the module
+ * pages, the title screen and the Shell's H1 (`ppg-heading-text`) with the
+ * badge fix only. The design sheet's mobile header is the same no-overflow
+ * contract; breaking every display-font text class keeps the real label
+ * readable inside the width (story #9 stays true — nothing is clipped away).
  */
 @media (max-width: 767px) {
   table {
     width: 100%;
     table-layout: fixed;
   }
-  :where(.ppg-card-text, table td) {
+  :where(.ppg-card-text, .ppg-badge, .ppg-badge-text, .ppg-heading, .ppg-heading-text, .ppg-button-label, .ppg-xp-numeral, table td) {
     word-break: break-all;
   }
 }

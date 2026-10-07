@@ -41,7 +41,7 @@ export function MenuWrap({ labels, menuId = 'ppg-nav-menu', toggleId = 'ppg-menu
   const [open, setOpen] = useState(false)
 
   const toggle: CSSProperties = {
-    fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+    fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
     borderWidth: 'var(--ppg-border-2)',
     borderColor: 'var(--ppg-blue-300)',
     borderStyle: 'solid',

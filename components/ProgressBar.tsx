@@ -13,7 +13,7 @@ import { useTranslations } from 'next-intl'
  *
  * Respect reduced-motion (`app/globals.css`): the `.ppg-progress-bar` class
  * carries the `transition/animation` off so a keyboard-press does not ease.
- * The number inside the bar is the heading-role `--font-ta16bit` — the XP
+ * The number inside the bar is the heading-role `--font-ppg-display` — the XP
  * digits share the single-token swap point with the badge.
  */
 export interface ProgressBarProps {
@@ -35,7 +35,7 @@ export function ProgressBar({ value, min = 0, max = 100, label }: ProgressBarPro
     borderStyle: 'solid',
     backgroundColor: 'var(--ppg-blue-200)',
     boxShadow: 'var(--ppg-shadow-pixel-1)',
-    fontFamily: 'var(--font-mitr)',
+    fontFamily: 'var(--font-ppg-body)',
   }
 
   return (
@@ -59,7 +59,7 @@ export function ProgressBar({ value, min = 0, max = 100, label }: ProgressBarPro
           transition: 'width 0.3s steps(8)', // 8-bit stepped fill, off in reduced-motion
         }}
       />
-      <span className="ppg-progress-text ppg-xp-numeral" style={{ fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}>
+      <span className="ppg-progress-text ppg-xp-numeral" style={{ fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}>
         {value}
       </span>
     </div>

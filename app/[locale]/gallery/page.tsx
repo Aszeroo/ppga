@@ -14,6 +14,7 @@ import { MissionPanel } from '../../../components/MissionPanel'
 import { ProgressBar } from '../../../components/ProgressBar'
 import { StageMap } from '../../../components/StageMap'
 import { StatusPill } from '../../../components/StatusPill'
+import { TokenSheet } from '../../../components/TokenSheet'
 import { XpRewardChip } from '../../../components/XpRewardChip'
 import { XPBar } from '../../../components/XPBar'
 
@@ -24,15 +25,22 @@ import { XPBar } from '../../../components/XPBar'
  * carry the `available / locked / warning / error` state variants — a state
  * is announced by its `aria-label` text + the stripe/`aria-disabled`, never
  * by the colour alone — and the XP/progress bars carry the heading-role
- * `--font-ta16bit` numerals so the single-token swap point is visible on the
+ * `--font-ppg-display` numerals so the single-token swap point is visible on the
  * page, not only in `app/globals.css`.
  *
  * No ad-hoc colour here: the page's body role comes from `app/globals.css`
- * (`body { font-family: var(--font-mitr) }`) and the components are the ones
+ * (`body { font-family: var(--font-ppg-body) }`) and the components are the ones
  * carrying the tokens. The `Link` keeps the locale prefix on the health link
  * (the explicit `/en` switch works everywhere). The `:root` token block in
  * `app/globals.css` is the single place the palette is defined; this page
  * consumes it via the component props only.
+ *
+ * Ticket #50 closes the sheet half of this page's AC: `components/TokenSheet`
+ * renders the owner's "DESIGN TOKENS" screen (palette swatches, type scale,
+ * spacing/radius/border/shadow scales, the pixel strip) from the stylesheet's
+ * real custom properties — swatches ride `var(--ppg-…)`, values come back
+ * through `getComputedStyle` — so the vocabulary demo below and the token
+ * sheet above are the same single source of truth.
  */
 export default function GalleryPage() {
   const t = useTranslations('gallery')
@@ -45,11 +53,19 @@ export default function GalleryPage() {
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <main>
         <section>
-          <h1 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}>
+          <h1 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}>
             {t('title')}
           </h1>
           <p className="ppg-card-text">{t('intro')}</p>
         </section>
+
+        {/**
+         * Ticket #50: the token sheet first (the owner's token-screen order:
+         * tokens, then the components that consume them). The section labels
+         * are design-system identifiers (token names, px sizes), so the sheet
+         * adds no locale copy — `messages/*.json` stay byte-identical.
+         */}
+        <TokenSheet />
 
         <section>
           <Button label={t('button.available')} status="available" tone="primary" />
@@ -93,7 +109,7 @@ export default function GalleryPage() {
          * routes (the live map links each stage's own module).
          */}
         <section>
-          <h2 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}>
+          <h2 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}>
             {t('stageMap.heading')}
           </h2>
           <StageMap
@@ -143,7 +159,7 @@ export default function GalleryPage() {
          * `/course` routes (the live module pages link the real screens).
          */}
         <section>
-          <h2 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}>
+          <h2 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}>
             {t('challengeDemo.heading')}
           </h2>
           <ChallengeTrack
@@ -222,7 +238,7 @@ export default function GalleryPage() {
                   className="ppg-nav-item"
                   style={{
                     display: 'inline-block',
-                    fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+                    fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
                     color: 'var(--ppg-fg-heading)',
                     padding: 'var(--ppg-space-2) var(--ppg-space-3)',
                     borderWidth: 'var(--ppg-border-2)',

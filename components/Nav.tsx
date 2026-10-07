@@ -78,7 +78,7 @@ export async function Nav({ role }: NavProps) {
   const items = role ? NAV_ITEMS[role] : []
 
   const itemStyle: CSSProperties = {
-    fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+    fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
     color: 'var(--ppg-fg-heading)',
     padding: 'var(--ppg-space-2) var(--ppg-space-3)',
     borderWidth: 'var(--ppg-border-2)',
@@ -94,7 +94,7 @@ export async function Nav({ role }: NavProps) {
       id="ppg-nav-menu"
       aria-label={t('navLabel')}
       style={{
-        fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+        fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
       }}
     >
       <MenuWrap
