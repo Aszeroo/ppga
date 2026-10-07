@@ -26,6 +26,15 @@ import { XpRewardChip } from '../../../../components/XpRewardChip'
  * `force-dynamic` because the page reads the detail through the session JWT.
  * Every state (`lesson.list`, `lesson.states.*`, `lesson.linkMap`,
  * `lesson.fallbackSuspense`, `challenge.*`) has its own copy in `messages`.
+ *
+ * The #52 V3 dressing (presentation only): the page wraps in the gallery's
+ * `.ppg-page-wrap` column, the challenge road (the module's at-a-glance
+ * progress) rides the CSS-driven `.ppg-stage-map` + the V3 node surfaces the
+ * shared `stageNodeStyle` already carries (no second gradient authored —
+ * the locked step KEEPS its stripes), the lesson rows sit in the hub's
+ * auto-fit grid under a visible section title, the unlock band rides the
+ * strip card, and the in-content links wear the `.ppg-link` text face — the
+ * page carries no CTA face at all, so nothing competes for primary.
  */
 export const dynamic = 'force-dynamic'
 
@@ -41,7 +50,10 @@ async function LessonsList({ moduleKey }: { moduleKey: string }) {
   const unlocked = buildUnlockBand(ctx, tC('unlockNext'), locale)
   const reward = rewardChipProps(ctx, tC('rewardNote'))
   return (
-    <section aria-label={t('list')}>
+    <section aria-label={t('list')} className="ppg-page-wrap">
+      {/* The challenge road IS the module's at-a-glance progress: the stage
+          vocabulary (#44, V3-dressed by #52) reads cleared / current / locked
+          from the learner's own reads, copy + icon + stripes — never hue. */}
       <ChallengeTrack label={tC('trackLabel')} steps={trackSteps} />
       {reward
         ? (
@@ -52,29 +64,33 @@ async function LessonsList({ moduleKey }: { moduleKey: string }) {
         : null}
       {unlocked
         ? (
-          <p data-ppg-unlock="next-module">
+          // The unlock band rides the hub's strip card (the gallery's
+          // celebration card) with the text link face — the page keeps NO
+          // second CTA face to compete with it.
+          <p className="ppg-status-card ppg-strip-top" data-ppg-unlock="next-module">
             {unlocked.copy}{' '}
-            <Link
-              href={unlocked.href}
-              className="ppg-button"
-              style={{ display: 'inline-block', fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}
-            >
+            <Link href={unlocked.href} className="ppg-link">
               {unlocked.title}
             </Link>
           </p>
         )
         : null}
-      {state.status === 'ok'
-        ? state.lessons
-          ?.sort((a, b) => a.order_index - b.order_index)
-          .map((row) => (
-            <Card
-              key={row.lesson_key}
-              heading={`${row.order_index}. ${pick(row.title_th, row.title_en)}`}
-              body={pick(row.what_learn_th, row.what_learn_en)}
-              status="available"
-            />
-          ))
+      <h2 className="ppg-list-title">{t('list')}</h2>
+      {state.status === 'ok' && state.lessons && state.lessons.length > 0
+        ? (
+          <div className="ppg-hub-grid">
+            {state.lessons
+              .sort((a, b) => a.order_index - b.order_index)
+              .map((row) => (
+                <Card
+                  key={row.lesson_key}
+                  heading={`${row.order_index}. ${pick(row.title_th, row.title_en)}`}
+                  body={pick(row.what_learn_th, row.what_learn_en)}
+                  status="available"
+                />
+              ))}
+          </div>
+        )
         : null}
       {state.status === 'empty' ? <p>{t('states.empty')} {state.detail}</p> : null}
       {state.status === 'error' ? <p>{t('states.error')} {state.detail}</p> : null}
@@ -85,6 +101,7 @@ async function LessonsList({ moduleKey }: { moduleKey: string }) {
         ? (
           <p>
             <Link
+              className="ppg-link"
               href={ctx.kind === 'practical'
                 ? { pathname: '/course/[moduleKey]/practical', params: { moduleKey } }
                 : { pathname: '/course/[moduleKey]/mission', params: { moduleKey } }}
@@ -95,7 +112,7 @@ async function LessonsList({ moduleKey }: { moduleKey: string }) {
         )
         : null}
       <p>
-        <Link href="/course">{t('linkMap')}</Link>
+        <Link className="ppg-link" href="/course">{t('linkMap')}</Link>
       </p>
     </section>
   )

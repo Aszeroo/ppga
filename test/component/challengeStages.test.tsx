@@ -43,6 +43,7 @@ import {
 } from '../../lib/challengeStages'
 import { ChallengeTrack } from '../../components/ChallengeTrack'
 import { MissionPanel } from '../../components/MissionPanel'
+import { SelfCheckPanel } from '../../components/SelfCheckPanel'
 import { XpRewardChip } from '../../components/XpRewardChip'
 
 /**
@@ -370,6 +371,27 @@ test('ChallengeTrack renders the stage vocabulary: cleared marks, current chip, 
   expect(locked.querySelector('a')).toBeNull()
   expect(items[0].querySelector('.ppg-stage-connector')).toBeNull()
   expect(items[2].querySelector('.ppg-stage-connector')).toBeTruthy()
+
+  // #52 V3 dressing: the road is CSS-owned (the shared `.ppg-stage-map` rule
+  // carries the list reset, the shared `.ppg-stage-numeral` the gold tile —
+  // no inline overrides that could diverge from the Course Map's road), the
+  // chips carry the gallery icon BESIDE the copy (state never icon-only nor
+  // hue-only), and the locked step keeps `backgroundImage: undefined` in its
+  // inline style — an inline gradient would erase the `.ppg-state-locked`
+  // stripe (a background-image) and silently kill the locked cue.
+  const road = list as HTMLElement
+  expect(road.getAttribute('style')).toBeNull()
+  const clearedNumeral = cleared.querySelector('.ppg-stage-numeral') as HTMLElement
+  expect(clearedNumeral.getAttribute('style')).toBeNull()
+  const clearedChip = cleared.querySelector('.ppg-stage-state-chip') as HTMLElement
+  expect(clearedChip.querySelector('span[aria-hidden="true"]')?.textContent).toBe('✓ ')
+  expect(clearedChip.textContent).toContain('cleared-copy')
+  // (The inline-style serialization is read off the attribute so the var()
+  // forms survive jsdom; what matters is WHICH declarations the shared
+  // style function emits, not its whitespace.)
+  expect(cleared.getAttribute('style')).toMatch(/background-image:\s*linear-gradient\(135deg,\s*var\(--ppg-mint-tint\),\s*var\(--ppg-bg-surface\)\)/)
+  expect(locked.getAttribute('style')).not.toContain('background-image')
+  expect(locked.getAttribute('style')).toMatch(/background-color:\s*var\(--ppg-state-locked-bg\)/)
 })
 
 test('MissionPanel frames the three states: chip + PK-marked reward + the real unlock band', () => {
@@ -409,6 +431,10 @@ test('MissionPanel frames the three states: chip + PK-marked reward + the real u
   const band = clearedPanel.querySelector('[data-ppg-unlock="next-module"]') as HTMLElement
   expect(band.textContent).toContain('unlocked-copy')
   expect(band.querySelector('a')).toBeTruthy()
+  // #52: the band's link wears the `.ppg-link` TEXT face (content, not a
+  // competing CTA — the panel's ONE primary action stays its own form).
+  expect(band.querySelector('a.ppg-link')).toBeTruthy()
+  expect(band.querySelector('a.ppg-cta')).toBeNull()
 })
 
 test('XpRewardChip is the ledger row made visible: the PK marker + the real amount', () => {
@@ -419,4 +445,114 @@ test('XpRewardChip is the ledger row made visible: the PK marker + the real amou
   expect(chip.getAttribute('data-ppg-xp-event')).toBe('self_check_pass:module-01-lesson-01')
   expect(chip.textContent).toContain('+50 XP')
   expect(chip.textContent).toContain('Ledger:')
+})
+
+const SC_ROWS = [
+  { orderIndex: 1, optionKey: 'a', stem: 'Where is the New button?', option: 'On the Home tab' },
+  { orderIndex: 1, optionKey: 'b', stem: 'Where is the New button?', option: 'On the File tab' },
+  { orderIndex: 2, optionKey: 'a', stem: 'The first step is…', option: 'Opening the app' },
+]
+
+const scPanel = (props: {
+  outcome: 'correct' | 'retry'
+  reward?: { amount: number; eventAttr: string; label: string } | null
+}) => render(
+  <NextIntlClientProvider locale="en" messages={enMessages}>
+    <SelfCheckPanel
+      lessonKey="module-01-lesson-01"
+      rows={SC_ROWS}
+      sectionLabel="Self-Check"
+      submitLabel="Check my answers (unlimited retries)"
+      outcome={props.outcome}
+      outcomeCopy="Pass (+50 XP — granted exactly once, the first pass only)"
+      retryCopy="Retry freely — the pass gates the Mission, no grade is ever recorded."
+      reward={props.reward ?? null}
+      badgeNote="First Steps badge awarded on the first pass"
+    />
+  </NextIntlClientProvider>,
+)
+
+test('SelfCheckPanel keeps the SERVER-graded form intact: grouped stems, letter tiles, one primary CTA', async () => {
+  const { container } = scPanel({ outcome: 'retry' })
+  const panel = container.querySelector('.ppg-sc-panel') as HTMLElement
+  expect(panel.getAttribute('aria-label')).toBe('Self-Check')
+
+  // The shipped native POST form, field for field (the #52 V3 dressing is
+  // presentation: the API route, the answer_<order> names, the option-value
+  // radios and the hidden lesson_key all survive untouched).
+  const form = container.querySelector('form') as HTMLFormElement
+  expect(form.getAttribute('method')).toBe('POST')
+  expect(form.getAttribute('action')).toBe('/api/self-check/submit')
+  expect(form.getAttribute('data-ppg-self-check-form')).toBe('selfcheck')
+  const lessonKey = form.querySelector('input[name="lesson_key"]') as HTMLInputElement
+  expect(lessonKey.value).toBe('module-01-lesson-01')
+  const radios = Array.from(form.querySelectorAll('input[type="radio"]')) as HTMLInputElement[]
+  expect(radios.map((r) => r.id)).toEqual(['answer_1_a', 'answer_1_b', 'answer_2_a'])
+  expect(radios.map((r) => r.getAttribute('name'))).toEqual(['answer_1', 'answer_1', 'answer_2'])
+  expect(radios.map((r) => r.value)).toEqual(['a', 'b', 'a'])
+  expect(form.querySelector('button[type="submit"]')).toBeTruthy()
+
+  // STATE 1 + 2 of 4: the option ROWS wear the gallery's lettered face, and
+  // the SELECTED state is the radio's OWN `:checked` painted in CSS (no JS,
+  // no new state) — both the row hook and the stylesheet rule are asserted.
+  const options = Array.from(container.querySelectorAll('.ppg-sc-opt'))
+  expect(options).toHaveLength(3)
+  expect(options[0].querySelector('.ppg-sc-opt-letter')?.textContent).toBe('A')
+  expect(options[1].querySelector('.ppg-sc-opt-letter')?.textContent).toBe('B')
+  const css = (await import('node:fs')).readFileSync('app/globals.css', 'utf8')
+  expect(css).toMatch(/\.ppg-sc-opt:has\(input:checked\)/)
+
+  // The RPC repeats the stem per option row; the reader shows it ONCE.
+  expect(container.querySelectorAll('.ppg-sc-question')).toHaveLength(2)
+  expect(Array.from(container.querySelectorAll('.ppg-sc-question'))
+    .filter((p) => p.textContent?.includes('Where is the New button?'))).toHaveLength(1)
+
+  // ONE primary CTA per context.
+  const ctas = container.querySelectorAll('.ppg-cta[data-ppg-cta="primary"]')
+  expect(ctas).toHaveLength(1)
+  expect(ctas[0].tagName.toLowerCase()).toBe('button')
+})
+
+test('SelfCheckPanel states 3 + 4: the mint CORRECT card over the REAL ledger row; the retry card encourages, never punishes', () => {
+  const { container, rerender } = scPanel({
+    outcome: 'correct',
+    reward: { amount: 50, eventAttr: 'self_check_pass:module-01-lesson-01', label: 'From your XP ledger:' },
+  })
+  const okCard = container.querySelector('[data-ppg-sc-result="correct"]') as HTMLElement
+  expect(okCard).toBeTruthy()
+  expect(okCard.className).toContain('ppg-sc-result')
+  expect(container.querySelector('[data-ppg-sc-result="retry"]')).toBeNull()
+  // The real grant rides the card: the ledger PK marker + its own amount —
+  // and no success pill coexists with the rendered grant (the #45 gate).
+  const chip = okCard.querySelector('[data-ppg-xp-event]') as HTMLElement
+  expect(chip.getAttribute('data-ppg-xp-event')).toBe('self_check_pass:module-01-lesson-01')
+  expect(chip.textContent).toContain('+50 XP')
+  expect(container.querySelector('.ppg-status-pill')).toBeNull()
+
+  rerender(
+    <NextIntlClientProvider locale="en" messages={enMessages}>
+      <SelfCheckPanel
+        lessonKey="module-01-lesson-01"
+        rows={SC_ROWS}
+        sectionLabel="Self-Check"
+        submitLabel="Check my answers (unlimited retries)"
+        outcome="retry"
+        outcomeCopy="Pass (+50 XP — granted exactly once, the first pass only)"
+        retryCopy="Retry freely — the pass gates the Mission, no grade is ever recorded."
+        reward={null}
+        badgeNote="First Steps badge awarded on the first pass"
+      />
+    </NextIntlClientProvider>,
+  )
+  const retryCard = container.querySelector('[data-ppg-sc-result="retry"]') as HTMLElement
+  expect(retryCard).toBeTruthy()
+  expect(container.querySelector('[data-ppg-sc-result="correct"]')).toBeNull()
+  // No ledger row, no chip — a not-yet-passed panel claims NO grant…
+  expect(container.querySelector('[data-ppg-xp-event]')).toBeNull()
+  // …and the framing is the encouraging one: trying again freely, nothing
+  // lost, no grade recorded (the brief's ban on XP deduction / punishment
+  // language — the card carries no minus sign, no lost point, no penalty).
+  expect(retryCard.textContent).toContain('Retry freely')
+  expect(retryCard.textContent).toContain('no grade is ever recorded')
+  expect(retryCard.textContent).not.toMatch(/-50|-10|lost|penalt|deduct|Points/i)
 })

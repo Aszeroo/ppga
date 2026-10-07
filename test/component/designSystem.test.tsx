@@ -219,7 +219,7 @@ test('Tokens live once in app/globals.css and the V3 font swap points are two va
 
 test('No ad-hoc colour anywhere: every component colour resolves a token', async () => {
   const fs = await import('node:fs')
-  const sources = ['Button', 'Card', 'Badge', 'StatusPill', 'ProgressBar', 'XPBar', 'State', 'StageNode', 'StageMap', 'ChallengeTrack', 'MissionPanel', 'XpRewardChip', 'TokenSheet'].map(
+  const sources = ['Button', 'Card', 'Badge', 'StatusPill', 'ProgressBar', 'XPBar', 'State', 'StageNode', 'StageMap', 'ChallengeTrack', 'MissionPanel', 'SelfCheckPanel', 'XpRewardChip', 'TokenSheet'].map(
     (name) => fs.readFileSync(`components/${name}.tsx`, 'utf8'),
   )
   for (const src of sources as string[]) {
@@ -299,4 +299,16 @@ test('StageMap renders the ordered stage road: cleared marks, the current node, 
   // The connectors join the road (the first node has none).
   expect(items[0].querySelector('.ppg-stage-connector')).toBeNull()
   expect(items[2].querySelector('.ppg-stage-connector')).toBeTruthy()
+
+  // PPGA #52: the V3 stage vocabulary — the gold MODULE numeral tile on
+  // every node, and the state chip's aria-hidden icon beside the copy
+  // (done/current/locked read as icon + TEXT, never hue only).
+  for (const li of items) {
+    expect(li.querySelector('.ppg-stage-node .ppg-stage-numeral')).toBeTruthy()
+  }
+  const lockedChip = locked.querySelector('.ppg-stage-state-chip') as HTMLElement
+  expect(lockedChip.textContent).toContain('locked-copy')
+  expect(lockedChip.querySelector('[aria-hidden="true"]')?.textContent).toContain('🔒')
+  const clearedChip = items[0].querySelector('.ppg-stage-state-chip') as HTMLElement
+  expect(clearedChip.querySelector('[aria-hidden="true"]')?.textContent).toContain('✓')
 })

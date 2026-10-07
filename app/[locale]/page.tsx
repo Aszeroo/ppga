@@ -35,8 +35,8 @@ import { StatusPill } from '../../components/StatusPill'
  * else's gate state.
  *
  * Ticket #43 (#41 stage 2): inside the Shell, the LEARNER's dashboard is the
- * game-hub next-action screen — ONE primary CTA (the `.ppg-button` face,
- * carrying the `data-ppg-cta` primary marker) chosen by `pickPrimaryCta` off
+ * game-hub next-action screen — ONE primary CTA (the `.ppg-cta` face as of
+ * #52, carrying the `data-ppg-cta` primary marker) chosen by `pickPrimaryCta` off
  * the SAME server reads the old screen spoke (gate → Pre-Test → Course;
  * Post-Test → Survey) plus the ticket's awaiting-review state (the FINAL
  * module's own submission round is `submitted` — the Teacher holds the
@@ -85,7 +85,11 @@ function ctaTarget(href: HubCtaHref) {
 
 /** The learner's next-action card: the state lines the old screen spoke
  * (`deriveNextActionLines` — same statuses, same details) + the ONE primary
- * CTA. */
+ * CTA. PPGA #52: the V3 next-mission hero (the gallery's `#s-dash` mission
+ * hero — the 6px-pink gradient card), the ONE primary action riding the
+ * `.ppg-cta` face with the `data-ppg-cta` primary marker (exactly one per
+ * context — the AC's binding rule). The CTA's text is EXACTLY the label (the
+ * journey's `toHaveText` reads it verbatim — decoration never rides the CTA). */
 interface NextActionViewProps {
   tCopy: (key: string) => string
   lines: HubStateLine[]
@@ -94,32 +98,18 @@ interface NextActionViewProps {
 
 function HubNextActionView({ tCopy, lines, cta }: NextActionViewProps) {
   return (
-    <section aria-label={tCopy('nextAction')} data-ppg-hub="next-action">
+    <section aria-label={tCopy('nextAction')} data-ppg-hub="next-action" className="ppg-hub-hero">
+      <h1 className="ppg-heading ppg-heading-text ppg-hero-title">{tCopy('nextAction')}</h1>
       {lines.map((line) => (
-        <p key={line.key}>
+        <p className="ppg-card-text ppg-state-line" key={line.key}>
           {tCopy(line.key)} {line.detail}
         </p>
       ))}
       {cta ? (
-        <p>
-          {/** The ONE primary CTA — the login submit's token face as a link
-           * (`.ppg-button` keeps the focus ring + reduced-motion targets). */}
-          <Link
-            className="ppg-button"
-            data-ppg-cta="primary"
-            href={ctaTarget(cta.href)}
-            style={{
-              fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
-              display: 'inline-block',
-              borderWidth: 'var(--ppg-border-2)',
-              borderStyle: 'solid',
-              borderColor: 'var(--ppg-pink-accent)',
-              backgroundColor: 'var(--ppg-state-available-bg)',
-              color: 'var(--ppg-state-available-fg)',
-              boxShadow: 'var(--ppg-shadow-pixel-1)',
-              padding: 'var(--ppg-space-2) var(--ppg-space-3)',
-            }}
-          >
+        <p className="ppg-hero-cta-row">
+          {/** The ONE primary CTA — the login submit's `.ppg-cta` face as a
+           * link (the class carries the focus ring + reduced-motion rules). */}
+          <Link className="ppg-cta" data-ppg-cta="primary" href={ctaTarget(cta.href)}>
             {cta.label}
           </Link>
         </p>
@@ -144,12 +134,16 @@ interface HubCopy {
   pick: (th: string, en: string) => string
 }
 
-/** The compact player-status summary rows — every row prop is EITHER real
- * view data or null (a missing datum renders no row: zero fabricated data).
- * The row types ride the view model (ONE declaration in `dashboardHub`, no
- * re-typed twins here). Rank stays on the Leaderboard destination, never
- * here. Each row is its own tiny component: the presence decision has one
- * guard, and the section is a branchless list of rows. */
+/**
+ * The compact player-status summary — PPGA #52: the gallery's `#s-dash`
+ * status row (the gold XP panel + the white `card strip lift` cards: course
+ * progress, achievements, submission status, feedback). Every row prop is
+ * EITHER real view data or null (a missing datum renders no card: zero
+ * fabricated data). The row types ride the view model (ONE declaration in
+ * `dashboardHub`, no re-typed twins here). Rank stays on the Leaderboard
+ * destination, never here. Each row is its own tiny component: the presence
+ * decision has one guard, and the grid is a branchless list of cards.
+ */
 interface StatusViewProps {
   copy: HubCopy
   xp: HubViewModel['xp']
@@ -163,62 +157,96 @@ interface StatusViewProps {
 function XpRow({ copy, xp }: { copy: HubCopy; xp: StatusViewProps['xp'] }) {
   if (!xp) return null
   return (
-    <p>
-      {copy.htCopy('level')} {xp.level} — {copy.htCopy('progress')} {xp.totalXp} / {xp.xpToNext}
+    <div className="ppg-xp-panel">
+      <p className="ppg-xp-panel-row">
+        <span>
+          <span aria-hidden="true">⭐ </span>
+          {copy.htCopy('level')} {xp.level}
+        </span>
+        <span>
+          <span aria-hidden="true">⚡ </span>
+          {copy.htCopy('progress')} {xp.totalXp} / {xp.xpToNext} {copy.htCopy('xpUnit')}
+        </span>
+      </p>
       <XPBar xp={xp.totalXp} level={xp.level} />
       <ProgressBar value={xp.progressPct} />
-    </p>
+    </div>
   )
 }
 
 function ProgressRow({ copy, progress }: { copy: HubCopy; progress: StatusViewProps['progress'] }) {
   if (!progress) return null
   return (
-    <p>
-      {copy.tCopy('courseProgress')} {progress.completed} / {progress.total}
-      <ProgressBar value={progress.progressPct} />
-    </p>
+    <div className="ppg-status-card ppg-strip-top">
+      <h3 className="ppg-status-card-title">
+        <span aria-hidden="true">📚 </span>
+        {copy.tCopy('courseProgress')}
+      </h3>
+      <p className="ppg-status-card-value">
+        {progress.completed} / {progress.total}
+      </p>
+      <ProgressBar value={progress.progressPct} label={copy.tCopy('courseProgress')} />
+    </div>
   )
 }
 
 function BadgesRow({ copy, badges }: { copy: HubCopy; badges: StatusViewProps['badges'] }) {
   if (!badges) return null
   return (
-    <p>
-      {copy.htCopy('badge')}{' '}
-      {badges.map((b) => (
-        // PPGA #51: the V3 HUD is chip-only (XP + LV), so the earned badge's
-        // observable moved here — the award row's own `badge_key` rides the
-        // chip as a marker (the `data-ppg-xp-event` PK-marker idiom: server-
-        // authored data rendered as a stable test seam, never a fake).
-        <span key={b.badge_key} data-ppg-badge={b.badge_key}>
-          <Badge text={copy.pick(b.label_th, b.label_en)} tone="success" />
-        </span>
-      ))}
-    </p>
+    <div className="ppg-status-card ppg-strip-top">
+      <h3 className="ppg-status-card-title">
+        <span aria-hidden="true">🏆 </span>
+        {copy.htCopy('badge')}
+      </h3>
+      <p className="ppg-status-card-value">
+        {badges.map((b) => (
+          // PPGA #51: the V3 HUD is chip-only (XP + LV), so the earned badge's
+          // observable moved here — the award row's own `badge_key` rides the
+          // chip as a marker (the `data-ppg-xp-event` PK-marker idiom: server-
+          // authored data rendered as a stable test seam, never a fake).
+          <span key={b.badge_key} data-ppg-badge={b.badge_key}>
+            <Badge text={copy.pick(b.label_th, b.label_en)} tone="success" />
+          </span>
+        ))}
+      </p>
+    </div>
   )
 }
 
 function MissionRow({ copy, mission }: { copy: HubCopy; mission: StatusViewProps['mission'] }) {
   if (!mission) return null
   return (
-    <p>
-      {copy.tCopy('missionCurrent')} {copy.pick(mission.titleTh, mission.titleEn)} —{' '}
-      <Link href={missionRoute(mission)}>{copy.tCopy('linkContent')}</Link>
-    </p>
+    <div className="ppg-status-card ppg-strip-top">
+      <h3 className="ppg-status-card-title">
+        <span aria-hidden="true">🎯 </span>
+        {copy.tCopy('missionCurrent')}
+      </h3>
+      <p className="ppg-status-card-value">
+        {copy.pick(mission.titleTh, mission.titleEn)} —{' '}
+        <Link className="ppg-link" href={missionRoute(mission)}>
+          {copy.tCopy('linkContent')}
+        </Link>
+      </p>
+    </div>
   )
 }
 
 function SubmissionRow({ copy, submission }: { copy: HubCopy; submission: StatusViewProps['submission'] }) {
   if (!submission) return null
   return (
-    <p>
-      {copy.tCopy('submissionLabel')} {submission.missionId} #{submission.submissionSeq}{' '}
-      <StatusPill
-        tone={submissionTone(submission.status)}
-        label={`${copy.tCopy(`states.${submissionStateKey(submission.status)}`)} (${submission.status})`}
-      />
-    </p>
+    <div className="ppg-status-card ppg-strip-top">
+      <h3 className="ppg-status-card-title">
+        <span aria-hidden="true">📤 </span>
+        {copy.tCopy('submissionLabel')}
+      </h3>
+      <p className="ppg-status-card-value">
+        {submission.missionId} #{submission.submissionSeq}{' '}
+        <StatusPill
+          tone={submissionTone(submission.status)}
+          label={`${copy.tCopy(`states.${submissionStateKey(submission.status)}`)} (${submission.status})`}
+        />
+      </p>
+    </div>
   )
 }
 
@@ -226,21 +254,30 @@ function FeedbackRow({ copy, feedback }: { copy: HubCopy; feedback: StatusViewPr
   if (!feedback) return null
   const shown = submissionPresentation(feedback, copy.pick)
   return (
-    <p>
-      {copy.tCopy('feedbackLabel')} {feedback.missionId} ({shown.verdict}) {shown.notes}
-    </p>
+    <div className="ppg-status-card ppg-strip-top">
+      <h3 className="ppg-status-card-title">
+        <span aria-hidden="true">🧑‍🏫 </span>
+        {copy.tCopy('feedbackLabel')}
+      </h3>
+      <p className="ppg-status-card-value">
+        {feedback.missionId} ({shown.verdict}) {shown.notes}
+      </p>
+    </div>
   )
 }
 
 function HubStatusView({ copy, xp, badges, progress, mission, submission, feedback }: StatusViewProps) {
   return (
     <section aria-label={copy.tCopy('statusLabel')} data-ppg-hub="status">
+      <h2 className="ppg-heading ppg-heading-text ppg-hub-status-title">{copy.tCopy('statusLabel')}</h2>
       <XpRow copy={copy} xp={xp} />
-      <ProgressRow copy={copy} progress={progress} />
-      <BadgesRow copy={copy} badges={badges} />
-      <MissionRow copy={copy} mission={mission} />
-      <SubmissionRow copy={copy} submission={submission} />
-      <FeedbackRow copy={copy} feedback={feedback} />
+      <div className="ppg-hub-grid">
+        <ProgressRow copy={copy} progress={progress} />
+        <BadgesRow copy={copy} badges={badges} />
+        <MissionRow copy={copy} mission={mission} />
+        <SubmissionRow copy={copy} submission={submission} />
+        <FeedbackRow copy={copy} feedback={feedback} />
+      </div>
     </section>
   )
 }
@@ -263,7 +300,7 @@ async function LearnerHub() {
   const view = buildHubView({ gate, posttest, survey, map, rows, xp })
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
   return (
-    <>
+    <div className="ppg-page-wrap">
       <HubNextActionView
         tCopy={(key) => t(key as never)}
         lines={view.lines}
@@ -278,7 +315,7 @@ async function LearnerHub() {
         submission={view.submission}
         feedback={view.feedback}
       />
-    </>
+    </div>
   )
 }
 

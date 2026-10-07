@@ -192,11 +192,17 @@ test.describe('PPGA #18 critical journey', () => {
     await page.goto(`/${locale}`)
     await expectXpLine(page, 50, 50)
     await expectBadge(page, locale, 'first_steps')
+    // 0. The hub's course-progress ride (PPGA #52: the V3 status card splits
+    // the label onto the card TITLE and the fraction onto its VALUE, so the
+    // pre-#52 `${label} N / 11` adjacency no longer exists in the text —
+    // assert the fraction INSIDE the card the label selects).
+    const hubProgress = (target: Page) =>
+      hubStatus(target).locator('.ppg-status-card', { hasText: t(['home', 'courseProgress'], locale) })
     // The hub summary (ticket #43): course progress = the learner's OWN
     // complete Mission rows (0 yet — module-01's Mission is not passed), and
     // the CURRENT Mission is module-01's, linked to the real screen. The
     // gate-open mid-course CTA is the Course map.
-    await expect(hubStatus(page)).toContainText(`${t(['home', 'courseProgress'], locale)} 0 / 11`)
+    await expect(hubProgress(page)).toContainText('0 / 11')
     await expect(hubStatus(page)).toContainText(t(['home', 'missionCurrent'], locale))
     await expect(page.locator('[data-ppg-hub="status"] a[href*="module-01/mission"]')).toBeVisible()
     await expect(primaryCta(page)).toHaveText(t(['home', 'linkCourse'], locale))
@@ -240,7 +246,7 @@ test.describe('PPGA #18 critical journey', () => {
     await expectXpLine(page, 200, 100)
     await expectBadge(page, locale, 'module_01_mission')
     // Course progress moved to the learner's ONE real completion.
-    await expect(hubStatus(page)).toContainText(`${t(['home', 'courseProgress'], locale)} 1 / 11`)
+    await expect(hubProgress(page)).toContainText('1 / 11')
 
     // UNLOCK OBSERVED (the transition, never a claimed flag): the stage map
     // re-read — Module 1 now CLEARED (its own `complete` Mission row),
@@ -270,7 +276,7 @@ test.describe('PPGA #18 critical journey', () => {
     await expectXpLine(page, 350, 50)
     await expectBadge(page, locale, 'module_02_mission')
     // Two real completions; the CURRENT Mission moved on to module-03.
-    await expect(hubStatus(page)).toContainText(`${t(['home', 'courseProgress'], locale)} 2 / 11`)
+    await expect(hubProgress(page)).toContainText('2 / 11')
     await expect(page.locator('[data-ppg-hub="status"] a[href*="module-03/mission"]')).toBeVisible()
     await page.goto(`/${locale}/course`)
     expect(await lockCopyCount(false, page)).toBe(8)

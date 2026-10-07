@@ -321,14 +321,30 @@ test('the hub page renders ONE primary CTA, tokens only, and reads the hub via t
   expect(src.match(/data-ppg-cta="primary"/g)?.length).toBe(1)
   // no ad-hoc colours — every colour resolves a `--ppg-*` token.
   expect(src).not.toMatch(/#[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]/)
-  // the summary rides the REAL reads; no client-side fetch, no raw keys.
-  expect(src).toContain('readHubRowsViaTables')
-  expect(src).toContain('readXpSummaryViaRpc')
-  expect(src).not.toContain('fetch(')
   // the reads module is server-only and never touches the service-role key.
   const hub = fs.readFileSync('lib/sup/hub.ts', 'utf8')
   expect(hub).toContain("import 'server-only'")
   expect(hub).not.toMatch(/SERVICE_ROLE/i)
+})
+
+test('the hub V3 framing (PPGA #52): the ONE CTA rides the .ppg-cta face and the status rows are real-data cards', () => {
+  const src = fs.readFileSync('app/[locale]/page.tsx', 'utf8')
+  // the single primary action carries the V3 CTA face (the gallery's btn-p).
+  expect(src).toContain('className="ppg-cta" data-ppg-cta="primary"')
+  // the real-status slots are the gallery's cards: the gold XP panel + the
+  // white strip-cards (course progress / badges / mission / submission /
+  // feedback) — every row keeps its null-guard (a missing datum renders NO
+  // card: zero fabricated data).
+  expect(src).toContain('ppg-xp-panel')
+  expect(src.match(/ppg-status-card/g)?.length).toBeGreaterThanOrEqual(5)
+  expect(src.match(/if \(!\w+\) return null/g)?.length).toBeGreaterThanOrEqual(6)
+  // the earned badge's observable stays inside the status region (the
+  // #51 chip-only HUD moved the award row here — the `data-ppg-badge` seam).
+  expect(src).toContain('data-ppg-badge={b.badge_key}')
+  // the summary rides the REAL reads; no client-side fetch.
+  expect(src).toContain('readHubRowsViaTables')
+  expect(src).toContain('readXpSummaryViaRpc')
+  expect(src).not.toContain('fetch(')
 })
 
 test('the hub copy exists in BOTH locales (bilingual complete, no raw keys)', () => {

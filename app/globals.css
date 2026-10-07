@@ -803,7 +803,515 @@ body {
     width: 100%;
     table-layout: fixed;
   }
-  :where(.ppg-card-text, .ppg-badge, .ppg-badge-text, .ppg-heading, .ppg-heading-text, .ppg-button-label, .ppg-xp-numeral, table td) {
+  :where(.ppg-card-text, .ppg-badge, .ppg-badge-text, .ppg-heading, .ppg-heading-text, .ppg-button-label, .ppg-xp-numeral, .ppg-list-title, .ppg-sc-title, .ppg-sc-result-title, table td) {
     word-break: break-all;
+  }
+}
+
+/*
+ * PPGA #52: the learner core surfaces — the Dashboard hub and the Course
+ * Map stage road, dressed in the V3 gallery's own sections (`#s-dash`:
+ * the next-mission hero = pink-bordered gradient card, the gold XP panel,
+ * the white `card strip lift` status cards; `#s-map`: the centered pixel
+ * title + the max-width 760 stage road with the ↓ arrows, the gold
+ * MODULE numeral tile, the pill state tags, and the glow on the CURRENT
+ * stage). Literal colours + literals-only sizes live ONLY here (the
+ * component-purity suite scans `components/*`); the components carry the
+ * ARIA semantics, the data-attribute state markers and the copy — the
+ * state stays copy + icon + stripes + `aria-disabled`, never hue.
+ */
+
+/* The gallery's `.wrap` — one centered content column per page. */
+.ppg-page-wrap {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 28px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* In-content text link (the hub's current-Mission link): ink + underline
+ * (AA on white; the pink-500 face is a CTA gradient face, not a link face),
+ * with the token focus ring like every other focusable surface. */
+.ppg-link {
+  font-family: var(--font-ppg-body);
+  color: var(--ppg-fg-heading);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ppg-link:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+/* The `.ppg-cta` face now rides LINKS too (the hub's ONE primary action,
+ * the map's continue band) — same token ring the login submit keeps. */
+.ppg-cta:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+/* …but the face was authored for a `<button>` (login/logout), which has no
+ * text-decoration to inherit. On an `<a>` the UA default underline paints
+ * THROUGH the white-on-gradient label, so the anchor form drops it — the
+ * face stays identical in both forms. Scoped to `a` so #51's buttons are
+ * untouched; the class carries no other anchor-only state. */
+a.ppg-cta {
+  text-decoration: none;
+}
+
+/* ── Dashboard hub (gallery `#s-dash`) ──────────────────────────────────── */
+
+/* The next-action hero — the gallery's `#s-dash` mission hero: the 6px-pink
+ * gradient card that carries the ONE primary CTA of the state. */
+.ppg-hub-hero {
+  background-image: linear-gradient(135deg, var(--ppg-pink-100), var(--ppg-blue-100), var(--ppg-purple-tint));
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--ppg-pink-300);
+  border-radius: var(--ppg-radius-3);
+  padding: var(--ppg-space-5) var(--ppg-space-4);
+  box-shadow: 0 12px 40px rgba(255, 109, 160, 0.3);
+}
+
+.ppg-hero-title {
+  font-size: 22px;
+  margin: 0 0 var(--ppg-space-3);
+}
+
+.ppg-state-line {
+  margin: 0 0 10px;
+  font-weight: 600;
+  color: var(--ppg-muted);
+}
+
+.ppg-hero-cta-row {
+  margin: var(--ppg-space-3) 0 0;
+}
+
+/* The XP panel — the gallery's cream + gold progress card under the
+ * welcome row (the REAL `ppg_xp_summary` numbers ride it). */
+.ppg-xp-panel {
+  background-color: var(--ppg-cream);
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--ppg-gold);
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-3) var(--ppg-space-4);
+  box-shadow: 0 4px 16px rgba(255, 240, 109, 0.35);
+  margin-bottom: var(--ppg-space-4);
+}
+
+.ppg-xp-panel-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--ppg-space-2);
+  font-family: var(--font-ppg-body);
+  font-weight: 700;
+  color: var(--ppg-ink);
+  margin: 0 0 10px;
+}
+
+.ppg-hub-status-title {
+  font-size: 18px;
+  margin: 0 0 var(--ppg-space-3);
+}
+
+/* The gallery's `g3` status-card row: course progress / achievements /
+ * submission — `card strip lift`: the white card, the rainbow strip on its
+ * top edge (`ppg-strip-top`), the soft lift shadow. A MISSING datum renders
+ * no card (the grid simply carries fewer), so auto-fit keeps every row tidy. */
+.ppg-hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--ppg-space-4);
+}
+
+.ppg-status-card {
+  position: relative; /* the ppg-strip-top ::before anchors here */
+  background-color: var(--ppg-bg-surface);
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-4);
+  box-shadow: var(--ppg-shadow-pixel-2);
+}
+
+.ppg-status-card-title {
+  font-family: var(--font-ppg-body);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ppg-fg-heading);
+  margin: 0 0 var(--ppg-space-2);
+}
+
+.ppg-status-card-value {
+  font-family: var(--font-ppg-body);
+  font-weight: 600;
+  color: var(--ppg-muted);
+  margin: 0 0 10px;
+}
+
+/* ── Course Map stage road (gallery `#s-map`) ───────────────────────────── */
+
+.ppg-map-head {
+  text-align: center;
+}
+
+.ppg-map-title {
+  font-size: 26px;
+  margin: 0;
+}
+
+/* The cleared-stages counter + bar ride one white card (the gallery's
+ * centered header block sits above the road). */
+.ppg-map-progress {
+  background-color: var(--ppg-bg-surface);
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-3);
+  box-shadow: var(--ppg-shadow-pixel-1);
+  max-width: 560px;
+  width: 100%;
+  /* The input face's own idiom (line 251): a `width:100%` box that also
+   * carries border + padding must count them INSIDE the 100%, or the
+   * content-box overhang spills the card past the phone viewport — the
+   * 360 sweep caught 350px (312 content + 6 border + 32 padding) at
+   * right=374 in BOTH locales; the same 100% rules on the title screen and
+   * the self-check radio are border/padding-free, so they never needed it. */
+  box-sizing: border-box;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.ppg-stage-direction {
+  text-align: center;
+  margin: 0;
+  font-weight: 700;
+}
+
+/* The road itself — the gallery's `.stack` inside the 760px column. */
+.ppg-stage-map {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-4);
+}
+
+/* The ↓ arrow between stages (the gallery's `.arrow-down`) rides the
+ * connector's own ::after — decoration only (the span is aria-hidden). */
+.ppg-stage-connector {
+  position: relative;
+}
+
+.ppg-stage-connector::after {
+  content: '\2193';
+  position: absolute;
+  left: var(--ppg-space-3);
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-ppg-body);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--ppg-muted);
+}
+
+/* The stage card face: the rounded V3 card + the token-driven column. The
+ * state SURFACES (gradient / border / shadow) ride the component's inline
+ * token styles (`stageNodeStyle`); only what inline never sets lives here,
+ * so #45's module-page road keeps its own inline authority untouched. */
+.ppg-stage-node {
+  border-radius: var(--ppg-radius-3);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--ppg-space-2);
+}
+
+/* The CURRENT stage glows (the gallery's `.stage.glow`); state already
+ * speaks by copy + chips — the glow is the decoration, zeroed below under
+ * `prefers-reduced-motion`. */
+.ppg-stage-node[data-ppg-stage-current='true'] {
+  animation: ppg-glow 3.5s ease-in-out infinite;
+}
+
+/* The gold MODULE tile (the gallery's `.tag.tg-gold` + the numeral). Ink on
+ * cream is AA-clean at EVERY stage state — the locked node's tile never
+ * drops to the locked pair (the state still speaks by copy + lock icon +
+ * stripes + `aria-disabled`). */
+.ppg-stage-numeral {
+  font-size: 0.9rem;
+  color: var(--ppg-ink);
+  background-color: var(--ppg-cream);
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--ppg-gold-border);
+  border-radius: var(--ppg-radius-1);
+  padding: 6px 10px;
+}
+
+/* The state tags become the gallery's pills. */
+:where(.ppg-stage-state-chip, .ppg-stage-next-chip) {
+  border-radius: var(--ppg-radius-pill);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ppg-stage-node[data-ppg-stage-current='true'] {
+    animation-name: none;
+    animation-duration: 0s;
+  }
+}
+
+@media (max-width: 639px) {
+  .ppg-map-title {
+    font-size: 20px;
+  }
+  .ppg-hero-title {
+    font-size: 18px;
+  }
+  .ppg-hub-hero {
+    padding: var(--ppg-space-4) var(--ppg-space-3);
+  }
+}
+
+/* ── Module road dress + Lesson reader + Self-Check (gallery `#s-module`,
+ * `#s-lesson`, `#s-check` / `#s-check-ok` / `#s-check-no`) — PPGA #52 ─────
+ * The Module page needs NO new node face (the challenge road rides the
+ * stage vocabulary above — the shared `stageNodeStyle` gradients, the gold
+ * tile, the pill chips, the CURRENT glow). What is new: the visible list
+ * title, and the Self-Check in the gallery's option vocabulary.
+ * EVERY class here is a NEW name on purpose: the #51 live-a11y contrast
+ * allowance keys on `ppg-heading`/`ppg-card-text` (locked-card-only in
+ * practice), so a sub-AA pair wearing THOSE names would be silently
+ * allowed — wearing fresh names, the gate can see and name this surface.
+ * It needs no allowance: every text pair clears AA-normal on its SOLID
+ * surface (no gradient anywhere here — ink #1a202c on cream 15.8, on
+ * pink-200 12.9, on mint-tint 15.6, on pink-100 15.0, on white 16.3). The
+ * only pink-500-painted text is the `.ppg-cta` submit face — a gradient,
+ * which axe reports as `incomplete`, never a violation (exactly #51's
+ * login CTA). State stays copy + radio semantics + border/tile + card
+ * framing — never hue alone.
+ */
+
+/* The gallery's `h2.h2` section title (the Module's lesson list heads it). */
+.ppg-list-title {
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 22px;
+  color: var(--ppg-fg-heading);
+  margin: 0;
+}
+
+/* The Self-Check panel — the gallery's `card bb` question card: the white
+ * surface, the blue border, the roomy column. */
+.ppg-sc-panel {
+  background-color: var(--ppg-bg-surface);
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  border-radius: var(--ppg-radius-3);
+  padding: var(--ppg-space-4);
+  box-shadow: var(--ppg-shadow-pixel-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-4);
+}
+
+.ppg-sc-title {
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 22px;
+  color: var(--ppg-ink);
+  margin: 0;
+}
+
+/* The form is the gallery's `.stack`: question groups + the centered CTA
+ * row, one rhythm apart. */
+.ppg-sc-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-4);
+}
+
+.ppg-sc-question-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-2);
+}
+
+/* One question: the gold numeral tile (the shared `.ppg-stage-numeral`) +
+ * the localized stem in the readable body family (ink on white 16.3). */
+.ppg-sc-question {
+  display: flex;
+  align-items: center;
+  gap: var(--ppg-space-2);
+  font-family: var(--font-ppg-body);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ppg-ink);
+  margin: 0;
+}
+
+.ppg-sc-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-2);
+}
+
+/* The gallery's `.opt` row: white card, line border, the lettered tile.
+ * The NATIVE radio stays the whole control (name/value/checked/keyboard
+ * identical to the shipped form) — it covers the row invisibly, so the
+ * LABELLED control keeps its real semantics while the LETTER tile is the
+ * face the eye reads. */
+.ppg-sc-opt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--ppg-space-3);
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-2) var(--ppg-space-3);
+  cursor: pointer;
+  font-family: var(--font-ppg-body);
+  color: var(--ppg-fg-heading);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.ppg-sc-opt:hover {
+  border-color: var(--ppg-blue-300);
+}
+
+/* STATE 2 of 4 — SELECTED: the radio's OWN `:checked` (no JS, no data-flow
+ * change). Pink-100 fill + the pink-500 border + the tile's pink-200 face;
+ * ink stays on every surface (ink on pink-100 15.0, on pink-200 12.9), and
+ * the radio's `aria-checked` remains the authoritative cue for AT. */
+.ppg-sc-opt:has(input:checked) {
+  background-color: var(--ppg-pink-100);
+  border-color: var(--ppg-pink-500);
+}
+
+.ppg-sc-opt:has(input:checked) .ppg-sc-opt-letter {
+  background-color: var(--ppg-pink-200);
+  border-color: var(--ppg-pink-500);
+}
+
+/* The token focus ring moves onto the ROW its radio owns (the radio paints
+ * nothing, so the row IS the focused surface — never hue-only: the ring). */
+.ppg-sc-opt:has(input:focus-visible) {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+.ppg-sc-opt-radio {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.ppg-sc-opt-letter {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--ppg-radius-pill);
+  background-color: var(--ppg-cream);
+  border-width: 2px;
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  color: var(--ppg-ink);
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 14px;
+}
+
+/* The option's own text (the tile never shrinks; long unbreakable strings
+ * wrap inside the row instead of overflowing the 360px sweep). */
+.ppg-sc-opt-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* The ONE primary CTA of the context (the gallery's centered check
+ * button). The `.ppg-cta` face owns the colours + the focus ring. */
+.ppg-sc-cta-row {
+  display: flex;
+  justify-content: center;
+}
+
+/* STATES 3 + 4 of 4 — the outcome cards (the gallery's `#s-check-ok` /
+ * `#s-check-no`). Whole-panel by necessity: the answer key NEVER reaches
+ * the browser (the RPC policy denies the client SELECT; the check RPC's sum
+ * decides server-side), so no per-option mark could ever be REAL data —
+ * the gallery's own ok/no screens are whole-panel cards too. The hue rides
+ * the BORDER + the icon + the copy, and every TEXT pair is ink (AA-normal
+ * on both surfaces); the `data-ppg-sc-result` marker names the state for
+ * tests and for the a11y gate alike. */
+.ppg-sc-result {
+  text-align: center;
+  border-width: var(--ppg-border-3);
+  border-style: solid;
+  border-radius: var(--ppg-radius-3);
+  padding: var(--ppg-space-5) var(--ppg-space-4);
+}
+
+.ppg-sc-result[data-ppg-sc-result='correct'] {
+  background-color: var(--ppg-mint-tint);
+  border-color: var(--ppg-status-success);
+}
+
+.ppg-sc-result[data-ppg-sc-result='retry'] {
+  background-color: var(--ppg-pink-100);
+  border-color: var(--ppg-pink-300);
+}
+
+.ppg-sc-result-emoji {
+  display: block;
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: var(--ppg-space-2);
+}
+
+.ppg-sc-result-title {
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 20px;
+  color: var(--ppg-ink);
+  margin: 0 0 var(--ppg-space-2);
+}
+
+/* The retry card's encouraging note — the shipped "retry freely, no grade
+ * is ever recorded" copy (ink on pink-100): the brief bans any XP
+ * deduction or punishment language, and none exists here or in the copy. */
+.ppg-sc-result-note {
+  font-family: var(--font-ppg-body);
+  font-weight: 600;
+  color: var(--ppg-fg-heading);
+  margin: 0;
+}
+
+.ppg-sc-result-line {
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ppg-sc-opt {
+    transition-duration: 0s;
   }
 }

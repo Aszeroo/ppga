@@ -80,11 +80,9 @@ export function MissionPanel({
       {unlocked ? (
         <p data-ppg-unlock="next-module">
           {unlocked.copy}{' '}
-          <Link
-            href={unlocked.href}
-            className="ppg-button"
-            style={{ display: 'inline-block', fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}
-          >
+          {/* The text-link face (#52): the band is content, not a competing
+              CTA — the panel keeps exactly one primary action (its form). */}
+          <Link href={unlocked.href} className="ppg-link">
             {unlocked.title}
           </Link>
         </p>

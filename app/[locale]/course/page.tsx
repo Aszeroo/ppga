@@ -54,29 +54,35 @@ async function CourseStageMap() {
   }))
 
   return (
-    <section aria-label={t('mapLabel')}>
+    <section aria-label={t('mapLabel')} className="ppg-page-wrap">
       {view.status === 'ok' ? (
         <>
-          <h1 className="ppg-heading ppg-heading-text" style={{ fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}>
-            {t('title')}
-          </h1>
-          <p className="ppg-card-text">
-            {t('progressCleared')}{' '}
-            <span className="ppg-xp-numeral" style={{ fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}>
-              {view.cleared} / {view.total}
-            </span>
-          </p>
-          <ProgressBar value={view.cleared} max={view.total} label={t('progressCleared')} />
+          {/** PPGA #52: the gallery's `#s-map` composition — the centered
+           * pixel title, the cleared-stages card, the continue band riding
+           * the ONE `.ppg-cta` face of this context, and the 760px stage
+           * road with the ↓ connectors + glow on the current stage (all in
+           * `app/globals.css` — the components carry the semantics only). */}
+          <div className="ppg-map-head">
+            <h1 className="ppg-heading ppg-heading-text ppg-map-title">{t('title')}</h1>
+          </div>
+          <div className="ppg-map-progress">
+            <p className="ppg-card-text">
+              {t('progressCleared')}{' '}
+              <span className="ppg-xp-numeral">
+                {view.cleared} / {view.total}
+              </span>
+            </p>
+            <ProgressBar value={view.cleared} max={view.total} label={t('progressCleared')} />
+          </div>
           {view.next ? (
-            <p data-ppg-stage-direction="next">
+            <p className="ppg-stage-direction" data-ppg-stage-direction="next">
               {t('continueStage')}{' '}
               <Link
                 href={{
                   pathname: '/course/[moduleKey]' as const,
                   params: { moduleKey: view.next.module_key },
                 }}
-                className="ppg-button"
-                style={{ display: 'inline-block', fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}
+                className="ppg-cta"
               >
                 {String(view.next.order_index).padStart(2, '0')}. {pick(view.next.title_th, view.next.title_en)}
               </Link>

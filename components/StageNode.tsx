@@ -4,19 +4,22 @@ import { Link, type AppHref } from '../lib/i18n/routing'
 import { type StageState } from '../lib/courseStages'
 
 /**
- * The StageNode primitive (#41 stage 3, ticket #44) — one Module on the
- * Course Map's pixel stage road: the numeral badge, the title, the summary
- * and the state chip (`cleared | open | locked`). The vocabulary is the
- * shared stage-map language ticket #45 reuses: `.ppg-stage-item` (the row),
- * `.ppg-stage-connector` (the road segment), `.ppg-stage-node`,
- * `.ppg-stage-numeral`, `.ppg-stage-clear-mark`, `.ppg-stage-state-chip` +
- * the `data-ppg-stage-state` / `data-ppg-stage-current` markers.
+ * The StageNode primitive (#41 stage 3, ticket #44; V3-dressed by ticket #52)
+ * — one Module on the Course Map's pixel stage road: the numeral badge, the
+ * title, the summary and the state chip (`cleared | open | locked`). The
+ * vocabulary is the shared stage-map language ticket #45 reuses:
+ * `.ppg-stage-item` (the row), `.ppg-stage-connector` (the road segment +
+ * its ↓ arrow), `.ppg-stage-node`, `.ppg-stage-numeral` (the gold MODULE
+ * tile), `.ppg-stage-clear-mark`, `.ppg-stage-state-chip` + the
+ * `data-ppg-stage-state` / `data-ppg-stage-current` markers (the glow on the
+ * current stage + the road layout ride `app/globals.css`).
  *
- * State is NEVER colour-only: every node carries its state COPY in the chip
- * + in the `aria-label`; a locked node is also `aria-disabled`, wears the
- * shipped `.ppg-state-locked` stripes and is rendered WITHOUT a link —
- * visible and semantically locked, never hidden, never fake-unlocked. A
- * cleared/open node links its title (keyboard-operable `.ppg-stage-link`,
+ * State is NEVER colour-only: every node carries its state COPY in the chip,
+ * an aria-hidden state ICON rides the copy (✓ | ▶️ | 🔒 — the gallery's tag
+ * icons), the `aria-label` names it; a locked node is also `aria-disabled`,
+ * wears the shipped `.ppg-state-locked` stripes and is rendered WITHOUT a
+ * link — visible and semantically locked, never hidden, never fake-unlocked.
+ * A cleared/open node links its title (keyboard-operable `.ppg-stage-link`,
  * the token focus ring via `app/globals.css`).
  *
  * Tokens only (the primitives' discipline): every colour resolves a
@@ -47,16 +50,34 @@ const BORDER_BY_STATE: Record<StageState, string> = {
   locked: 'var(--ppg-status-locked)',
 }
 
+/** The V3 stage fills (the gallery `#s-map` gradients, token-pure). The
+ * LOCKED node keeps a flat surface colour: the `.ppg-state-locked` class
+ * paints its stripes as a `background-image` — an inline gradient would
+ * override the stripes (the locked cue must stay). */
 const BG_BY_STATE: Record<StageState, string> = {
-  cleared: 'var(--ppg-bg-surface)',
+  cleared: 'var(--ppg-mint-tint)',
   open: 'var(--ppg-state-available-bg)',
   locked: 'var(--ppg-state-locked-bg)',
+}
+
+const GRADIENT_BY_STATE: Record<StageState, string | undefined> = {
+  cleared: 'linear-gradient(135deg, var(--ppg-mint-tint), var(--ppg-bg-surface))',
+  open: 'linear-gradient(135deg, var(--ppg-pink-100), var(--ppg-blue-100))',
+  locked: undefined,
 }
 
 const CONNECTOR_BY_STATE: Record<StageState, string> = {
   cleared: 'var(--ppg-status-success)',
   open: 'var(--ppg-pink-accent)',
   locked: 'var(--ppg-status-locked)',
+}
+
+/** The gallery's per-state chip icons (aria-hidden decoration beside the
+ * state COPY — the copy stays the authoritative non-colour cue). */
+const STATE_ICON: Record<StageState, string> = {
+  cleared: '✓',
+  open: '▶️',
+  locked: '🔒',
 }
 
 /**
@@ -68,6 +89,7 @@ const CONNECTOR_BY_STATE: Record<StageState, string> = {
 export function stageNodeStyle(state: StageState): CSSProperties {
   return {
     backgroundColor: BG_BY_STATE[state],
+    backgroundImage: GRADIENT_BY_STATE[state],
     color: state === 'locked' ? 'var(--ppg-state-locked-fg)' : 'var(--ppg-fg-heading)',
     borderWidth: 'var(--ppg-border-2)',
     borderColor: BORDER_BY_STATE[state],
@@ -134,10 +156,7 @@ export function StageNode({
         aria-label={`${stateCopy} — ${title}`}
         style={nodeStyle}
       >
-        <span
-          className="ppg-xp-numeral ppg-stage-numeral"
-          style={{ color: locked ? 'var(--ppg-state-locked-fg)' : 'var(--ppg-fg-heading)' }}
-        >
+        <span className="ppg-xp-numeral ppg-stage-numeral">
           {String(orderIndex).padStart(2, '0')}
         </span>
         {state === 'cleared' ? (
@@ -164,6 +183,7 @@ export function StageNode({
         </h2>
         <p className="ppg-card-text">{summary}</p>
         <span className="ppg-stage-state-chip" data-ppg-stage-state={state} style={chipStyle}>
+          <span aria-hidden="true">{`${STATE_ICON[state]} `}</span>
           {stateCopy}
         </span>
         {isNext && nextCopy ? (

@@ -21,7 +21,7 @@ export interface StageMapProps {
 
 export function StageMap({ stages, mapLabel }: StageMapProps) {
   return (
-    <ol className="ppg-stage-map" aria-label={mapLabel} style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+    <ol className="ppg-stage-map" aria-label={mapLabel}>
       {stages.map((stage, index) => (
         <StageNode key={stage.moduleKey} {...stage} isFirst={index === 0} />
       ))}
