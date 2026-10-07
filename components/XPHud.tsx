@@ -2,51 +2,46 @@ import { readXpSummaryViaRpc } from '../lib/sup/xp'
 
 import { getTranslations } from 'next-intl/server'
 
-import { XPBar } from './XPBar'
-import { ProgressBar } from './ProgressBar'
-import { Badge } from './Badge'
-
 /**
- * Ticket #10 header, PPGA #41 stage 1: the component was misnamed `Header`
- * while it is the gamified HUD's XP/Level/Badge display — the issue's
- * Solution names it as the HUD bar's player display. It is renamed here to
- * `XPHud` per the issue's Implementation Decision ("the existing XP/Level/
- * Badge display component, renamed to a clear name such as XPHud"); the
- * `header` message namespace and all `header.*` keys stay unchanged — a
- * component-name change, never a copy-key change (the journey's `t` reads
- * `header.label`, `header.level`, `header.progress`, `header.badge` verbatim).
+ * Ticket #51: the V3 HUD chips — the gallery's `.xp` gold XP chip + `.lv` LV
+ * chip (the `XPHud` keeps the #10/#41 data spine verbatim): the Level/XP
+ * values are the `ppg_xp_summary` read — the learner's own XP ledger DERIVED
+ * (total = the SUM; level = floor(total/100)+1; xp-to-next = level*100 -
+ * total) — no fake numbers (the state is the ledger's read, never a client
+ * count). The `header.progress` copy line keeps the real
+ * `xp / xpToNext` numbers at every width (story #9: the learner never loses
+ * bearings; the responsive sweep reads exactly this copy).
  *
- * Ticket #10 header: the real Level/XP/progress the gamified spine shows.
- * The XP/Level/progress are the `ppg_xp_summary` read — the learner's own
- * XP ledger DERIVED (total = the SUM; level = floor(total/100)+1;
- * xp-to-next = level*100 - total; progress = remainder/100) — no fake
- * numbers (the state is the ledger's read, never a client count; the
- * client never decides what Level a learner holds). The earned badges ride
- * the awards (a real achievement's record: the First Steps badge lands on
- * the first Self-Check pass event, never a fake award). The definer's
- * rights are FILTERED to the CALLER's own rows — an other learner's XP/
- * Level never appears. Loading/empty/error states (`header.states.*`)
- * have their own copy in `messages`; the numeral + bar roles reuse the
- * gallery's XP/progress primitives (`XPBar`, `ProgressBar`) so a
- * single-token swap re-tunes the digits once.
+ * The V3 design sheet's HUD is chip-only (the progress bar + the earned-badge
+ * chips ride the dashboard cards — stage #52); the header's chips + the copy
+ * line keep the REAL state with the same loading/empty/error copy
+ * (`header.states.*`). The `⭐` + `XP` + `LV` are the design sheet's literal
+ * marks (the `lv`/`xp` allowlist in `scripts/validate-thai.py`); the
+ * announcement stays the full `header.level` label on the chip.
+ *
+ * The LV chip's `ppg-ring` pulse + the strip pixels ride `app/globals.css`
+ * (tokens only — zeroed under `prefers-reduced-motion`); state is never
+ * colour-alone: every chip carries its text + the ARIA label.
  */
 export async function XPHud() {
   const t = await getTranslations('header')
   const summary = await readXpSummaryViaRpc()
   const xp = summary.totalXp ?? 0
   const level = summary.level ?? 1
-  const progress = summary.progressPct ?? 0
   return (
-    <section aria-label={t('label')}>
+    <section aria-label={t('label')} className="ppg-hud">
       {summary.status === 'ok' ? (
         <>
-          <span>{t('level')} {level}</span>
-          <XPBar xp={xp} level={level} />
-          <ProgressBar value={progress} />
-          <span>{t('progress')} {xp} / {summary.xpToNext ?? 100}</span>
-          {summary.badges?.map((b) => (
-            <Badge key={b.badge_key} text={`${t('badge')} ${b.badge_key}`} tone="success" />
-          ))}
+          <span className="ppg-xp-chip">
+            <span aria-hidden="true">⭐</span> {xp} {t('xpUnit')}
+          </span>
+          <span className="ppg-level-chip" role="img" aria-label={`${t('level')} ${level}`}>
+            <i className="ppg-level-chip-label">{t('levelChip')}</i>
+            <b className="ppg-level-chip-number">{level}</b>
+          </span>
+          <span className="ppg-hud-progress">
+            {t('progress')} {xp} / {summary.xpToNext ?? 100}
+          </span>
         </>
       ) : null}
       {summary.status === 'not-configured' ? <span>{t('states.notConfigured')} {summary.detail}</span> : null}

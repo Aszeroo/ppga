@@ -62,7 +62,36 @@
   --ppg-gray-500: #a0aec0;
   --ppg-gray-700: #718096;
   --ppg-cream: #fffbf0;
-
+  /*
+   * PPGA #51: the frame's strips + the pill radius — the V3 design-sheet
+   * values (the gallery's `--strip`/`--strip-sm`/`999px` chips) as new tokens.
+   * Literal colours stay ONLY in this file (the component-purity suite's scan
+   * covers `components/*`); the spacing scale keeps its own comment.
+   */
+  --ppg-strip: repeating-linear-gradient(
+    90deg,
+    var(--ppg-pink-300) 0,
+    var(--ppg-pink-300) 20px,
+    var(--ppg-blue-300) 20px,
+    var(--ppg-blue-300) 40px,
+    var(--ppg-purple) 40px,
+    var(--ppg-purple) 60px,
+    var(--ppg-mint) 60px,
+    var(--ppg-mint) 80px
+  );
+  --ppg-strip-sm: repeating-linear-gradient(
+    90deg,
+    var(--ppg-pink-300) 0,
+    var(--ppg-pink-300) 10px,
+    var(--ppg-blue-300) 10px,
+    var(--ppg-blue-300) 20px,
+    var(--ppg-purple) 20px,
+    var(--ppg-purple) 30px,
+    var(--ppg-mint) 30px,
+    var(--ppg-mint) 40px
+  );
+  --ppg-gold-border: var(--ppg-gold-deepest);
+  --ppg-radius-pill: 999px;
   /* ── spacing scale (8px base — the pixel unit) ─────────────────────────
    *─ */
   --ppg-space-1: 4px;
@@ -212,10 +241,16 @@ body {
 .ppg-input {
   font-family: var(--font-ppg-body);
   background-color: var(--ppg-bg-surface);
-  color: var(--ppg-fg-body);
-  border: var(--ppg-border-2) solid var(--ppg-blue-300);
+  color: var(--ppg-fg-heading);
+  border-width: 3.5px;
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
   box-shadow: var(--ppg-shadow-pixel-1);
-  padding: var(--ppg-space-2);
 }
 
 /*
@@ -232,19 +267,459 @@ body {
 }
 
 /*
- * PPGA #41 stage 2: the mobile collapse. SAME Shell concept on small screens
- * (the issue: "primary nav collapses into a compact accessible menu; the
- * learner status stays visible; no sidebar"). The MOBILE collapsed menu hides
- * the nav links (`display: none` — never Tab-trapable, so Tab lands on the
- * `.ppg-menu-toggle` button, which is the focusable affordance with the
- * `aria-expanded` state); the OPEN menu shows them (`the wrapper's
- * `.ppg-nav-open` class from `components/MenuWrap.tsx`). The toggle itself is
- * the menu affordance on mobile and is HIDDEN at desktop (the items are always
- * inline there — the issue's desktop composition: CENTER = primary nav).
- * The `XPHud` is NEVER inside the collapsible content: the Shell's right
- * cluster keeps the HUD + the selector + logout on every width (story #9).
+ * PPGA #51: the V3 frame pixels — the header's white face + pink underline +
+ * the rainbow strip beneath it (the gallery's `.hd`/`.hd::after`), the pixel
+ * logo (`Press Start 2P` + the blue/purple shadow; the display font is
+ * ASCII-only, so the wordmark never falls to Thai), the centered nav pills
+ * + the active-section indication, the gold XP chip + the LV chip, the user
+ * chip + the compact switcher and the burger; the simple footer's strip +
+ * copy line; and the standalone title screens' login-card idiom (the
+ * 6px-pink card + its `::before` strip + the bouncing mascot + the compact
+ * language switch spans). Literal colours + literals-only sizes live ONLY in
+ * this stylesheet (the token-purity suite scans `components/*` only); the
+ * ARIA roles/names + the keyboard focus stay the components' own attributes.
+ * The V3 gallery's keyframes ride below and are ZEROED under
+ * `prefers-reduced-motion` at the end of this block.
  */
-@media (max-width: 767px) {
+.ppg-logo {
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  color: var(--ppg-pink-300);
+  font-size: 20px;
+  text-shadow: 3px 3px 0 var(--ppg-blue-300), 5px 5px 0 var(--ppg-purple);
+  white-space: nowrap;
+  animation: ppg-floaty 3s ease-in-out infinite;
+}
+
+.ppg-nav-pill {
+  font-family: var(--font-ppg-body);
+  padding: 9px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 15px;
+  border-width: 3px;
+  border-style: solid;
+  border-color: transparent;
+  color: var(--ppg-ink);
+}
+
+.ppg-nav-current {
+  background: linear-gradient(135deg, var(--ppg-pink-300), var(--ppg-purple));
+  color: #fff;
+  border-color: var(--ppg-blue-300);
+  box-shadow: 0 5px 14px rgba(230, 80, 144, 0.4);
+}
+
+.ppg-xp-chip {
+  background: linear-gradient(135deg, var(--ppg-gold), var(--ppg-gold-deep));
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--ppg-gold-border);
+  border-radius: var(--ppg-radius-pill);
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.4);
+  font-size: 14px;
+}
+
+.ppg-level-chip {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--ppg-pink-300), var(--ppg-pink-500));
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  animation: ppg-ring 2.2s infinite;
+}
+
+.ppg-level-chip-label {
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.ppg-level-chip-number {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.ppg-user-chip {
+  background-color: #fff;
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+  font-family: var(--font-ppg-body);
+}
+
+.ppg-lang-compact {
+  font-family: var(--font-ppg-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 6px 16px;
+  border-width: 2.5px;
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-pill);
+  color: var(--ppg-faint);
+}
+
+.ppg-lang-current {
+  background-color: var(--ppg-blue-100);
+  border-color: var(--ppg-blue-300);
+  color: var(--ppg-blue-500);
+}
+
+.ppg-strip-top::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  border-radius: 16px 16px 0 0;
+  background: var(--ppg-strip-sm);
+}
+
+.ppg-strip-bottom::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 6px;
+  background: var(--ppg-strip);
+}
+
+/* The gallery's `.ft` wrapper + `.ft-in` white panel (the faint copy line
+ * rides the WHITE panel — `--ppg-faint` on the blue page body would sit at
+ * 4.10:1, under the AA floor; on the #fff panel it clears at 4.62:1). */
+.ppg-shell-footer {
+  background-color: var(--ppg-bg-surface);
+  margin-top: 56px;
+  padding: 18px 16px 22px;
+  text-align: center;
+  position: relative;
+}
+
+.ppg-footer-copy {
+  color: var(--ppg-faint);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.8;
+  font-family: var(--font-ppg-body);
+}
+
+.ppg-footer-copy strong {
+  color: var(--ppg-muted);
+}
+
+.ppg-login-card {
+  background-color: #fff;
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--ppg-pink-300);
+  border-radius: 26px;
+  padding: 44px 40px;
+  position: relative;
+  animation: ppg-glow 3.5s ease-in-out infinite;
+  box-shadow: 0 20px 60px rgba(26, 32, 44, 0.22);
+}
+
+.ppg-login-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 8px;
+  border-radius: 20px 20px 0 0;
+  background: var(--ppg-strip-sm);
+}
+
+.ppg-mascot {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 16px;
+  background: linear-gradient(135deg, var(--ppg-pink-300), var(--ppg-blue-300), var(--ppg-purple));
+  border-radius: 50%;
+  border-width: 6px;
+  border-style: solid;
+  border-color: #fff;
+  box-shadow: 0 10px 30px rgba(230, 80, 144, 0.45);
+  font-size: 60px;
+  animation: ppg-bounce-ic 2s ease-in-out infinite;
+}
+
+.ppg-title-h1 {
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 44px;
+  color: var(--ppg-pink-300);
+  text-shadow: 4px 4px 0 var(--ppg-blue-300), 6px 6px 0 var(--ppg-purple);
+}
+
+.ppg-title-h1-small {
+  font-family: var(--font-ppg-body);
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.ppg-title-sub {
+  font-family: var(--font-ppg-body);
+  color: var(--ppg-muted);
+  font-weight: 600;
+}
+
+.ppg-shell-header {
+  background-color: var(--ppg-bg-surface);
+  border-bottom: 6px solid var(--ppg-pink-300);
+  position: relative;
+  box-shadow: var(--ppg-shadow-pixel-1);
+}
+
+.ppg-shell-in {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.ppg-context-title {
+  font-family: var(--font-ppg-body);
+  font-size: 14px;
+  color: var(--ppg-faint);
+  margin: 0;
+}
+
+.ppg-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+}
+
+.ppg-menu-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.ppg-menu-wrap.ppg-nav-open {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.ppg-menu-toggle {
+  font-family: var(--font-ppg-body);
+  font-size: 22px;
+  padding: 6px 12px;
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--ppg-pink-300);
+  border-radius: 10px;
+  background-color: var(--ppg-bg-surface);
+  color: var(--ppg-pink-500);
+  line-height: 1;
+}
+
+.ppg-hud-cluster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ppg-hud {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ppg-hud-progress {
+  font-family: var(--font-ppg-body);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ppg-faint);
+}
+
+/* The app's own chip (the /logout route must stay reachable; the gallery
+ * ships no logout affordance). It rides the `.uchip` family — white face,
+ * blue border, INK text: `--ppg-status-error` on white is 4.11:1 and the
+ * #18 axe sweep would flag it on EVERY authenticated stage. */
+.ppg-logout-chip {
+  font-family: var(--font-ppg-body);
+  background-color: var(--ppg-bg-surface);
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ppg-ink);
+  white-space: nowrap;
+}
+
+.ppg-cta {
+  font-family: var(--font-ppg-body);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 13px 26px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 16px;
+  background-image: linear-gradient(135deg, var(--ppg-pink-300), var(--ppg-pink-500));
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--ppg-pink-500);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(230, 80, 144, 0.45);
+}
+
+.ppg-title-screen-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.ppg-title-welcome {
+  font-family: var(--font-ppg-body);
+  font-size: 26px;
+  font-weight: 800;
+  text-align: center;
+  background-image: linear-gradient(135deg, var(--ppg-pink-300), var(--ppg-blue-300), var(--ppg-purple));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.ppg-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ppg-field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-ppg-body);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ppg-fg-heading);
+}
+
+.ppg-field-label::before {
+  content: '\25B6';
+  color: var(--ppg-pink-300);
+  font-size: 11px;
+}
+
+.ppg-form-note {
+  font-family: var(--font-ppg-body);
+  color: var(--ppg-status-error);
+  font-weight: 700;
+}
+
+@keyframes ppg-floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes ppg-bounce-ic {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-9px) scale(1.08);
+  }
+}
+
+@keyframes ppg-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 18px rgba(230, 80, 144, 0.35), 0 0 36px rgba(109, 180, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 34px rgba(230, 80, 144, 0.6), 0 0 56px rgba(109, 180, 255, 0.4);
+  }
+}
+
+@keyframes ppg-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(230, 80, 144, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 16px rgba(230, 80, 144, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.ppg-logo, .ppg-level-chip, .ppg-login-card, .ppg-mascot) {
+    animation-duration: 0s;
+    transition-duration: 0s;
+  }
+  .ppg-logo {
+    animation-name: none;
+    animation-duration: 0s;
+  }
+  .ppg-level-chip {
+    animation-name: none;
+    animation-duration: 0s;
+  }
+  .ppg-login-card {
+    animation-name: none;
+    animation-duration: 0s;
+  }
+  .ppg-mascot {
+    animation-name: none;
+    animation-duration: 0s;
+  }
+}
+
+/*
+ * PPGA #51: the mobile collapse keeps its SAME Shell concept, but the
+ * tablet breakpoint moves to the V3 design-sheet's boundary (the gallery's
+ * `@media(max-width:1000px)` collapses the `.navs` + shows the `.burger`) —
+ * the #41 768px convention was the previous brief's tablet edge; the design
+ * authority order (HTML gallery > brief) decides this stage's layout. The
+ * MOBILE collapsed menu hides the nav links (`display: none` — never
+ * Tab-trapable, Tab lands on the `.ppg-menu-toggle` affordance with the
+ * `aria-expanded` state); the OPEN menu shows them (`.ppg-nav-open`); the
+ * toggle hides itself on the desktop composition (CENTER = primary nav,
+ * no sidebar). The `XPHud` stays in the Shell's right cluster at every
+ * width (story #9: learner status never lost bearings).
+ */
+@media (max-width: 999px) {
   .ppg-menu-wrap .ppg-nav-item {
     display: none;
   }
@@ -253,12 +728,49 @@ body {
   }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1000px) {
   .ppg-menu-toggle {
     display: none;
   }
   .ppg-menu-wrap .ppg-nav-item {
     display: block;
+  }
+}
+
+/*
+ * PPGA #51: the V3 compact header below the tablet breakpoint (the gallery's
+ * `.hd-in{justify-content:space-between}` + the `.burger` affordance) and the
+ * phone-shrunk HUD chips (the gallery's `@media(max-width:640px)` `.xp` + the
+ * hidden `.uchip .lbl` — here the chip's own type just shrinks so the REAL
+ * numbers stay readable inside 360px; nothing is hidden away, story #9).
+ */
+@media (max-width: 999px) {
+  .ppg-shell-in {
+    justify-content: space-between;
+  }
+  .ppg-nav {
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 639px) {
+  .ppg-xp-chip {
+    font-size: 12.5px;
+    padding: 8px 12px;
+  }
+  .ppg-user-chip {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  .ppg-logout-chip {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+  .ppg-title-h1 {
+    font-size: 26px;
+  }
+  .ppg-login-card {
+    padding: 32px 22px;
   }
 }
 

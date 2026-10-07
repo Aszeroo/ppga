@@ -52,9 +52,13 @@ ABOVE_VOWELS = set(range(0x0E34, 0x0E3B))
 
 # Case-insensitive tokens allowed to touch Thai letters or stand alone as
 # untranslated English (proper nouns, format names, ICU-style args).
+# PPGA #51: "PPGA" (the product wordmark, Press Start 2P is ASCII-only) and
+# "LV" (the HUD's Level-chip abbreviation from the design gallery) join the
+# allowlist — they are format-only marks, never untranslated copy.
 ALLOWED_TOKENS = {
     "powerpoint", "microsoft", "xp", "level", "roster",
     "pdf", "csv", "xlsx", "sql", "id", "url",
+    "ppga", "lv",
 }
 ICU_ARG = re.compile(r"\{[^{}]*\}")
 

@@ -118,7 +118,9 @@
     "submit": "ลงชื่อ",
     "busy": "กำลังลงชื่อ…",
     "afterSuccess": "เมื่อลงชื่อได้ คุณไปที่หน้าโปรไฟล์",
-    "fallbackSuspense": "กำลังเตรียมแบบฟอร์ม..."
+    "fallbackSuspense": "กำลังเตรียมแบบฟอร์ม...",
+    "welcome": "ยินดีต้อนรับ!",
+    "gameBlurb": "🎮 เริ่มต้นการผจญภัย เรียนรู้ PowerPoint แบบ Gamification"
   },
   "changePassword": {
     "intro": "เปลี่ยนรหัสที่ลงชื่อ",
@@ -427,7 +429,9 @@
       "error": "ความผิด",
       "unauthorized": "ไม่อ้อนาญ — เปิกงานก่่อน",
       "notConfigured": "ไม่ไม่่งตั้"
-    }
+    },
+    "levelChip": "LV",
+    "xpUnit": "XP"
   },
   "selfcheck": {
     "section": "Self-Check",
@@ -598,7 +602,11 @@
     "menuOpenLabel": "เปิด-นาทาง",
     "footerAttribution": "PowerPoint Presentation Creation — การเรียนรู้การนำเสนอ / สำหรับนักเรียนระดับประกาศนียบัตรวิชาชีพชั้นปีที่ 2 (ปวช.2)",
     "footerAttributionEn": "PowerPoint Presentation Creation — Presentation-Production learning / for certificate-level vocational learners, Year 2 (Por Wor Sor 2)",
-    "footerHealth": "สารภาพ"
+    "footerHealth": "สารภาพ",
+    "logo": "PPGA",
+    "userLearner": "นักเรียน",
+    "userTeacher": "ครูผู้สอน",
+    "userAdmin": "ผู้ดูแลระบบ"
   },
   "challenge": {
     "trackLabel": "ลำดับการท้าทาย",

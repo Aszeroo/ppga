@@ -78,5 +78,5 @@ export default async function LocaleLayout({ children }: Readonly<{ children: Re
   const profile = await readOwnProfile()
   const role = profile.status === 'ok' ? profile.row?.role : undefined
 
-  return <Shell role={role} contextTitle={contextTitle} standalone={standalone}>{children}</Shell>
+  return <Shell role={role} contextTitle={contextTitle} standalone={standalone} activeSection={suffix}>{children}</Shell>
 }

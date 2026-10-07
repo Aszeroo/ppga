@@ -49,23 +49,54 @@ test.describe('PPGA #18 accessibility sweep', () => {
   ] as [string, string, string][]
 
   /**
-   * PPGA #50 / ADR-0004: the V3 palette is the owner-authored design (the
-   * design sheet's own `:root` values ride under the unchanged token names),
-   * and TWO of its state surfaces sit below the AA ratio the #18 sweep
+   * PPGA #50 / ADR-0004 + #51: the V3 palette is the owner-authored design
+   * (the design sheet's own `:root` values ride under the unchanged token
+   * names), and a few of its marks sit below the AA ratio the #18 sweep
    * asserted against the OLD palette:
-   * - the login CTA (`.ppg-button`, available state): `--ppg-pink-500`
-   *   `#e65090` on `--ppg-pink-100` `#ffeeec` = 3.16 (needs 4.5);
-   * - the locked badge cards (`.ppg-card[data-ppg-state=locked]` heading):
-   *   `--ppg-status-locked` `#99a3b0` on `--ppg-gray-100` `#f1f3f6` = 2.29
-   *   (needs 3 at 24pt bold).
+   * - the LOCKED badge card (`Card[data-ppg-state=locked]`): `--ppg-status-locked`
+   *   `#99a3b0` on `--ppg-gray-100` `#f1f3f6` = 2.29 (needs 3 at 24pt bold),
+   *   and that ONE foreground paints BOTH of its text nodes — the heading
+   *   (`h1.ppg-heading`) and the criteria body (`p.ppg-card-text`). #50's pair,
+   *   still live; the dump on this branch confirms those two classes are the
+   *   ONLY violators, and ONLY on locked cards (every available/warning/error
+   *   card clears AA, so these classes cannot fire off a locked card today);
+   * - the pixel wordmark (`.ppg-logo` header, 20px display; `.ppg-title-h1`
+   *   title screens, 44px): `--ppg-pink-300` `#ff6da0` on `#fff` = 2.64, the
+   *   design sheet's SHADOWED logo — #51's pair. Today the text-shadow makes
+   *   axe report it `incomplete` (never a violation), so the fragment matches
+   *   nothing yet; it stays a documented allowance the moment the shadow drops
+   *   (the #50 login-CTA 3.16 pair likewise died to the CTA's gradient face —
+   *   axe reports gradients as incomplete, never a violation).
    * #50's AC keeps the ramp exactly as the owner authored it ("tests updated
-   * to the new tokens"), so the sweep's baseline moves to the V3 pairings:
-   * on the two stages below, `color-contrast` is the ONLY finding allowed —
-   * every other rule, on every stage, stays at zero like before. A V3
-   * re-tune that clears these two pairs makes the allowance dead code the
-   * next ticket deletes.
+   * to the new tokens"), so the sweep's baseline moves to the V3 surfaces —
+   * scoped NODE-precisely now: `color-contrast` may only fire on nodes whose
+   * OWN markup carries one of the class names below (any other node, or any
+   * other rule, on ANY stage, stays zero like before). A V3 re-tune that
+   * clears these pairs makes the allowance dead code the next ticket deletes.
+   * Matching is on `node.html` (the real class attribute), NOT the generated
+   * `node.target` selector: axe picks the shortest selector that uniquely
+   * resolves, so a lone locked-card node emits `…section > h1` /
+   * `…section > .ppg-card-text` and may DROP the class — and it resolves
+   * through DIFFERENT ancestors per locale (the th run through the locked
+   * `.ppg-card[data-ppg-state]`, the en run through the `section[aria-label]`),
+   * so a `target`-only match is both incomplete and locale-fragile. The class
+   * names below are dot-free: they hit `html`'s `class="… ppg-card-text …"`
+   * AND substring-match the dotted form when axe does emit it in a `target`.
    */
-  const V3_CONTRAST_STAGES = new Set(['login', 'badges gallery'])
+  const V3_CONTRAST_NODES = ['ppg-heading', 'ppg-card-text', 'ppg-logo', 'ppg-title-h1']
+
+  /** The sweep's gate for ONE analyze() result. */
+  function expectAxeV3Clean(results: Awaited<ReturnType<AxeBuilder['analyze']>>) {
+    expect(results.violations.filter((v) => v.id !== 'color-contrast')).toEqual([])
+    for (const violation of results.violations.filter((v) => v.id === 'color-contrast')) {
+      for (const node of violation.nodes) {
+        expect(
+          V3_CONTRAST_NODES.some((fragment) => node.html.includes(fragment) || node.target.some((selector) => selector.includes(fragment))),
+          `color-contrast node ${JSON.stringify({ target: node.target, html: node.html })} is not a V3-allowed surface`,
+        ).toBe(true)
+      }
+    }
+  }
 
   for (const [stageName, path] of stages) {
     test(`a11y axe: ${stageName}`, async ({ page }, testInfo) => {
@@ -75,11 +106,7 @@ test.describe('PPGA #18 accessibility sweep', () => {
       if (path !== '/login') await signIn(page, locale, learner, '/profile')
       await page.goto(`/${locale}${path}`)
       const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
-      if (V3_CONTRAST_STAGES.has(stageName)) {
-        expect(results.violations.map((v) => v.id)).toEqual(['color-contrast'])
-      } else {
-        expect(results.violations).toEqual([])
-      }
+      expectAxeV3Clean(results)
     })
   }
 
@@ -90,7 +117,7 @@ test.describe('PPGA #18 accessibility sweep', () => {
       await signIn(page, locale, identifier, '/profile')
       await page.goto(`/${locale}${path}`)
       const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
-      expect(results.violations).toEqual([])
+      expectAxeV3Clean(results)
     })
   }
 

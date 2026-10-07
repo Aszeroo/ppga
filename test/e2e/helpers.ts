@@ -124,9 +124,18 @@ export async function submitForm(
   return body
 }
 
-/** The award the real record shows: `badge <badge_key>` text per award. */
+/**
+ * The award the real record shows. PPGA #51: the V3 HUD is chip-only (XP +
+ * LV — the header never shows badges), so the earned badge's observable is
+ * the dashboard hub's badge row: the `header.badge` copy line + the award
+ * row's own `badge_key` marker (`[data-ppg-badge]`, the `data-ppg-xp-event`
+ * PK-marker idiom). The count-1 check keeps the once-per-learner authority
+ * gate (the award PK renders exactly once).
+ */
 export async function expectBadge(page: Page, locale: string, badgeKey: string) {
-  await expect(page.locator('body')).toContainText(`${t(['header', 'badge'], locale)} ${badgeKey}`)
+  const hub = page.locator('[data-ppg-hub="status"]')
+  await expect(hub).toContainText(t(['header', 'badge'], locale))
+  await expect(hub.locator(`[data-ppg-badge="${badgeKey}"]`)).toHaveCount(1)
 }
 
 /** The XP + Level the gamified spine shows on the signed-in learner. */

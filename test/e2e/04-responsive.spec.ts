@@ -80,18 +80,17 @@ test.describe('PPGA #18 responsive sweep', () => {
       await page.goto(`/${locale}`)
       await expect(page.locator('body')).toContainText(t(['header', 'progress'], locale))
 
-      // PPGA #41 stage 2: the mobile collapse (story #8/#10) — the compact
-      // ACCESSIBLE menu affordance on small screens (the `#ppg-menu-toggle`
-      // button, keyboard-operable + the `aria-expanded` state visible), the
-      // nav items hide until the toggle opens them; on desktop (≥768px) the
-      // toggle hides itself and every destination shows inline (the issue's
-      // desktop composition: CENTER = primary navigation, no sidebar). The
-      // proof rides the nav LANDMARK's links (a page's own copy may repeat a
-      // label — the landmark cannot).
+      // PPGA #51: the V3 tablet breakpoint moves to 1000px (the design
+      // gallery's `@media(max-width:1000px)` collapses the `.navs` + shows
+      // the `.burger` below it) — the #41 768px convention is superseded by
+      // the design authority (HTML gallery > brief). The phone (360) and the
+      // tablet (768) ride the collapsed menu; the desktop (1280) shows every
+      // destination inline (the issue's composition: CENTER = primary nav,
+      // no sidebar).
       const nav = page.getByRole('navigation', { name: t(['shell', 'navLabel'], locale) })
       const courseLink = nav.getByRole('link', { name: t(['nav', 'course'], locale), exact: true })
       const toggle = page.locator('#ppg-menu-toggle')
-      const collapsed = width < 768
+      const collapsed = width < 1000
       if (collapsed) {
         await expect(toggle).toBeVisible()
         expect(await toggle.getAttribute('aria-expanded')).toBe('false')
@@ -100,7 +99,7 @@ test.describe('PPGA #18 responsive sweep', () => {
         expect(await toggle.getAttribute('aria-expanded')).toBe('true')
         await expect(courseLink).toBeVisible()
       } else {
-        // The desktop toggle hides itself (the `min-width: 768px` media rule
+        // The desktop toggle hides itself (the `min-width: 1000px` media rule
         // removes it from the layout + the AX tree; the items stay inline).
         await expect(toggle).toBeHidden()
         await expect(courseLink).toBeVisible()

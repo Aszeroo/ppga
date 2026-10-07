@@ -25,7 +25,11 @@
     "menuOpenLabel": "Open the navigation menu",
     "footerAttribution": "PowerPoint Presentation Creation — การเรียนรู้การนำเสนอ / สำหรับนักเรียนระดับประกาศนียบัตรวิชาชีพชั้นปีที่ 2 (ปวช.2)",
     "footerAttributionEn": "PowerPoint Presentation Creation — Presentation-Production learning / for certificate-level vocational learners, Year 2 (Por Wor Sor 2)",
-    "footerHealth": "Health"
+    "footerHealth": "Health",
+    "logo": "PPGA",
+    "userLearner": "Learner",
+    "userTeacher": "Teacher",
+    "userAdmin": "Admin"
   },
   "admin": {
     "fallbackSuspense": "Preparing the console…",
@@ -130,7 +134,9 @@
     "submit": "Sign in",
     "busy": "Signing in…",
     "afterSuccess": "after a successful login you land on /profile.",
-    "fallbackSuspense": "Preparing the login form…"
+    "fallbackSuspense": "Preparing the login form…",
+    "welcome": "Welcome!",
+    "gameBlurb": "🎮 Start the gamified PowerPoint learning adventure"
   },
   "changePassword": {
     "intro": "Change the password you signed in with.",
@@ -437,7 +443,9 @@
       "error": "error",
       "unauthorized": "unauthorized — sign in first",
       "notConfigured": "not-configured"
-    }
+    },
+    "levelChip": "LV",
+    "xpUnit": "XP"
   },
   "selfcheck": {
     "section": "Self-Check",

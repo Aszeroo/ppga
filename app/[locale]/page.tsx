@@ -187,7 +187,13 @@ function BadgesRow({ copy, badges }: { copy: HubCopy; badges: StatusViewProps['b
     <p>
       {copy.htCopy('badge')}{' '}
       {badges.map((b) => (
-        <Badge key={b.badge_key} text={copy.pick(b.label_th, b.label_en)} tone="success" />
+        // PPGA #51: the V3 HUD is chip-only (XP + LV), so the earned badge's
+        // observable moved here — the award row's own `badge_key` rides the
+        // chip as a marker (the `data-ppg-xp-event` PK-marker idiom: server-
+        // authored data rendered as a stable test seam, never a fake).
+        <span key={b.badge_key} data-ppg-badge={b.badge_key}>
+          <Badge text={copy.pick(b.label_th, b.label_en)} tone="success" />
+        </span>
       ))}
     </p>
   )

@@ -97,11 +97,20 @@ export default function LoginPage() {
        * are UNTOUCHED (no new auth logic).
        */}
       <section className="ppg-title-screen-body">
+        {/** PPGA #51: the V3 login title screen — the gallery's welcome +
+         * gamified blurb ride the card above the SAME form (#41's submit
+         * handler, Zod gate, API route + redirect UNTOUCHED). Every new copy
+         * string flows through `messages` (`login.welcome`,
+         * `login.gameBlurb` — the Thai verbatim from the design gallery); the
+         * controls ride the V3 classes (`.ppg-field-label`, `.ppg-input`,
+         * the one primary CTA `.ppg-cta`). */}
+        <p className="ppg-title-welcome">{t('welcome')}</p>
+        <p className="ppg-title-sub">{t('gameBlurb')}</p>
         <p className="ppg-card-text">{t('intro')}</p>
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="identifier">{t('identifier')}</label>
+        <form className="ppg-login-form" onSubmit={handleSubmit}>
+          <label className="ppg-field-label" htmlFor="identifier">{t('identifier')}</label>
           <input id="identifier" name="identifier" className="ppg-input" required minLength={3} maxLength={50} />
-          <label htmlFor="password">{t('password')}</label>
+          <label className="ppg-field-label" htmlFor="password">{t('password')}</label>
           <input
             id="password"
             name="password"
@@ -111,26 +120,13 @@ export default function LoginPage() {
             minLength={8}
             maxLength={72}
           />
-          <button
-            type="submit"
-            className="ppg-button"
-            style={{
-              fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
-              borderWidth: 'var(--ppg-border-2)',
-              borderStyle: 'solid',
-              borderColor: 'var(--ppg-blue-300)',
-              backgroundColor: 'var(--ppg-state-available-bg)',
-              color: 'var(--ppg-state-available-fg)',
-              boxShadow: 'var(--ppg-shadow-pixel-1)',
-              padding: 'var(--ppg-space-2) var(--ppg-space-3)',
-            }}
-          >
+          <button type="submit" className="ppg-button ppg-cta">
             {t('submit')}
           </button>
         </form>
-        {busy ? <p>{t('busy')}</p> : null}
-        {message ? <p>{message}</p> : null}
-        <p>
+        {busy ? <p className="ppg-form-note">{t('busy')}</p> : null}
+        {message ? <p className="ppg-form-note">{message}</p> : null}
+        <p className="ppg-title-sub">
           <Link href="/">{t('intro')}</Link> — {t('afterSuccess')}
         </p>
       </section>

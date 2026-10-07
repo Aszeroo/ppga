@@ -50,30 +50,15 @@ export default function LogoutPage() {
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <section className="ppg-title-screen-body">
         <p className="ppg-card-text">{t('intro')}</p>
-        {/** PPGA #41 stage 1: the logout button rides the standalone title
-         * screen too — a MINIMAL token restyle (`.ppg-button` focus target +
-         * the token face); the handler + the revoke + the observable redirect
-         * are UNTOUCHED. */}
-        <button
-          type="button"
-          className="ppg-button"
-          onClick={handleClick}
-          style={{
-            fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
-            borderWidth: 'var(--ppg-border-2)',
-            borderStyle: 'solid',
-            borderColor: 'var(--ppg-status-error)',
-            backgroundColor: 'var(--ppg-state-available-bg)',
-            color: 'var(--ppg-status-error)',
-            boxShadow: 'var(--ppg-shadow-pixel-1)',
-            padding: 'var(--ppg-space-2) var(--ppg-space-3)',
-          }}
-        >
+        {/** PPGA #51: the logout title screen rides the SAME V3 card + the
+         * one primary CTA (`.ppg-cta`); the handler + the revoke + the
+         * observable redirect are UNTOUCHED. */}
+        <button type="button" className="ppg-button ppg-cta" onClick={handleClick}>
           {t('submit')}
         </button>
-        {busy ? <p>{t('busy')}</p> : null}
-        {message ? <p>{message}</p> : null}
-        <p>
+        {busy ? <p className="ppg-form-note">{t('busy')}</p> : null}
+        {message ? <p className="ppg-form-note">{message}</p> : null}
+        <p className="ppg-title-sub">
           <Link href="/profile">{t('intro')}</Link> ·{' '}
           <Link href="/login">{t('intro')}</Link>
         </p>

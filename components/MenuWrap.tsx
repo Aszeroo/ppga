@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState, type CSSProperties, type ReactNode } from 'react'
+import { useCallback, useState, type ReactNode } from 'react'
 
 /**
  * Ticket #41 stage 2: the mobile collapse affordance — the SAME Shell concept
@@ -19,12 +19,14 @@ import { useCallback, useState, type CSSProperties, type ReactNode } from 'react
  * media queries decide what is visible: on mobile the collapsed menu hides
  * the `.ppg-nav-item` links (`display: none`, never Tab-trapable), the open
  * menu shows them; on desktop the toggle is hidden and every item stays
- * visible (the `min-width: 768px` rules). The learner's status (the
+ * visible (the `min-width: 1000px` rules — PPGA #51 moved the tablet
+ * breakpoint to the V3 design sheet's boundary). The learner's status (the
  * `XPHud`) is never inside the collapsed content — the HUD stays in the
  * Shell's right cluster on every width (`story #9`: status preserved).
  *
- * Tokens only: the toggle's pixel surface / border / shadow / focus all
- * resolve `var(--ppg-…)` from `app/globals.css`; no ad-hoc colour is here.
+ * PPGA #51: the toggle's FACE moved to the `.ppg-menu-toggle` class in
+ * `app/globals.css` (the V3 burger — the inline token style used to override
+ * the class); the component carries only behavior + ARIA state.
  */
 export interface MenuWrapProps {
   labels: { menuLabel: string; openLabel: string; closeLabel: string }
@@ -40,17 +42,6 @@ export interface MenuWrapProps {
 export function MenuWrap({ labels, menuId = 'ppg-nav-menu', toggleId = 'ppg-menu-toggle', children }: MenuWrapProps) {
   const [open, setOpen] = useState(false)
 
-  const toggle: CSSProperties = {
-    fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
-    borderWidth: 'var(--ppg-border-2)',
-    borderColor: 'var(--ppg-blue-300)',
-    borderStyle: 'solid',
-    backgroundColor: 'var(--ppg-state-available-bg)',
-    color: 'var(--ppg-state-available-fg)',
-    boxShadow: 'var(--ppg-shadow-pixel-1)',
-    padding: 'var(--ppg-space-2) var(--ppg-space-3)',
-  }
-
   const toggleOpen = useCallback(() => setOpen((state) => !state), [])
 
   return (
@@ -65,7 +56,6 @@ export function MenuWrap({ labels, menuId = 'ppg-nav-menu', toggleId = 'ppg-menu
         aria-expanded={open ? 'true' : 'false'}
         aria-label={open ? labels.closeLabel : labels.menuLabel}
         onClick={toggleOpen}
-        style={toggle}
       >
         ☰
       </button>
