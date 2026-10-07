@@ -803,7 +803,7 @@ body {
     width: 100%;
     table-layout: fixed;
   }
-  :where(.ppg-card-text, .ppg-badge, .ppg-badge-text, .ppg-heading, .ppg-heading-text, .ppg-button-label, .ppg-xp-numeral, .ppg-list-title, .ppg-sc-title, .ppg-sc-result-title, table td) {
+  :where(.ppg-card-text, .ppg-badge, .ppg-badge-text, .ppg-heading, .ppg-heading-text, .ppg-button-label, .ppg-xp-numeral, .ppg-list-title, .ppg-sc-title, .ppg-sc-result-title, .ppg-celebration-title, table td) {
     word-break: break-all;
   }
 }
@@ -1313,5 +1313,507 @@ a.ppg-cta {
 @media (prefers-reduced-motion: reduce) {
   .ppg-sc-opt {
     transition-duration: 0s;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * MISSIONS & SUBMISSIONS in the V3 gallery's own sections (`#s-mission`,
+ * `#s-submit`, the `#s-clear` win flavour) — PPGA #53 ──────────────────────
+ * The knowledge-mission CHALLENGE PANEL (the gallery's thick-bordered
+ * mission card + the 🎯 tile), the practical UPLOAD AREA (the drop face
+ * with its EMPTY / VALID / INVALID states + the always-visible rules), the
+ * append-only HISTORY tables, and the small secondary action face.
+ * EVERY class here is a NEW name on purpose (the #51 live-a11y allowance
+ * keys on the old names — fresh names keep the gate able to NAME this
+ * surface). It needs no allowance: every text pair is ink/near-black or
+ * muted on a SOLID pastel (ink on white 16.3, on cream 15.8, on mint-tint
+ * 15.6, on pink-100 15.0, muted on white 7.5) or on the two panel
+ * gradients the axe reports `incomplete` (the dashboard-hero precedent —
+ * worst-stop reads stay above 6.4). State rides the `data-ppg-*` marker +
+ * icon + COPY, never hue alone. The upload preview NEVER gates the POST —
+ * the server's magic-byte + size gate stays the only authority.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/* The knowledge/practical mission panel — the gallery's big `card strip
+ * bp6` mission card: the 5px-pink border + the 🎯 tile row. The two state
+ * washes are the stage road's OWN surfaces (#52's GRADIENT_BY_STATE values,
+ * var-only — NOT a second invented gradient; `locked` never renders here:
+ * the RPC returns no panel before the gate, so there is nothing to paint). */
+.ppg-mission-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-3);
+  border-width: 5px;
+  border-style: solid;
+  border-radius: var(--ppg-radius-3);
+  padding: var(--ppg-space-4);
+  box-shadow: var(--ppg-shadow-pixel-2);
+}
+
+.ppg-mission-panel[data-ppg-mission-panel='challenge'] {
+  border-color: var(--ppg-pink-300);
+  background-image: linear-gradient(180deg, var(--ppg-pink-100), var(--ppg-blue-100));
+}
+
+.ppg-mission-panel[data-ppg-mission-panel='success'],
+.ppg-mission-panel[data-ppg-mission-panel='clear'] {
+  border-color: var(--ppg-status-success);
+  background-image: linear-gradient(180deg, var(--ppg-mint-tint), var(--ppg-bg-surface));
+}
+
+/* The head row: the gallery's bouncing icon tile (held STILL — the brief's
+ * calm rule + no new motion to zero) + the heading + the state chip. */
+.ppg-mission-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ppg-space-3);
+}
+
+.ppg-mission-tile {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  font-size: 28px;
+  line-height: 1;
+  background-color: var(--ppg-pink-100);
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--ppg-pink-500);
+  border-radius: var(--ppg-radius-2);
+}
+
+/* The attempt/upload form: the option stack + the ONE CTA row, one rhythm
+ * (the `.ppg-sc-opt` rows are the Self-Check's shared option vocabulary). */
+.ppg-mission-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-3);
+}
+
+/* The practical upload area — the gallery's `#s-submit` drop face + its
+ * always-visible criteria list (`#s-mission`'s `#s-เกณฑ์` card idiom).
+ * EMPTY = white/blue + 📄; VALID = mint + success border + ✅ + the real
+ * name/size; INVALID = pink + error border + ⚠️ + the SAME rule copy the
+ * server denial speaks. `role=status` on the drop announces the flip. */
+.ppg-upload {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-3);
+}
+
+.ppg-drop {
+  box-sizing: border-box;
+  width: 100%;
+  text-align: center;
+  border-width: 4px;
+  border-style: solid;
+  border-radius: var(--ppg-radius-3);
+  padding: var(--ppg-space-5) var(--ppg-space-4);
+  background-color: var(--ppg-bg-surface);
+  border-color: var(--ppg-blue-300);
+}
+
+.ppg-drop[data-ppg-upload-state='valid'] {
+  background-color: var(--ppg-mint-tint);
+  border-color: var(--ppg-status-success);
+}
+
+.ppg-drop[data-ppg-upload-state='invalid'] {
+  background-color: var(--ppg-pink-100);
+  border-color: var(--ppg-status-error);
+}
+
+.ppg-drop-emoji {
+  display: block;
+  font-size: 44px;
+  line-height: 1;
+  margin-bottom: var(--ppg-space-2);
+}
+
+/* The picked file's real name — long unbreakable names wrap INSIDE the
+ * drop (the 360px sweep arithmetic, #52's `/course` lesson). */
+.ppg-drop-name {
+  font-weight: 800;
+  color: var(--ppg-ink);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.ppg-drop-detail {
+  font-family: var(--font-ppg-body);
+  font-size: 14px;
+  color: var(--ppg-muted);
+  margin: var(--ppg-space-1) 0 0;
+  overflow-wrap: anywhere;
+}
+
+/* The accepted-file rules, VISIBLE before any pick — the gallery's `lisq`
+ * list with its green ✓ tiles. */
+.ppg-rules {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ppg-space-2) var(--ppg-space-4);
+  margin: 0;
+  padding: 0;
+}
+
+.ppg-rules li {
+  display: flex;
+  align-items: center;
+  gap: var(--ppg-space-2);
+  font-family: var(--font-ppg-body);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ppg-fg-heading);
+}
+
+.ppg-rules li::before {
+  content: '\2713';
+  flex: none;
+  color: var(--ppg-status-success);
+  font-weight: 800;
+}
+
+/* The append-only history tables (mission scores, submission rounds) —
+ * the gallery's card-table idiom: the bordered white card around the
+ * table, the cream display-font head row. `overflow-x:auto` keeps the
+ * 4-column round table inside the 360px sweep; the wrap carries
+ * `box-sizing: border-box` with its width:100% (the #52 defect class). */
+.ppg-table-wrap {
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: auto;
+  background-color: var(--ppg-bg-surface);
+  border-width: 4px;
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  border-radius: var(--ppg-radius-3);
+  padding: var(--ppg-space-2);
+}
+
+.ppg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-ppg-body);
+  color: var(--ppg-fg-heading);
+}
+
+.ppg-table th,
+.ppg-table td {
+  text-align: left;
+  padding: var(--ppg-space-2) var(--ppg-space-3);
+  border-bottom: 2px solid var(--ppg-line);
+}
+
+.ppg-table th {
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 12px;
+  color: var(--ppg-ink);
+  background-color: var(--ppg-cream);
+}
+
+.ppg-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* The gallery's `btn btn-s` secondary action — the per-round
+ * submit-for-review chip. The ONE primary CTA per context stays the form's
+ * own `.ppg-cta`; this never competes. */
+.ppg-btn-secondary {
+  box-sizing: border-box;
+  font-family: var(--font-ppg-body);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ppg-ink);
+  background-color: var(--ppg-blue-100);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  border-radius: var(--ppg-radius-pill);
+  padding: var(--ppg-space-1) var(--ppg-space-3);
+  cursor: pointer;
+}
+
+.ppg-btn-secondary:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+/* The panel's honest note lines (retry freely, the pass rule, the lessons
+ * flow) — MUTED body text on the panel surface (muted on white 7.5, on the
+ * washes >= 6.4, the dashboard-hero arithmetic). NOT `.ppg-form-note`:
+ * that face is the login/logout ERROR colour (error red on white 4.11 is
+ * the #51-vetoed pair) — neutral guidance never wears the denial face. */
+.ppg-mission-note {
+  font-family: var(--font-ppg-body);
+  font-weight: 600;
+  color: var(--ppg-muted);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * PPGA #53: the REWARD CELEBRATION popup (`components/RewardCelebration.tsx`)
+ * — the gallery's `#s-clear` win screen re-cut as a dismissable dialog: the
+ * white clear-card (success border + gold ring + top strip), the 🎉 mega
+ * tile, the reward rows and the falling confetti. The popup is NON-BLOCKING
+ * BY DESIGN (the component does not trap Tab): the scrim carries
+ * `pointer-events: none` so the page behind stays operable — only the card
+ * itself takes clicks. It adds NO `.ppg-cta` (the close rides
+ * `.ppg-btn-secondary`, the module link `.ppg-link`), NO success-tone pill
+ * and NO `data-ppg-xp-event`/`data-ppg-unlock`/`data-ppg-badge` marker —
+ * the pages' count-1/count-0 journey gates belong to the page alone.
+ * Contrast: solid-ink text on the white card (16.3) + muted labels (7.5);
+ * the LV tile is ink on gold (~13). No new a11y allowance: fresh class
+ * names the #51 node allowlist can name, none of them sub-AA pairs.
+ * Every animation here is ZEROED under `prefers-reduced-motion` below.
+ */
+@keyframes ppg-celebration-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes ppg-celebration-fall {
+  0% {
+    transform: translateY(-12vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(105vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* The scrim: viewport-fixed and CENTRING — but see-through to input (the
+ * dialog never blocks the page behind it). No z-index exists anywhere in
+ * this sheet today; 60 sits above the (static) frame without inventing a
+ * stacking vocabulary. */
+.ppg-celebration {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ppg-space-3);
+  background-color: rgba(26, 32, 44, 0.45);
+  pointer-events: none;
+}
+
+/* The gallery's confetti layer: nine falling squares, its own inline
+ * styles (left %, palette colour, duration, delay) moved into nth-child
+ * rules — same nine, same rhythm. `aria-hidden` decoration only. */
+.ppg-celebration-confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.ppg-celebration-confetti > span {
+  position: absolute;
+  top: -4vh;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--ppg-space-1);
+  animation-name: ppg-celebration-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.ppg-celebration-confetti > span:nth-child(1) {
+  left: 8%;
+  background-color: var(--ppg-pink-300);
+  animation-duration: 3s;
+}
+
+.ppg-celebration-confetti > span:nth-child(2) {
+  left: 22%;
+  background-color: var(--ppg-blue-300);
+  animation-duration: 3.5s;
+  animation-delay: 0.2s;
+}
+
+.ppg-celebration-confetti > span:nth-child(3) {
+  left: 38%;
+  background-color: var(--ppg-gold);
+  animation-duration: 3.2s;
+  animation-delay: 0.4s;
+}
+
+.ppg-celebration-confetti > span:nth-child(4) {
+  left: 54%;
+  background-color: var(--ppg-purple);
+  animation-duration: 3.8s;
+  animation-delay: 0.6s;
+}
+
+.ppg-celebration-confetti > span:nth-child(5) {
+  left: 70%;
+  background-color: var(--ppg-success-soft);
+  animation-duration: 3.3s;
+  animation-delay: 0.8s;
+}
+
+.ppg-celebration-confetti > span:nth-child(6) {
+  left: 84%;
+  background-color: var(--ppg-peach);
+  animation-duration: 3.6s;
+  animation-delay: 1s;
+}
+
+.ppg-celebration-confetti > span:nth-child(7) {
+  left: 93%;
+  background-color: var(--ppg-mint);
+  animation-duration: 3.1s;
+  animation-delay: 1.3s;
+}
+
+.ppg-celebration-confetti > span:nth-child(8) {
+  left: 14%;
+  background-color: var(--ppg-purple);
+  animation-duration: 4s;
+  animation-delay: 1.6s;
+}
+
+.ppg-celebration-confetti > span:nth-child(9) {
+  left: 64%;
+  background-color: var(--ppg-pink-300);
+  animation-duration: 3.9s;
+  animation-delay: 2s;
+}
+
+/* The gallery's clear-card: white face, success border, the gold ring
+ * (layered solid spreads, gallery-faithful) + its top strip. Takes input
+ * even though the scrim does not. `box-sizing: border-box` PAIRS the
+ * `width: 100%` with the border + padding (the #52 `/course` defect class
+ * — 360px sweep arithmetic). The programmatic focus on OPEN is signalled
+ * with the token ring on `:focus` (not `:focus-visible`: a scripted focus
+ * does not reliably count as keyboard interaction, and the learner must
+ * SEE where the dialog took them). */
+.ppg-celebration-card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 560px;
+  pointer-events: auto;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-3);
+  border-style: solid;
+  border-color: var(--ppg-status-success);
+  border-radius: var(--ppg-radius-3);
+  box-shadow: var(--ppg-shadow-pixel-3), 0 0 0 5px var(--ppg-bg-surface), 0 0 0 12px var(--ppg-gold);
+  padding: var(--ppg-space-5) var(--ppg-space-4);
+  animation: ppg-celebration-pop 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.ppg-celebration-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--ppg-space-3);
+  background: var(--ppg-strip);
+}
+
+.ppg-celebration-card:focus {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+/* The 🎉 mega tile — the gallery's `mega-ic`, HELD STILL (an infinite
+ * bounce would be new ambient motion; the one-shot pop above is the
+ * celebration's movement). */
+.ppg-celebration-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto var(--ppg-space-3);
+  font-size: 44px;
+  line-height: 1;
+  background-image: linear-gradient(135deg, var(--ppg-success-soft), var(--ppg-status-success));
+  border-width: 6px;
+  border-style: solid;
+  border-color: var(--ppg-bg-surface);
+  border-radius: 50%;
+  box-shadow: var(--ppg-shadow-pixel-2);
+}
+
+/* The display-font heading in SOLID ink (16.3 on white) — the gallery's
+ * gradient-painted wordmark rides the Shell's wordmark only; a dialog
+ * heading keeps the sheet's solid-text discipline. */
+.ppg-celebration-title {
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 20px;
+  line-height: 1.4;
+  color: var(--ppg-fg-heading);
+  margin: 0 0 var(--ppg-space-4);
+}
+
+.ppg-celebration-row {
+  font-family: var(--font-ppg-body);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--ppg-ink);
+  margin: 0 0 var(--ppg-space-3);
+  overflow-wrap: anywhere;
+}
+
+.ppg-celebration-label {
+  color: var(--ppg-muted);
+}
+
+/* The LV tile — the HUD chip family's gold face (`XPHud`'s idiom), ink on
+ * gold ~13. Decorative `aria-hidden` lettering beside the real copy. */
+.ppg-celebration-lv {
+  display: inline-block;
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 12px;
+  color: var(--ppg-ink);
+  background-color: var(--ppg-gold);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-gold-deepest);
+  border-radius: var(--ppg-radius-pill);
+  padding: var(--ppg-space-1) var(--ppg-space-2);
+}
+
+/* The dismiss action rides `.ppg-btn-secondary` (NEVER `.ppg-cta` — the
+ * page's one primary CTA stays the page's own); this adds only rhythm. */
+.ppg-celebration-close {
+  margin-top: var(--ppg-space-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The AC: "Popup animation is disabled under the reduced-motion
+   * preference." The one-shot pop drops to its final state; the infinite
+   * confetti gets `animation-name: none` (duration 0s alone would leave
+   * the fall re-triggering) — the spans then rest at their off-viewport
+   * base position, i.e. invisible. */
+  .ppg-celebration-card {
+    animation-duration: 0s;
+  }
+  .ppg-celebration-confetti > span {
+    animation-name: none;
+    animation-duration: 0s;
   }
 }

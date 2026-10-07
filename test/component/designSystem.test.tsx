@@ -219,7 +219,7 @@ test('Tokens live once in app/globals.css and the V3 font swap points are two va
 
 test('No ad-hoc colour anywhere: every component colour resolves a token', async () => {
   const fs = await import('node:fs')
-  const sources = ['Button', 'Card', 'Badge', 'StatusPill', 'ProgressBar', 'XPBar', 'State', 'StageNode', 'StageMap', 'ChallengeTrack', 'MissionPanel', 'SelfCheckPanel', 'XpRewardChip', 'TokenSheet'].map(
+  const sources = ['Button', 'Card', 'Badge', 'StatusPill', 'ProgressBar', 'XPBar', 'State', 'StageNode', 'StageMap', 'ChallengeTrack', 'MissionPanel', 'SelfCheckPanel', 'UploadArea', 'RewardCelebration', 'XpRewardChip', 'TokenSheet'].map(
     (name) => fs.readFileSync(`components/${name}.tsx`, 'utf8'),
   )
   for (const src of sources as string[]) {

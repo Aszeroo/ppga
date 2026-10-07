@@ -13,7 +13,7 @@ vi.mock('next/navigation', () => ({
   permanentRedirect: () => undefined,
 }) as never)
 
-import { render, cleanup } from '@testing-library/react'
+import { render, cleanup, fireEvent } from '@testing-library/react'
 import { NextIntlClientProvider } from 'next-intl'
 import { afterEach, test, expect } from 'vitest'
 
@@ -42,8 +42,10 @@ import {
   type MapLockRow,
 } from '../../lib/challengeStages'
 import { ChallengeTrack } from '../../components/ChallengeTrack'
-import { MissionPanel } from '../../components/MissionPanel'
+import { MissionPanel, type MissionUnlockInfo } from '../../components/MissionPanel'
+import { RewardCelebration, type RewardCelebrationProps } from '../../components/RewardCelebration'
 import { SelfCheckPanel } from '../../components/SelfCheckPanel'
+import { UploadArea } from '../../components/UploadArea'
 import { XpRewardChip } from '../../components/XpRewardChip'
 
 /**
@@ -408,6 +410,17 @@ test('MissionPanel frames the three states: chip + PK-marked reward + the real u
   // challenge: NO reward chip, NO unlock band — nothing was granted, nothing opened.
   expect(panel.querySelector('[data-ppg-xp-event]')).toBeNull()
   expect(panel.querySelector('[data-ppg-unlock]')).toBeNull()
+  // #53: the V3 panel face is CSS-driven — the big `.ppg-mission-panel` card
+  // (the gallery `#s-mission` mission card), its state wash keyed on the
+  // SAME `data-ppg-mission-panel` marker, and the 🎯 tile beside the
+  // heading. No inline surface style rides the panel any more (the #52
+  // gradient vocabulary belongs to the stage road; a panel re-painting it
+  // inline would be the second-gradient landmine).
+  expect(panel.className).toContain('ppg-mission-panel')
+  expect(panel.getAttribute('style')).toBeNull()
+  const tile = panel.querySelector('.ppg-mission-tile') as HTMLElement
+  expect(tile.getAttribute('aria-hidden')).toBe('true')
+  expect(panel.querySelector('.ppg-mission-head h2.ppg-heading-text')).toBeTruthy()
 
   rerender(
     <NextIntlClientProvider locale="en" messages={enMessages}>
@@ -428,6 +441,13 @@ test('MissionPanel frames the three states: chip + PK-marked reward + the real u
   const chip = clearedPanel.querySelector('[data-ppg-xp-event]') as HTMLElement
   expect(chip.getAttribute('data-ppg-xp-event')).toBe('knowledge_mission_pass:module-01')
   expect(chip.textContent).toContain('+100 XP')
+  // #53: the stage-win 🎉 rides the state chip of a WON panel (beside the
+  // copy, aria-hidden — state never hue/icon alone); the challenge chip
+  // above carried NO icon.
+  const stateChip = clearedPanel.querySelector('[data-ppg-mission-state]') as HTMLElement
+  expect(stateChip.textContent).toContain('clear-copy')
+  expect(stateChip.textContent).toContain('🎉')
+  expect(stateChip.querySelector('[aria-hidden]')?.textContent).toContain('🎉')
   const band = clearedPanel.querySelector('[data-ppg-unlock="next-module"]') as HTMLElement
   expect(band.textContent).toContain('unlocked-copy')
   expect(band.querySelector('a')).toBeTruthy()
@@ -435,6 +455,65 @@ test('MissionPanel frames the three states: chip + PK-marked reward + the real u
   // competing CTA — the panel's ONE primary action stays its own form).
   expect(band.querySelector('a.ppg-link')).toBeTruthy()
   expect(band.querySelector('a.ppg-cta')).toBeNull()
+})
+
+/**
+ * #53 upload-area states: the EMPTY / VALID / INVALID drop faces the
+ * `data-ppg-upload-state` marker names, the accepted-file rules VISIBLE
+ * before any pick, and the honest client PREVIEW only — the real
+ * `<input type=file>` (name/accept/label-for) is untouched so the shipped
+ * native POST + the server's magic-byte/size gate stay the authority.
+ * (The jsdom pick pattern: `fireEvent.change` with `target.files` — the
+ * same file list the live `setInputFiles` journey drives.)
+ */
+const UPLOAD_PROPS = {
+  id: 'ppg-submission-file',
+  name: 'file',
+  accept: '.pptx,.ppt',
+  fileLabel: 'Your work file (.pptx/.ppt)',
+  formatRule: 'wrong type: the file signature NEVER is .pptx/.ppt',
+  sizeRule: 'too large: 25 MB max — trim your deck before you upload',
+  maxBytes: 100,
+}
+
+test('UploadArea shows the three states with the rules visible and the real input intact', () => {
+  const { container, rerender } = render(<UploadArea {...UPLOAD_PROPS} />)
+  const drop = container.querySelector('[data-ppg-upload-state]') as HTMLElement
+  const input = container.querySelector('input[type=file]') as HTMLInputElement
+  // EMPTY before any pick — and the accepted-file rules ALREADY visible.
+  expect(drop.getAttribute('data-ppg-upload-state')).toBe('empty')
+  expect(drop.getAttribute('role')).toBe('status')
+  expect(container.textContent).toContain(UPLOAD_PROPS.formatRule)
+  expect(container.textContent).toContain(UPLOAD_PROPS.sizeRule)
+  // The shipped control contract (the journey's own selectors ride it).
+  expect(input.name).toBe('file')
+  expect(input.getAttribute('accept')).toBe('.pptx,.ppt')
+  expect(container.querySelector(`label[for="${UPLOAD_PROPS.id}"]`)).toBeTruthy()
+
+  // VALID: a real pick inside the rules shows the file's OWN name + size.
+  fireEvent.change(input, { target: { files: [new File(['x'.repeat(50)], 'course-deck.pptx')] } })
+  expect(drop.getAttribute('data-ppg-upload-state')).toBe('valid')
+  expect(drop.textContent).toContain('course-deck.pptx')
+  expect(drop.textContent).toContain('MB')
+
+  // INVALID on format: the drop speaks the SAME format-rule copy (the
+  // server denial's own text) — copy + icon, never hue alone.
+  rerender(<UploadArea {...UPLOAD_PROPS} />)
+  const input2 = container.querySelector('input[type=file]') as HTMLInputElement
+  fireEvent.change(input2, { target: { files: [new File(['plain'], 'notes.txt')] } })
+  expect(drop.getAttribute('data-ppg-upload-state')).toBe('invalid')
+  expect(drop.textContent).toContain(UPLOAD_PROPS.formatRule)
+
+  // INVALID on size: an accepted EXTENSION over the cap still previews the
+  // size rule — and the client NEVER blocks the control (no `required`,
+  // the input stays enabled: the server gate is the only authority).
+  rerender(<UploadArea {...UPLOAD_PROPS} />)
+  const input3 = container.querySelector('input[type=file]') as HTMLInputElement
+  fireEvent.change(input3, { target: { files: [new File(['x'.repeat(150)], 'huge.pptx')] } })
+  expect(drop.getAttribute('data-ppg-upload-state')).toBe('invalid')
+  expect(drop.textContent).toContain(UPLOAD_PROPS.sizeRule)
+  expect(input3.disabled).toBe(false)
+  expect(input3.required).toBe(false)
 })
 
 test('XpRewardChip is the ledger row made visible: the PK marker + the real amount', () => {
@@ -555,4 +634,140 @@ test('SelfCheckPanel states 3 + 4: the mint CORRECT card over the REAL ledger ro
   expect(retryCard.textContent).toContain('Retry freely')
   expect(retryCard.textContent).toContain('no grade is ever recorded')
   expect(retryCard.textContent).not.toMatch(/-50|-10|lost|penalt|deduct|Points/i)
+})
+
+/**
+ * #53 reward popups (XP-grant / level-up / module-unlock): the celebration
+ * dialog over the REAL reads — an accessible `alertdialog` with its own
+ * seams, keyboard-dismissable, focus in/out, and the ONCE-per-browser memory
+ * that keeps a revisit silent (the trigger stays the server's row; the
+ * memory is client bookkeeping only). The gated seams of the pages it
+ * mounts on (`.ppg-cta` count-1, the status-pill count-0s, the
+ * `data-ppg-xp-event`/`data-ppg-unlock`/hub `[data-ppg-badge]` count-1s)
+ * are asserted HERE as untouched.
+ */
+const POPUP_COPY = { title: 'popup-title', dismiss: 'popup-close', levelLabel: 'popup-level' }
+const POPUP_REWARD = { amount: 100, eventAttr: 'knowledge_mission_pass:module-01', label: 'reward-note' }
+const POPUP_UNLOCK: MissionUnlockInfo = {
+  copy: 'unlocked-copy',
+  title: '02. Unlocked Module',
+  href: { pathname: '/course/[moduleKey]', params: { moduleKey: 'module-02' } },
+}
+
+function renderPopup(props: Omit<RewardCelebrationProps, 'copy'>) {
+  return render(
+    <NextIntlClientProvider locale="en" messages={enMessages}>
+      <RewardCelebration copy={POPUP_COPY} {...props} />
+    </NextIntlClientProvider>,
+  )
+}
+
+test('RewardCelebration: no real moment renders NO popup; nothing is fabricated from an empty page', () => {
+  window.localStorage.clear()
+  const { container } = renderPopup({})
+  expect(container.firstChild).toBeNull()
+})
+
+test('RewardCelebration celebrates the REAL grant: alertdialog semantics, the row amount, and the pages’ gated seams untouched', () => {
+  window.localStorage.clear()
+  const { container } = renderPopup({ reward: POPUP_REWARD })
+  const card = container.querySelector('[data-ppg-celebration]') as HTMLElement
+  expect(card.getAttribute('data-ppg-celebration')).toBe('xp')
+  expect(card.getAttribute('role')).toBe('alertdialog')
+  // The accessible NAME: the labelledby resolves to the dialog's own title.
+  const titleId = card.getAttribute('aria-labelledby') as string
+  expect((document.getElementById(titleId) as HTMLElement).textContent).toBe('popup-title')
+  // The XP row speaks the ledger’s OWN amount + label (no schedule claim).
+  const xpRow = container.querySelector('[data-ppg-celebration-section="xp"]') as HTMLElement
+  expect(xpRow.textContent).toContain('reward-note')
+  expect(xpRow.textContent).toContain('+100 XP')
+  // The gates: the popup carries NONE of the page-seamed markers/faces.
+  expect(container.querySelector('[data-ppg-xp-event]')).toBeNull()
+  expect(container.querySelector('[data-ppg-unlock]')).toBeNull()
+  expect(container.querySelector('[data-ppg-badge]')).toBeNull()
+  expect(container.querySelector('.ppg-cta')).toBeNull()
+  expect(container.querySelector('[data-ppg-cta]')).toBeNull()
+  expect(container.querySelector('.ppg-status-pill')).toBeNull()
+  // The close is the SECONDARY face (never a competing primary CTA).
+  const close = container.querySelector('button.ppg-celebration-close') as HTMLButtonElement
+  expect(close.className).toContain('ppg-btn-secondary')
+  expect(close.textContent).toBe('popup-close')
+  // The confetti is aria-hidden decoration; focus moved INTO the dialog.
+  expect((container.querySelector('.ppg-celebration-confetti') as HTMLElement).getAttribute('aria-hidden')).toBe('true')
+  expect(document.activeElement).toBe(card)
+  // The AC’s keyboard dismissal: Escape closes anywhere.
+  fireEvent.keyDown(window, { key: 'Escape' })
+  expect(container.querySelector('[data-ppg-celebration]')).toBeNull()
+})
+
+test('RewardCelebration celebrates each identity ONCE per browser: a revisit stays silent, the button dismisses', () => {
+  window.localStorage.clear()
+  const first = renderPopup({ reward: POPUP_REWARD, unlocked: POPUP_UNLOCK })
+  // Both real moments on one page celebrate in ONE dialog (xp leads).
+  expect((first.container.querySelector('[data-ppg-celebration]') as HTMLElement).getAttribute('data-ppg-celebration')).toBe('xp')
+  expect(first.container.querySelector('[data-ppg-celebration-section="xp"]')).toBeTruthy()
+  expect(first.container.querySelector('[data-ppg-celebration-section="unlock"]')).toBeTruthy()
+  // The unlock row rides the text-link face and NEVER the band’s marker.
+  const unlockRow = first.container.querySelector('[data-ppg-celebration-section="unlock"]') as HTMLElement
+  expect(unlockRow.textContent).toContain('unlocked-copy')
+  expect(unlockRow.textContent).toContain('02. Unlocked Module')
+  const link = unlockRow.querySelector('a.ppg-link') as HTMLAnchorElement
+  expect(link.getAttribute('href')).toMatch(/\/course\/module-02$/)
+  expect(first.container.querySelector('[data-ppg-unlock]')).toBeNull()
+  // Dismiss by button, then unmount: the celebrated identities are recorded…
+  fireEvent.click(first.container.querySelector('button.ppg-celebration-close') as HTMLElement)
+  expect(first.container.querySelector('[data-ppg-celebration]')).toBeNull()
+  expect(window.localStorage.getItem('ppg-celebrated:xp:knowledge_mission_pass:module-01')).toBe('100')
+  expect(window.localStorage.getItem('ppg-celebrated:unlock:module-02')).toBe('1')
+  first.unmount()
+  // …so a REVISIT of the same success state renders nothing (once per row).
+  const second = renderPopup({ reward: POPUP_REWARD, unlocked: POPUP_UNLOCK })
+  expect(second.container.firstChild).toBeNull()
+})
+
+test('RewardCelebration LEVEL: the first observed level is a silent baseline; only a WITNESSED increase celebrates', () => {
+  window.localStorage.clear()
+  // First-ever observation: recorded, NEVER celebrated (no fabricated level-up).
+  const baseline = renderPopup({ level: 2 })
+  expect(baseline.container.firstChild).toBeNull()
+  expect(window.localStorage.getItem('ppg-celebrated:level')).toBe('2')
+  baseline.unmount()
+  // A witnessed INCREASE celebrates, naming the real level…
+  const up = renderPopup({ level: 3 })
+  const card = up.container.querySelector('[data-ppg-celebration]') as HTMLElement
+  expect(card.getAttribute('data-ppg-celebration')).toBe('level')
+  const levelRow = up.container.querySelector('[data-ppg-celebration-section="level"]') as HTMLElement
+  expect(levelRow.textContent).toContain('popup-level')
+  expect(levelRow.textContent).toContain('3')
+  // …and the LV tile is aria-hidden decoration beside the copy.
+  expect((levelRow.querySelector('.ppg-celebration-lv') as HTMLElement).getAttribute('aria-hidden')).toBe('true')
+  up.unmount()
+  // No further increase -> silent again (the same level, then a decrease).
+  const same = renderPopup({ level: 3 })
+  expect(same.container.firstChild).toBeNull()
+  same.unmount()
+  const down = renderPopup({ level: 2 })
+  expect(down.container.firstChild).toBeNull()
+})
+
+test('RewardCelebration stylesheet: every face has a rule, the pop+confetti keyframes exist, reduced motion zeroes them', async () => {
+  const css = (await import('node:fs')).readFileSync('app/globals.css', 'utf8')
+  for (const face of [
+    'ppg-celebration', 'ppg-celebration-confetti', 'ppg-celebration-card', 'ppg-celebration-tile',
+    'ppg-celebration-title', 'ppg-celebration-row', 'ppg-celebration-label', 'ppg-celebration-lv',
+    'ppg-celebration-close',
+  ]) {
+    expect(css).toContain(`.${face} {`)
+  }
+  expect(css).toContain('@keyframes ppg-celebration-pop')
+  expect(css).toContain('@keyframes ppg-celebration-fall')
+  // The #52 width:100% + border/padding defect class, pre-empted:
+  expect(css).toMatch(/\.ppg-celebration-card\s*\{[^}]*box-sizing:\s*border-box/)
+  // The AC: popup animation DISABLED under the reduced-motion preference —
+  // the LAST reduced-motion block carries both zeroings (one-shot pop +
+  // the infinite fall via animation-name).
+  const reduced = css.slice(css.lastIndexOf('@media (prefers-reduced-motion: reduce)'))
+  expect(reduced).toContain('.ppg-celebration-card')
+  expect(reduced).toContain('.ppg-celebration-confetti > span')
+  expect(reduced).toMatch(/animation-name:\s*none/)
 })

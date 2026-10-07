@@ -626,5 +626,9 @@
     "current": "current challenge",
     "rewardNote": "From your XP ledger:",
     "unlockNext": "Cleared — the next Module is open:"
+  },
+  "reward": {
+    "title": "Rewards you received",
+    "dismiss": "Close"
   }
 }

@@ -21,6 +21,7 @@ import { XPBar } from '../../components/XPBar'
 import { ProgressBar } from '../../components/ProgressBar'
 import { Badge } from '../../components/Badge'
 import { StatusPill } from '../../components/StatusPill'
+import { RewardCelebration } from '../../components/RewardCelebration'
 
 /**
  * Ticket #8 dashboard (the home): the next action per state, always shown
@@ -288,6 +289,7 @@ function HubStatusView({ copy, xp, badges, progress, mission, submission, feedba
 async function LearnerHub() {
   const t = await getTranslations('home')
   const ht = await getTranslations('header')
+  const tR = await getTranslations('reward')
   const locale = await getLocale()
   const [gate, posttest, survey, map, rows, xp] = await Promise.all([
     readGateViaTable(),
@@ -314,6 +316,16 @@ async function LearnerHub() {
         mission={view.mission}
         submission={view.submission}
         feedback={view.feedback}
+      />
+      {/* #53: the level-up celebration — the hub is the ONLY page that reads
+          the derived level, so it owns the LEVEL section. The first observed
+          level is recorded as a baseline and never celebrated; the popup
+          speaks a witnessed INCREASE only, with the server's own number.
+          No `.ppg-cta` / no success-tone pill / no hub-scoped marker: the
+          CTA count and `expectBadge`'s gates are untouched. */}
+      <RewardCelebration
+        level={view.xp?.level ?? null}
+        copy={{ title: tR('title'), dismiss: tR('dismiss'), levelLabel: ht('level') }}
       />
     </div>
   )

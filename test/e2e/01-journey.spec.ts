@@ -227,6 +227,10 @@ test.describe('PPGA #18 critical journey', () => {
     // reward chips — the +100 the shipped note promises is NOT yet shown.
     await expect(page.locator('[data-ppg-mission-panel="challenge"]')).toBeVisible()
     await expect(page.locator('[data-ppg-xp-event]')).toHaveCount(0)
+    // #53: the challenge state wears the V3 mission-card face, and the form
+    // submit is the context's ONE primary action (`.ppg-cta`).
+    await expect(page.locator('section.ppg-mission-panel[data-ppg-mission-panel="challenge"]')).toHaveCount(1)
+    await expect(page.locator('.ppg-cta')).toHaveCount(1)
     await page.locator('#answer_1_a').click()
     await page.locator('#answer_2_a').click()
     await page.locator('#answer_3_a').click()
@@ -291,7 +295,17 @@ test.describe('PPGA #18 critical journey', () => {
     // learner's OWN `in_progress → submitted` move (#18's wire — without
     // which the upload NEVER reaches a Teacher's queue).
     await page.goto(`/${locale}/course/module-08/practical`)
+    // #53: the upload area OPENS EMPTY with the accepted-file rules VISIBLE
+    // (the shipped bilingual rule copy rides the drop's rules list), and
+    // the upload submit is the context's ONE primary action.
+    await expect(page.locator('[data-ppg-upload-state="empty"]')).toBeVisible()
+    await expect(page.locator('body')).toContainText(t(['practical', 'states', 'oversize'], locale))
+    await expect(page.locator('.ppg-cta')).toHaveCount(1)
     await page.setInputFiles('input[type=file]', deckFixture)
+    // #53: the REAL picked deck flips the drop to its VALID state showing
+    // the file's own name — a CLIENT preview of the rules only; the
+    // SERVER's magic-byte + size gate below stays the only authority.
+    await expect(page.locator('[data-ppg-upload-state="valid"]')).toContainText('course-deck.pptx')
     await page.locator('input[name=reflection]').fill('Module 8 LMS deployment reflection — critical-journey verification round 1.')
     const upload1 = await submitForm(page, '[data-ppg-submission-form=submission]', '/api/submissions', true)
     expect(upload1.submissionSeq).toBe(1)
