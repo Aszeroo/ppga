@@ -120,7 +120,6 @@ function StepNode({ step }: { step: ChallengeTrackStep }) {
         <span
           className="ppg-stage-clear-mark"
           aria-hidden="true"
-          style={{ color: 'var(--ppg-status-success)' }}
         >
           ✓
         </span>

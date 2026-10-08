@@ -59,7 +59,7 @@ export function ProgressBar({ value, min = 0, max = 100, label }: ProgressBarPro
           transition: 'width 0.3s steps(8)', // 8-bit stepped fill, off in reduced-motion
         }}
       />
-      <span className="ppg-progress-text ppg-xp-numeral" style={{ fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}>
+      <span className="ppg-progress-text ppg-xp-numeral">
         {value}
       </span>
     </div>

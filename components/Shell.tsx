@@ -88,7 +88,7 @@ export async function Shell({ role, contextTitle, standalone, activeSection, chi
   if (standalone) {
     return (
       <section
-        className="ppg-title-screen ppg-login-card ppg-strip-top"
+        className="ppg-login-card ppg-strip-top"
         data-ppg-standalone="true"
         aria-label={`${t('identity')} — ${t('start')}`}
       >
@@ -114,7 +114,7 @@ export async function Shell({ role, contextTitle, standalone, activeSection, chi
   }
 
   return (
-    <section className="ppg-shell">
+    <section>
       <header className="ppg-shell-header ppg-strip-bottom">
         <div className="ppg-shell-in">
           {/** LEFT: the pixel identity + the contextual Course/Module title. */}

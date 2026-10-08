@@ -54,7 +54,7 @@ export function XPBar({ xp, level = 0 }: XPBarProps) {
           transition: 'width 0.3s steps(8)', // 8-bit stepped, off in reduced-motion
         }}
       />
-      <span className="ppg-xp-numeral" style={{ fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}>
+      <span className="ppg-xp-numeral">
         {xp}
       </span>
     </div>

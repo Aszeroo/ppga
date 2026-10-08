@@ -175,14 +175,29 @@ body {
   background-image: var(--ppg-state-locked-stripe);
 }
 
+/* PPGA #56 coherence: the AvailableState's own face — the CSS-owned
+ * surface (the inline authority's token styles move here; the component
+ * keeps only the markup + the markers). The literal colour rides the
+ * `--ppg-state-*` / `--ppg-pink-accent` tokens ONLY; the span is a real
+ * focusable `card` (`.ppg-state-available` joins the `:focus-visible`
+ * `where` groups above). */
+.ppg-state-available {
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  background-color: var(--ppg-state-available-bg);
+  color: var(--ppg-state-available-fg);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-pink-accent);
+}
+
 /* Visible focus: a thickened border + ring (never hue-shifted only). */
-:where(.ppg-button, .ppg-card, .ppg-badge, .ppg-badge-card, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar, .ppg-profile-hero, .ppg-instr-item, .ppg-instr-opt, .ppg-instr-receipt, .ppg-work-card, .ppg-queue-card, .ppg-rubric-crit, .ppg-rubric-score, .ppg-rubric-total) {
+:where(.ppg-button, .ppg-card, .ppg-badge, .ppg-badge-card, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar, .ppg-profile-hero, .ppg-instr-item, .ppg-instr-opt, .ppg-instr-receipt, .ppg-work-card, .ppg-queue-card, .ppg-rubric-crit, .ppg-rubric-score, .ppg-rubric-total, .ppg-state-available) {
   --ppg-focus-visible: var(--ppg-focus-ring);
   --ppg-focus-thickness: var(--ppg-border-2);
 }
 
 /* Visible focus: a thickened border + ring (never hue-shifted only). */
-:where(.ppg-button, .ppg-card, .ppg-badge, .ppg-badge-card, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar, .ppg-profile-hero, .ppg-instr-item, .ppg-instr-opt, .ppg-instr-receipt, .ppg-work-card, .ppg-queue-card, .ppg-rubric-crit, .ppg-rubric-score, .ppg-rubric-total):focus-visible {
+:where(.ppg-button, .ppg-card, .ppg-badge, .ppg-badge-card, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar, .ppg-profile-hero, .ppg-instr-item, .ppg-instr-opt, .ppg-instr-receipt, .ppg-work-card, .ppg-queue-card, .ppg-rubric-crit, .ppg-rubric-score, .ppg-rubric-total, .ppg-state-available):focus-visible {
   outline: var(--ppg-focus-ring);
   outline-offset: var(--ppg-focus-offset);
   border-width: var(--ppg-border-2);
@@ -803,6 +818,16 @@ body {
     width: 100%;
     table-layout: fixed;
   }
+  /* PPGA #56 B: the podium CANNOT sit beside-by-side at 360px — the three
+   * `.ppg-pod` faces carry `min-width:150px` (450px + the gaps vs the 360px
+   * sweep). Stacked column the mobile responsive export: the rank-1 /
+   * rank-2 / rank-3 columns stack (the same no-overflow contract the
+   * hub-grid's auto-fit + the round-table's overflow-x:auto already honour). */
+  .ppg-podium {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--ppg-space-2);
+  }
   :where(.ppg-card-text, .ppg-badge, .ppg-badge-text, .ppg-heading, .ppg-heading-text, .ppg-button-label, .ppg-xp-numeral, .ppg-list-title, .ppg-sc-title, .ppg-sc-result-title, .ppg-celebration-title, table td) {
     word-break: break-all;
   }
@@ -1059,6 +1084,29 @@ a.ppg-cta {
   border-color: var(--ppg-gold-border);
   border-radius: var(--ppg-radius-1);
   padding: 6px 10px;
+}
+
+/* PPGA #56 coherence: the road-item's flex floor (`.ppg-stage-item` is a
+ * `<li>` child of the `ol.ppg-stage-map` flex column; `min-width:0` keeps
+ * the flex floor honest — the same rule `ppg-work-form` carries). The
+ * cleared node's ✓ mark owns its colour HERE now: the components' inline
+ * authority for it dropped to the token class (the CSS owns the colour). */
+.ppg-stage-item {
+  min-width: 0;
+}
+
+.ppg-stage-clear-mark {
+  color: var(--ppg-status-success);
+}
+
+/* PPGA #56 coherence: the challenge track's NAME is the primitive's
+ * `data-ppg-challenge-track` twin (the suites query `ol.ppg-stage-map.
+ * ppg-challenge-track` — a name the stylesheet still recognises). It rides
+ * the SAME road face as every `.ppg-stage-map` (`list-style:none` + the
+ * flex column + the gap); nothing here is new — the block only keeps the
+ * class RESOLVABLE where the map's shared rule already paints the road. */
+.ppg-challenge-track {
+  list-style: none;
 }
 
 /* The state tags become the gallery's pills. */

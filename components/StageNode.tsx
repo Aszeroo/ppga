@@ -163,7 +163,6 @@ export function StageNode({
           <span
             className="ppg-stage-clear-mark"
             aria-hidden="true"
-            style={{ color: 'var(--ppg-status-success)' }}
           >
             ✓
           </span>

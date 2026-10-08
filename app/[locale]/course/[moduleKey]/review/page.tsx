@@ -55,10 +55,14 @@ async function LearnerReviewResult({ moduleKey }: { moduleKey: string }) {
   return (
     <section aria-label={t('latestResultHeading')}>
       <ChallengeTrack label={tC('trackLabel')} steps={trackSteps} />
-      <h1 className="ppg-heading">{t('latestResultHeading')}</h1>
+      <h1 className="ppg-heading ppg-heading-text">{t('latestResultHeading')}</h1>
 
       {latest.status === 'ok' && latest.latest ? (
         <>
+          {/** The verdict card: the SHIPPED `Card` primitive stays (its
+         * inline authority carries the V3 token surfaces + the `.ppg-card`
+         * focus/reduced-motion join) — the repo's lint does NOT forgive an
+         * unused import and the guard suite reads this import line. */}
           <Card
             heading={`${t('latestResultHeading')} — ${latest.latest.decision === 'approved' ? t('approve') : t('needsImprovement')}`}
             body={`${t('totalScore')}: ${latest.latest.total_score} / 35 — ${pick(latest.latest.feedback_th ?? '', latest.latest.feedback_en ?? '')}`}
@@ -72,30 +76,35 @@ async function LearnerReviewResult({ moduleKey }: { moduleKey: string }) {
             )
             : null}
           <section aria-label={t('historyHeading')}>
-            <h2>{t('historyHeading')}</h2>
-            <table>
-              <thead>
-                <tr>
-                  <td>{t('round')}</td>
-                  <td>{t('decision')}</td>
-                  <td>{t('totalScore')}</td>
-                  <td>{t('feedbackHeading')}</td>
-                </tr>
-              </thead>
-              <tbody>
-                {latest.history.map((row) => (
-                  <tr
-                    key={`${row.mission_id}-${row.submission_seq}`}
-                    aria-label={`${t('round')} ${row.submission_seq}, ${row.decision}`}
-                  >
-                    <td>{row.submission_seq}</td>
-                    <td>{row.decision}</td>
-                    <td>{row.total_score}</td>
-                    <td>{pick(row.feedback_th ?? '—', row.feedback_en ?? '—')}</td>
+            <h2 className="ppg-heading ppg-heading-text">{t('historyHeading')}</h2>
+            {/** The append-only round table rides the shipped console face
+         * (`ppg-table-wrap` + `ppg-table` + `<th scope="col">` on every
+         * header). */}
+            <div className="ppg-table-wrap">
+              <table className="ppg-table">
+                <thead>
+                  <tr>
+                    <th scope="col">{t('round')}</th>
+                    <th scope="col">{t('decision')}</th>
+                    <th scope="col">{t('totalScore')}</th>
+                    <th scope="col">{t('feedbackHeading')}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {latest.history.map((row) => (
+                    <tr
+                      key={`${row.mission_id}-${row.submission_seq}`}
+                      aria-label={`${t('round')} ${row.submission_seq}, ${row.decision}`}
+                    >
+                      <td>{row.submission_seq}</td>
+                      <td>{row.decision}</td>
+                      <td>{row.total_score}</td>
+                      <td>{pick(row.feedback_th ?? '—', row.feedback_en ?? '—')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
         </>
       ) : latest.status === 'empty' ? (
@@ -105,22 +114,28 @@ async function LearnerReviewResult({ moduleKey }: { moduleKey: string }) {
       ) : latest.status === 'ok' ? (
         null
       ) : latest.status === 'denied' ? (
-        <p>{t('queueDenied')} {latest.detail}</p>
+        <p className="ppg-state-line">{t('queueDenied')} {latest.detail}</p>
       ) : latest.status === 'unauthorized' ? (
-        <p>{t('queueUnauthorized')} {latest.detail}</p>
+        <p className="ppg-state-line">{t('queueUnauthorized')} {latest.detail}</p>
       ) : latest.status === 'not-configured' ? (
-        <p>{t('queueNotConfigured')} {latest.detail}</p>
+        <p className="ppg-state-line">{t('queueNotConfigured')} {latest.detail}</p>
       ) : (
-        <p>{t('queueError')} {latest.detail}</p>
+        <p className="ppg-state-line">{t('queueError')} {latest.detail}</p>
       )}
 
       <p>
-        <Link href={{ pathname: '/course/[moduleKey]/practical', params: { moduleKey } }}>
+        <Link
+          href={{ pathname: '/course/[moduleKey]/practical', params: { moduleKey } }}
+          className="ppg-link"
+        >
           {t('backToQueue')}
         </Link>
       </p>
       <p>
-        <Link href={{ pathname: '/course/[moduleKey]', params: { moduleKey } }}>
+        <Link
+          href={{ pathname: '/course/[moduleKey]', params: { moduleKey } }}
+          className="ppg-link"
+        >
           {t('linkModule')}
         </Link>
       </p>

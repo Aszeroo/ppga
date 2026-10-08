@@ -49,7 +49,6 @@ export function Card({ heading, body, status = 'available' }: CardProps) {
     >
       <h1
         className="ppg-heading ppg-heading-text"
-        style={{ fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)' }}
       >
         {heading}
       </h1>

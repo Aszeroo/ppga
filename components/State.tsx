@@ -50,22 +50,12 @@ export function LockedState({ label, children }: StateProps) {
 export function AvailableState({ label, children }: StateProps) {
   const t = useTranslations('gallery')
 
-  const style: CSSProperties = {
-    backgroundColor: 'var(--ppg-state-available-bg)',
-    color: 'var(--ppg-state-available-fg)',
-    borderWidth: 'var(--ppg-border-2)',
-    borderColor: 'var(--ppg-pink-accent)',
-    borderStyle: 'solid',
-    fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
-  }
-
   return (
     <span
       className="ppg-state-available"
       data-ppg-state="available"
       aria-label={`${t('states.available')} — ${label}`}
       tabIndex={0}
-      style={style}
     >
       {children}
     </span>
