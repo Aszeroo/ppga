@@ -176,13 +176,13 @@ body {
 }
 
 /* Visible focus: a thickened border + ring (never hue-shifted only). */
-:where(.ppg-button, .ppg-card, .ppg-badge, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar) {
+:where(.ppg-button, .ppg-card, .ppg-badge, .ppg-badge-card, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar, .ppg-profile-hero, .ppg-instr-item, .ppg-instr-opt, .ppg-instr-receipt) {
   --ppg-focus-visible: var(--ppg-focus-ring);
   --ppg-focus-thickness: var(--ppg-border-2);
 }
 
 /* Visible focus: a thickened border + ring (never hue-shifted only). */
-:where(.ppg-button, .ppg-card, .ppg-badge, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar):focus-visible {
+:where(.ppg-button, .ppg-card, .ppg-badge, .ppg-badge-card, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar, .ppg-profile-hero, .ppg-instr-item, .ppg-instr-opt, .ppg-instr-receipt):focus-visible {
   outline: var(--ppg-focus-ring);
   outline-offset: var(--ppg-focus-offset);
   border-width: var(--ppg-border-2);
@@ -214,7 +214,7 @@ body {
 
 /* Respect the reduced-motion signal: no shadow animation, no bar easing. */
 @media (prefers-reduced-motion: reduce) {
-  :where(.ppg-button, .ppg-card, .ppg-badge, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar) {
+  :where(.ppg-button, .ppg-card, .ppg-badge, .ppg-badge-card, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar, .ppg-profile-hero, .ppg-profile-avatar, .ppg-instr-item, .ppg-instr-opt, .ppg-instr-receipt) {
     animation-duration: 0s;
     transition-duration: 0s;
   }
@@ -1816,4 +1816,226 @@ a.ppg-cta {
     animation-name: none;
     animation-duration: 0s;
   }
+}
+
+/*
+ * PPGA #54: the #s-badges badge-card primitive (components/BadgeCard.tsx) —
+ * the gallery's earned/locked card idiom: the gold-border earned card + the
+ * dashed locked card, the gold icon circle, and the grayscale locked circle.
+ * The literal hexes for the idiom live ONLY in this stylesheet (the
+ * source-purity suite); the component renders the markup + the data-ppg-state
+ * the selectors key on, and the state markers the page beside (StatusPill/
+ * Badge copy + the locked prefix 🔒) announce the state — never the colour
+ * alone. Reduced-motion zeroes the idiom below.
+ */
+.ppg-badge-card {
+  text-align: center;
+  padding: var(--ppg-space-4) var(--ppg-space-3);
+  font-family: var(--font-ppg-body);
+  background-color: var(--ppg-bg-surface);
+  color: var(--ppg-fg-heading);
+  border-width: var(--ppg-border-1);
+  border-style: solid;
+  border-color: var(--ppg-gold-border);
+}
+
+.ppg-badge-card[data-ppg-state="locked"] {
+  border-style: dashed;
+  border-color: var(--ppg-status-locked);
+  background-color: #f8fafc; /* V3 locked card background (hex-in-stylesheet) */
+}
+
+.ppg-badge-icon {
+  width: 74px;
+  height: 74px;
+  margin: 0 auto 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ppg-yellow-tint), #ffffff);
+  border-width: var(--ppg-border-3);
+  border-color: var(--ppg-gold);
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+  transition: transform 0.3s steps(8);
+}
+
+.ppg-badge-card[data-ppg-state="locked"] .ppg-badge-icon {
+  filter: grayscale(1);
+  border-color: var(--ppg-status-locked);
+  background-color: var(--ppg-gray-100);
+}
+/*
+ * PPGA #54: the #s-board leaderboard frame — the podium column (the gold
+ * rank-1 + the silver rank-2 + the bronze rank-3 faces, the pixel avatar
+ * circle) and the rank-row list (the white row + the pink own-row
+ * highlight). The literal hexes for the bronze faces live ONLY in this
+ * stylesheet (the source-purity suite); the component renders the markup
+ * + the data-ppg-pod-position / data-ppg-own markers the selectors key on,
+ * and the state rides the copy + icon chips beside (StatusPill/ Badge),
+ * never the hue alone. The rank tile is the shared `.ppg-stage-numeral`.
+ * Reduced-motion zeroes the podium below (the idiom has no animation).
+ */
+.ppg-podium {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--ppg-space-4);
+}
+
+.ppg-pod {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ppg-space-2);
+  color: var(--ppg-fg-heading);
+  font-weight: 800;
+  padding: var(--ppg-space-3) var(--ppg-space-2) var(--ppg-space-3);
+  min-width: 150px;
+  position: relative;
+}
+
+.ppg-pod-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background-color: var(--ppg-bg-surface);
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  border-width: var(--ppg-border-3);
+  border-color: var(--ppg-line);
+}
+
+.ppg-pod[data-ppg-pod-position="1"] {
+  background: linear-gradient(160deg, var(--ppg-gold), var(--ppg-gold-deep));
+  height: 220px;
+  border-width: var(--ppg-border-3);
+  border-color: var(--ppg-gold-border);
+}
+
+.ppg-pod[data-ppg-pod-position="2"] {
+  background: linear-gradient(160deg, var(--ppg-gray-300), var(--ppg-gray-500));
+  height: 170px;
+  border-width: var(--ppg-border-3);
+  border-color: var(--ppg-gray-700);
+}
+
+.ppg-pod[data-ppg-pod-position="3"] {
+  background: linear-gradient(160deg, #f0b27a, #dd9a56); /* V3 bronze (hex-in-stylesheet) */
+  height: 145px;
+  border-width: var(--ppg-border-3);
+  border-color: #c07e3a; /* V3 bronze deep (hex-in-stylesheet) */
+}
+
+.ppg-board-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-2);
+  margin: 0 auto;
+  max-width: 640px;
+}
+
+.ppg-board-item {
+  display: flex;
+  align-items: center;
+  gap: var(--ppg-space-3);
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-1);
+  border-color: var(--ppg-line);
+  padding: var(--ppg-space-2) var(--ppg-space-3);
+}
+
+.ppg-board-item[data-ppg-own="true"] {
+  border-color: var(--ppg-pink-300);
+  background-color: var(--ppg-pink-100);
+  font-weight: 800;
+}
+
+/* ========================================================================
+ * PPGA #54: the meta surfaces — the profile hero (the gallery's
+ * `#s-profile` gradient-avatar card) + the research instruments' own parts
+ * (the gallery's card/tag idiom: the question card, the DISPLAY-ONLY choice
+ * tile the shipped text-input form keeps beside, and the submitted receipt).
+ * Literal hexes live ONLY in this stylesheet (the avatar's white ring
+ * mirrors `.ppg-mascot`).
+ * ====================================================================== */
+.ppg-profile-hero {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--ppg-space-4);
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-3);
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  border-radius: var(--ppg-radius-3);
+  padding: var(--ppg-space-4);
+  box-shadow: var(--ppg-shadow-pixel-2);
+}
+
+.ppg-profile-avatar {
+  flex: none;
+  width: 96px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background-image: linear-gradient(135deg, var(--ppg-purple), var(--ppg-blue-500));
+  border-width: var(--ppg-border-3);
+  border-style: solid;
+  border-color: #fff; /* V3 avatar ring (hex-in-stylesheet) */
+  box-shadow: var(--ppg-shadow-pixel-3);
+  font-size: 44px;
+  animation: ppg-floaty 2.6s ease-in-out infinite;
+}
+
+.ppg-instr-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-3);
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-4);
+  box-shadow: var(--ppg-shadow-pixel-1);
+}
+
+/* The gallery's `.opt` row WITHOUT the interactive radio (the instrument's
+ * answer field is the SHIPPED text input, unchanged — the tile presents the
+ * seeded choices, it is never a control). */
+.ppg-instr-opt {
+  display: flex;
+  align-items: center;
+  gap: var(--ppg-space-3);
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-2) var(--ppg-space-3);
+  font-family: var(--font-ppg-body);
+  color: var(--ppg-fg-heading);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.ppg-instr-opt:hover {
+  border-color: var(--ppg-blue-300);
+}
+
+/* The submitted-instrument receipt: the mint win-card face (the `#s-clear`
+ * flavour) + the success border — the ✓/immutable copy markers carry the
+ * state in TEXT beside the colour, never the hue alone. */
+.ppg-instr-receipt {
+  text-align: center;
+  background-color: var(--ppg-mint-tint);
+  border-width: var(--ppg-border-3);
+  border-style: solid;
+  border-color: var(--ppg-status-success);
+  border-radius: var(--ppg-radius-3);
+  padding: var(--ppg-space-5) var(--ppg-space-4);
 }

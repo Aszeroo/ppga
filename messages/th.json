@@ -141,7 +141,10 @@
       "notConfigured": "บริการไม่ได้"
     },
     "links": "ลิงกค์",
-    "fallbackSuspense": "กำลังอ่านโปรไฟล์..."
+    "fallbackSuspense": "กำลังอ่านโปรไฟล์...",
+    "heroTitle": "นักเรียนของฉัน",
+    "enrolled": "เข้าร่วม PPGA",
+    "editLabel": "✏️ แก้ไขโปรไฟล์"
   },
   "logout": {
     "intro": "ออกชื่อจาก P PGA —คุกกี้ชสชันและรีเฟรสโทเกน",
@@ -220,7 +223,17 @@
       "ok": "ได้าสาย",
       "scaffold": " P PGA พร้อม",
       "fallbackSuspense": "กำลังโหลด..."
-    }
+    },
+    "researchTag": "🔬 แบบประเมินเพื่อการวิจัย",
+    "noXpTag": "กิจกรรมนี้ไม่มี XP ⚠️",
+    "autosaveTag": "💾 บันทึกอัตโนมัติแล้ว",
+    "instrumentHeading": "📝 แบบทดสอบก่อนเรียน (Pre-Test)",
+    "noXpSub": "ตอบตามความเข้าใจจริง — ไม่มีผลต่อ XP หรือคะแนนในเกม",
+    "questionTag": "ข้อที่ {n}",
+    "itemProgress": "ข้อ {n}/{total}",
+    "receiptHeading": "ส่งแบบประเมินเรียบร้อยแล้ว",
+    "immutableNote": "คำตอบถูกบันทึกถาวรและเข้ารหัสเพื่อการวิจัย แก้ไขไม่ได้อีกหลังส่ง — ขอบคุณที่ช่วยพัฒนาบทเรียน 💙",
+    "immutableTag": "✓ สถานะ: ส่งแล้ว (Immutable)"
   },
   "posttest": {
     "gateLabel": "สถานะเปิด Post-Test",
@@ -247,7 +260,17 @@
       "notConfigured": "ยงัมได้าตังคา",
       "ok": "ok",
       "fallbackSuspense": "กำลงโหลด..."
-    }
+    },
+    "researchTag": "🔬 แบบประเมินเพื่อการวิจัย",
+    "noXpTag": "กิจกรรมนี้ไม่มี XP ⚠️",
+    "autosaveTag": "💾 บันทึกอัตโนมัติแล้ว",
+    "instrumentHeading": "📝 แบบทดสอบหลังเรียน (Post-Test) ✅",
+    "unlockedSub": "หลังเรียนจบ Module 02 — ตอบตามที่ได้เรียนรู้มา",
+    "questionTag": "ข้อที่ {n}",
+    "itemProgress": "ข้อ {n}/{total}",
+    "receiptHeading": "ส่งแบบประเมินเรียบร้อยแล้ว",
+    "immutableNote": "คำตอบถูกบันทึกถาวรและเข้ารหัสเพื่อการวิจัย แก้ไขไม่ได้อีกหลังส่ง — ขอบคุณที่ช่วยพัฒนาบทเรียน 💙",
+    "immutableTag": "✓ สถานะ: ส่งแล้ว (Immutable)"
   },
   "survey": {
     "gateLabel": "สถานะเปิดแบบสำารวจ",
@@ -273,7 +296,17 @@
       "notConfigured": "ยงัมได้าตั้่งคา",
       "ok": "ok",
       "fallbackSuspense": "กำลังโหลด..."
-    }
+    },
+    "researchTag": "🔬 แบบประเมินเพื่อการวิจัย",
+    "noXpTag": "กิจกรรมนี้ไม่มี XP ⚠️",
+    "autosaveTag": "💾 บันทึกอัตโนมัติแล้ว",
+    "instrumentHeading": "😊 แบบสอบถามความพึงพอใจ",
+    "satisfactionSub": "ให้คะแนนความพึงพอใจ 1–5 (มากที่สุด → น้อยที่สุด)",
+    "questionTag": "ข้อที่ {n}",
+    "itemProgress": "ข้อ {n}/{total}",
+    "receiptHeading": "ส่งแบบประเมินเรียบร้อยแล้ว",
+    "immutableNote": "คำตอบถูกบันทึกถาวรและเข้ารหัสเพื่อการวิจัย แก้ไขไม่ได้อีกหลังส่ง — ขอบคุณที่ช่วยพัฒนาบทเรียน 💙",
+    "immutableTag": "✓ สถานะ: ส่งแล้ว (Immutable)"
   },
   "content": {
     "gateLabel": "ขั้ทกัาน์",
@@ -511,6 +544,10 @@
     "title": "ช่ออ-กิ่",
     "intro": "กิ่-จากเหตุ-จริง — กิ่คก/กิ่ยังไม่คก คอยกั่",
     "criteria": "กั่",
+    "gallerySub": "สะสมแบดจ์ทุกใบ — พิสูจน์ความสามารถ PowerPoint ของคุณ",
+    "tagAll": "ทั้งหมด",
+    "tagEarned": "ปลดล็อค",
+    "tagLocked": "ล็อค",
     "earned": "กิ่คก — จากเหตุ-จริง",
     "locked": "กิ่ยังไม่คก (คอยกั่)",
     "earnedBadge": "กิ่คก",
@@ -528,6 +565,7 @@
   },
   "leaderboard": {
     "tableLabel": "ชื่ิง-XP",
+    "weekSub": "สัปดาห์นี้ใครได้ XP มากที่สุด — แข่งแบบเป็นมิตร!",
     "rank": "ลำดู",
     "level": "ขั้",
     "xp": "XP",

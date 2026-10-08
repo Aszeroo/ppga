@@ -157,7 +157,10 @@
       "notConfigured": "Service not configured:"
     },
     "links": "Links",
-    "fallbackSuspense": "Reading your profile…"
+    "fallbackSuspense": "Reading your profile…",
+    "heroTitle": "Learner profile",
+    "enrolled": "Joined PPGA",
+    "editLabel": "Edit profile"
   },
   "logout": {
     "intro": "Sign out of PPGA — your session cookies are cleared and the refresh token is revoked at the service.",
@@ -235,7 +238,17 @@
       "notConfigured": "not-configured",
       "ok": "ok",
       "fallbackSuspense": "Loading…"
-    }
+    },
+    "researchTag": "Research instrument",
+    "noXpTag": "This activity grants no XP",
+    "autosaveTag": "Autosaved",
+    "instrumentHeading": "Pre-Test",
+    "noXpSub": "Answer with your real understanding — no effect on XP or game scores",
+    "questionTag": "Question",
+    "itemProgress": "Question {n}/{total}",
+    "receiptHeading": "Instrument submitted",
+    "immutableNote": "Your answers are stored permanently and encrypted for the research — they cannot be edited after the submit. Thank you for helping improve the course",
+    "immutableTag": "Status: submitted (immutable)"
   },
   "posttest": {
     "gateLabel": "Post-Test unlock",
@@ -262,7 +275,17 @@
       "notConfigured": "not-configured",
       "ok": "ok",
       "fallbackSuspense": "Loading…"
-    }
+    },
+    "researchTag": "Research instrument",
+    "noXpTag": "This activity grants no XP",
+    "autosaveTag": "Autosaved",
+    "instrumentHeading": "Post-Test",
+    "unlockedSub": "After the Module 02 study — answer with what you learned",
+    "questionTag": "Question",
+    "itemProgress": "Question {n}/{total}",
+    "receiptHeading": "Instrument submitted",
+    "immutableNote": "Your answers are stored permanently and encrypted for the research — they cannot be edited after the submit. Thank you for helping improve the course",
+    "immutableTag": "Status: submitted (immutable)"
   },
   "survey": {
     "gateLabel": "Survey unlock",
@@ -288,7 +311,17 @@
       "notConfigured": "not-configured",
       "ok": "ok",
       "fallbackSuspense": "Loading…"
-    }
+    },
+    "researchTag": "Research instrument",
+    "noXpTag": "This activity grants no XP",
+    "autosaveTag": "Autosaved",
+    "instrumentHeading": "Satisfaction Survey",
+    "satisfactionSub": "Rate your satisfaction 1–5 (highest → lowest)",
+    "questionTag": "Question",
+    "itemProgress": "Question {n}/{total}",
+    "receiptHeading": "Instrument submitted",
+    "immutableNote": "Your answers are stored permanently and encrypted for the research — they cannot be edited after the submit. Thank you for helping improve the course",
+    "immutableTag": "Status: submitted (immutable)"
   },
   "content": {
     "gateLabel": "Content gate",
@@ -525,6 +558,10 @@
     "title": "Badge gallery",
     "intro": "Criteria-based awards from real events — earned and locked states with the criteria shown in your language.",
     "criteria": "Criteria",
+    "gallerySub": "Earned and locked badges side by side — the criteria shown in both states",
+    "tagAll": "All badges",
+    "tagEarned": "Earned",
+    "tagLocked": "Locked",
     "earned": "Earned — a real achievement's record",
     "locked": "Locked — no award yet (the criteria stay visible)",
     "earnedBadge": "Earned badge",
@@ -542,6 +579,7 @@
   },
   "leaderboard": {
     "tableLabel": "XP leaderboard",
+    "weekSub": "This week's top XP — friendly competition!",
     "rank": "Rank",
     "level": "Level",
     "xp": "XP",

@@ -22,6 +22,7 @@ import { afterEach, test, expect } from 'vitest'
 afterEach(() => cleanup())
 
 import { Badge } from '../../components/Badge'
+import { BadgeCard } from '../../components/BadgeCard'
 import { Button } from '../../components/Button'
 import { Card } from '../../components/Card'
 import { LockedState, AvailableState } from '../../components/State'
@@ -137,6 +138,40 @@ test('Card is focusable and names its heading in the aria-label', () => {
     `${enMessages.gallery.states.available} — Pastel card`,
   )
   expect(card.getAttribute('tabIndex')).toBe('0')
+  cleanup()
+})
+
+test('BadgeCard is a focusable earned/locked badge card whose state rides the data-ppg-state + the aria-label text', () => {
+  const { getByRole } = render(
+    <NextIntlClientProvider locale="en" messages={enMessages}>
+      <BadgeCard heading="First Steps" body="Criteria shown" status="locked" icon="⭐" />
+    </NextIntlClientProvider>,
+  )
+  // A focusable `section` is a `region` role in jsdom; the `.ppg-badge-card`
+  // class + the `data-ppg-state` are the card's own state marker, and the
+  // locked card's `aria-label` carries the “Locked” text (never the hue
+  // alone). The icon circle is `aria-hidden` decoration only.
+  const card = getByRole('region')
+  expect(card.getAttribute('class')).toContain('ppg-badge-card')
+  expect(card.getAttribute('data-ppg-state')).toBe('locked')
+  expect(card.getAttribute('aria-label')).toContain(
+    `${enMessages.gallery.states.locked} — First Steps`,
+  )
+  expect(card.getAttribute('tabIndex')).toBe('0')
+  const icon = card.querySelector('.ppg-badge-icon')
+  expect(icon?.getAttribute('aria-hidden')).toBe('true')
+  cleanup()
+
+  const { getByRole: getRegion2 } = render(
+    <NextIntlClientProvider locale="th" messages={thMessages}>
+      <BadgeCard heading="ก้าวแรก" body="Criteria shown" status="available" icon="⭐" />
+    </NextIntlClientProvider>,
+  )
+  const earned = getRegion2('region')
+  expect(earned.getAttribute('data-ppg-state')).toBe('available')
+  expect(earned.getAttribute('aria-label')).toContain(
+    `${thMessages.gallery.states.available} — ก้าวแรก`,
+  )
   cleanup()
 })
 
