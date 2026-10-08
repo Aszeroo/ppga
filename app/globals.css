@@ -176,13 +176,13 @@ body {
 }
 
 /* Visible focus: a thickened border + ring (never hue-shifted only). */
-:where(.ppg-button, .ppg-card, .ppg-badge, .ppg-badge-card, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar, .ppg-profile-hero, .ppg-instr-item, .ppg-instr-opt, .ppg-instr-receipt) {
+:where(.ppg-button, .ppg-card, .ppg-badge, .ppg-badge-card, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar, .ppg-profile-hero, .ppg-instr-item, .ppg-instr-opt, .ppg-instr-receipt, .ppg-work-card, .ppg-queue-card, .ppg-rubric-crit, .ppg-rubric-score, .ppg-rubric-total) {
   --ppg-focus-visible: var(--ppg-focus-ring);
   --ppg-focus-thickness: var(--ppg-border-2);
 }
 
 /* Visible focus: a thickened border + ring (never hue-shifted only). */
-:where(.ppg-button, .ppg-card, .ppg-badge, .ppg-badge-card, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar, .ppg-profile-hero, .ppg-instr-item, .ppg-instr-opt, .ppg-instr-receipt):focus-visible {
+:where(.ppg-button, .ppg-card, .ppg-badge, .ppg-badge-card, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar, .ppg-profile-hero, .ppg-instr-item, .ppg-instr-opt, .ppg-instr-receipt, .ppg-work-card, .ppg-queue-card, .ppg-rubric-crit, .ppg-rubric-score, .ppg-rubric-total):focus-visible {
   outline: var(--ppg-focus-ring);
   outline-offset: var(--ppg-focus-offset);
   border-width: var(--ppg-border-2);
@@ -214,7 +214,7 @@ body {
 
 /* Respect the reduced-motion signal: no shadow animation, no bar easing. */
 @media (prefers-reduced-motion: reduce) {
-  :where(.ppg-button, .ppg-card, .ppg-badge, .ppg-badge-card, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar, .ppg-profile-hero, .ppg-profile-avatar, .ppg-instr-item, .ppg-instr-opt, .ppg-instr-receipt) {
+  :where(.ppg-button, .ppg-card, .ppg-badge, .ppg-badge-card, .ppg-status-pill, .ppg-xp-bar, .ppg-progress-bar, .ppg-profile-hero, .ppg-profile-avatar, .ppg-instr-item, .ppg-instr-opt, .ppg-instr-receipt, .ppg-work-card, .ppg-queue-card, .ppg-rubric-crit, .ppg-rubric-score, .ppg-rubric-total) {
     animation-duration: 0s;
     transition-duration: 0s;
   }
@@ -2038,4 +2038,209 @@ a.ppg-cta {
   border-color: var(--ppg-status-success);
   border-radius: var(--ppg-radius-3);
   padding: var(--ppg-space-5) var(--ppg-space-4);
+}
+/* ========================================================================
+ * PPGA #55: the UTILITARIAN work surfaces — the teacher review queue +
+ * rubric (`#t-queue`/`#t-rubric`) and the admin console + health status
+ * (`#a-*`). Productivity-first: the SAME V3 pixel frame (white cards, blue
+ * borders, pill chips, cream/gold accents) with NO game decoration. Every
+ * colour rides a token — no literal hex enters this branch here. The new
+ * card classes joined the focus-`where` groups + the reduced-motion group
+ * at the top of this file.
+ * ====================================================================== */
+
+/* The work surfaces' heading block: left-aligned title + honest subline +
+ * the REAL count chips (never invented totals). The h1 carries the repo
+ * idiom `ppg-heading ppg-heading-text` beside its own class (the #54 a11y
+ * lesson: every display-font heading rides the marker classes). */
+.ppg-work-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-2);
+}
+
+.ppg-work-head-title {
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--ppg-pink-300);
+  margin: 0;
+}
+
+.ppg-work-head-sub {
+  font-family: var(--font-ppg-body);
+  font-weight: 600;
+  color: var(--ppg-muted);
+  margin: 0;
+}
+
+.ppg-work-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ppg-space-2);
+}
+
+/* The console panel — one bordered card per job (the gallery's admin
+ * `card strip`). box-sizing with width:100% keeps it inside the sweep
+ * (the #52 defect class). */
+.ppg-work-card {
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-3);
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-3);
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  border-radius: var(--ppg-radius-3);
+  padding: var(--ppg-space-4);
+  box-shadow: var(--ppg-shadow-pixel-2);
+}
+
+/* The native controls stacked with honest rhythm (labels wear the ▶
+ * `.ppg-field-label`, fields the `.ppg-input` face). On a `fieldset` it also
+ * strips the UA chrome so only the panel's ONE border reads. */
+.ppg-work-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-2);
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+/* The queue's per-learner/round card (the gallery's `#t-queue` row: gold
+ * border, name + meta, the StatusPill copy beside, the action link). State
+ * rides the pill's COPY + tone, never the hue alone. */
+.ppg-queue-card {
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--ppg-space-3);
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-3);
+  border-style: solid;
+  border-color: var(--ppg-gold);
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-3) var(--ppg-space-4);
+}
+
+.ppg-queue-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-1);
+  flex: 1 1 200px;
+  min-width: 200px;
+  color: var(--ppg-fg-heading);
+}
+
+.ppg-queue-meta {
+  font-family: var(--font-ppg-body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ppg-faint);
+  overflow-wrap: anywhere;
+}
+
+/* The rubric's per-criterion row (the gallery's `.crit`: label + dashed
+ * rule). The shipped RADIO inputs stay the control (e2e names byte-identical)
+ * — the score tiles dress them, they never replace them. */
+.ppg-rubric-crit {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-2);
+  padding-block: var(--ppg-space-3);
+  border-bottom: var(--ppg-border-1) dashed var(--ppg-line);
+}
+
+.ppg-rubric-crit:last-of-type {
+  border-bottom: 0;
+}
+
+.ppg-rubric-crit-label {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ppg-space-2);
+  flex-wrap: wrap;
+  font-weight: 700;
+  color: var(--ppg-fg-heading);
+}
+
+.ppg-rubric-descriptors {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-1);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ppg-muted);
+  overflow-wrap: anywhere;
+}
+
+.ppg-rubric-scores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ppg-space-2);
+}
+
+.ppg-rubric-score {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ppg-space-1);
+  font-family: var(--font-ppg-body);
+  font-weight: 800;
+  color: var(--ppg-fg-heading);
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-1) var(--ppg-space-3);
+  cursor: pointer;
+  accent-color: var(--ppg-pink-300);
+}
+
+.ppg-rubric-score:has(input:checked) {
+  border-color: var(--ppg-pink-300);
+  background-color: var(--ppg-pink-100);
+}
+
+.ppg-rubric-score:has(input:focus-visible) {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+/* The running total (the gallery's cream/gold 28/35 box). DISPLAY ONLY —
+ * the server recomputes the authoritative 7–35 sum (ADR-0003); the figure
+ * component only PRESENTS the checked radios. */
+.ppg-rubric-total {
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--ppg-space-2);
+  background-color: var(--ppg-cream);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-gold);
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-3) var(--ppg-space-4);
+  font-weight: 800;
+  color: var(--ppg-fg-heading);
+}
+
+.ppg-total-figure {
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ppg-fg-heading);
 }

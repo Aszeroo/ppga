@@ -33,11 +33,20 @@
       "consentFlag": "ตอง",
       "unlockOverride": "ปล้",
       "unlockSubmit": "ปล้",
-      "linkAuditOverride": "สารชื่ปล้"
+      "linkAuditOverride": "สารชื่ปล้",
+      "title": "จัดการผู้ใช้",
+      "sub": "ค้นหา จัดบทบาท และดูสถานะบัญชีทั้งหมด",
+      "colUser": "ผู้ใช้",
+      "colRole": "บทบาท"
     },
     "audit": {
       "stream": "สายชื่่อ",
-      "linkUsers": "รายชื่่อผู้ใชั้"
+      "linkUsers": "รายชื่่อผู้ใชั้",
+      "title": "บันทึกกิจกรรม (Audit)",
+      "colTime": "เวลา",
+      "colAction": "กิจกรรม",
+      "colTarget": "เป้าหมาย",
+      "colDetails": "ระเยละเอยด"
     },
     "provisioning": {
       "intro": "วาง roster (นัักเรียนหนึ่่งล้าว: บะร.บกะนักเรียน + ชื่่อสับสบ) —ระบบส้าน้างบัญชีนัักเรียนแบบุุมก้วยร.บกะนัักเรียนและรหัสช่วครััง่ที่ให้าได้า บนื่้าก่า; แบบฟอร์มเพิ่่มหนึ่่งล้าวจะเปน็ัลfallback",
@@ -63,7 +72,8 @@
         "denied": "ปฏฏิลทู่",
         "unauthorized": "ลงชื่อ",
         "notConfigured": "บริการไม่มี"
-      }
+      },
+      "title": "📥 นำเข้ารายชื่อนักเรียน"
     },
     "publication": {
       "list": "สถานะ publish (หน่วนเรียน)",
@@ -73,10 +83,13 @@
       "draft": "draft (invisible  learner)",
       "published": "published (visible ตาม lock)",
       "archived": "archived (invisible  learner)",
-      "linkAudit": "audit log (publish)"
+      "linkAudit": "audit log (publish)",
+      "title": "จัดการคอร์ส",
+      "sub": "เตรียม เผยแพร่ และตรวจสอบโมดูลทั้งหมดก่อนถึงมือนักเรียน"
     },
     "export": {
       "heading": "ส่งออข้อมูลวิจัย",
+      "downloadTitle": "📦 ส่งออกข้อมูล",
       "intro": "ไฟล์ CSV, XLSX และ SQL จากตารางข้อมูลวิจัย — หนึ่งแถวต่อผู้เข้าร่วม (ก่อนทดสอบ, หลังทดสอบ, คะแนนรบริก, ความพงใจพอใจ) พร้อมข้อมูลประจำตัวจริงของผู้เรียน ใช้ได้เฉพาะอาจารย์/ผู้ดูแล; ผู้เรียนจะถูกปฏิเสธที่ชั้นฐานข้อมูล ไม่ใช่แค่ที่หน้า",
       "auditNote": "การส่งออกทุกครั้งบันทึกเหตุการณ์ตรวจสอบ (ใคร ทำอะไร เมื่อไร) — การดาวน์โหลดคือรอบที่มีการบันทึก ไม่ใช่การเปิดหน้า",
       "counts": "สถานะกลุ่มตัวอย่างตอนนี้",
@@ -155,7 +168,12 @@
   "health": {
     "connectivity": "สารภาพกับฐานข้อมูล",
     "detail": "ความผิด:",
-    "fallbackSuspense": "กำลังสอฐานข้อมูล..."
+    "fallbackSuspense": "กำลังสอฐานข้อมูล...",
+    "systemTitle": "สถานะระบบ",
+    "systemSub": "ตรวจสุขภาพบริการ ทรัพยากร และงานเบื้องหลัง",
+    "statusOk": "ระบบทำงานปกติ ✓",
+    "statusDown": "ระบบตรวจสอบไม่ผ่าน",
+    "statusNotConfigured": "ยังไม่ได้ตั้งค่า"
   },
   "home": {
     "scaffold": " P PGA พร้อม",
@@ -625,7 +643,15 @@
       "denied": "ไม่คก",
       "unauthorized": "ไม่อ้อนาญ",
       "notConfigured": "ไม่่ตตั้"
-    }
+    },
+    "queueTitle": "📥 คิวงานตรวจ",
+    "queueSub": "เลือกงานเพื่อเปิด Rubric ให้คะแนน 7 ด้าน",
+    "chipAll": "ทั้งหมด",
+    "pendingTag": "รอตรวจ",
+    "rubricTitle": "📋 ตรวจงานด้วย Rubric",
+    "feedbackPlaceholder": "เขียนคำติชมแบบกำลังใจ เช่น จุดที่ทำได้ดี และสิ่งที่ควรปรับปรุงต่อไป…",
+    "approvePass": "✓ อนุมัติผ่าน",
+    "requestRevision": "🔁 ส่งกลับให้แก้ไข"
   },
   "language": {
     "th": "ไทย",

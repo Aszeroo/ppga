@@ -49,11 +49,20 @@
       "consentFlag": "Consent (paper consent offline)",
       "unlockOverride": "Unlock past the gate",
       "unlockSubmit": "Unlock",
-      "linkAuditOverride": "Audit stream (override)"
+      "linkAuditOverride": "Audit stream (override)",
+      "title": "User management",
+      "sub": "Browse accounts and manage roles, consent and unlocks",
+      "colUser": "User",
+      "colRole": "Role"
     },
     "audit": {
       "stream": "Audit stream",
-      "linkUsers": "User list"
+      "linkUsers": "User list",
+      "title": "Activity log (Audit)",
+      "colTime": "Time",
+      "colAction": "Action",
+      "colTarget": "Target",
+      "colDetails": "Details"
     },
     "provisioning": {
       "intro": "Paste the roster (one learner per line: student ID + name) — accounts are bulk-created with student-ID logins and one-time temporary passwords to hand out on paper; the single-add form is the fallback.",
@@ -79,7 +88,8 @@
         "denied": "denied — provisioning is admin/teacher-only",
         "unauthorized": "unauthorized — sign in first",
         "notConfigured": "not-configured"
-      }
+      },
+      "title": "📥 Import learner roster"
     },
     "publication": {
       "list": "Publication states (modules)",
@@ -89,10 +99,13 @@
       "draft": "draft (invisible to Learners)",
       "published": "published (visible per the lock rule)",
       "archived": "archived (invisible to Learners)",
-      "linkAudit": "Audit log (publication events)"
+      "linkAudit": "Audit log (publication events)",
+      "title": "Course management",
+      "sub": "Draft, publish and lock states of every module"
     },
     "export": {
       "heading": "Research export",
+      "downloadTitle": "📦 Data export",
       "intro": "CSV, XLSX and SQL extracts of the research tables — one row per participant (Pre-Test, Post-Test, rubric totals, satisfaction) with the real student identity. Teacher/Admin only — a learner is denied at the database, not just the page.",
       "auditNote": "Every export run writes one audit event (who, what, when): the download itself is the audited call, never the page view.",
       "counts": "The cohort right now",
@@ -171,7 +184,12 @@
   "health": {
     "connectivity": "Database connectivity:",
     "detail": "Detail:",
-    "fallbackSuspense": "Checking Supabase Postgres…"
+    "fallbackSuspense": "Checking Supabase Postgres…",
+    "systemTitle": "System status",
+    "systemSub": "Service health and database connectivity",
+    "statusOk": "System operating normally ✓",
+    "statusDown": "System check failed ✗",
+    "statusNotConfigured": "Not configured ⚠"
   },
   "home": {
     "fallbackSuspense": "Preparing the dashboard…",
@@ -639,7 +657,15 @@
       "denied": "denied",
       "unauthorized": "unauthorized",
       "notConfigured": "not-configured"
-    }
+    },
+    "queueTitle": "📥 Review queue",
+    "queueSub": "Pick a submission to open the 7-criterion rubric.",
+    "chipAll": "All",
+    "pendingTag": "Pending review",
+    "rubricTitle": "📋 Rubric review",
+    "feedbackPlaceholder": "Write encouraging feedback — what worked well, and what to improve next…",
+    "approvePass": "✓ Approve & pass",
+    "requestRevision": "🔁 Send back for revision"
   },
   "language": {
     "th": "Thai",
