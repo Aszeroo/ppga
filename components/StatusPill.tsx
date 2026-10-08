@@ -14,8 +14,8 @@ import { useTranslations } from 'next-intl'
  *
  * Tokens only: the `--ppg-status-{success|warning|error|locked}` colour,
  * the pastel-blue face, the pixel border. The heading-role family
- * (`--font-ta16bit`) reads the numeral badge inside the pill with the same
- * per-glyph Mitr fallback — a Thai status label falls to Mitr.
+ * (`--font-ppg-display`) reads the numeral badge inside the pill with the same
+ * per-glyph Noto Sans Thai fallback — a Thai status label falls to Noto Sans Thai.
  */
 export interface StatusPillProps {
   label: string
@@ -26,7 +26,7 @@ export function StatusPill({ label, tone }: StatusPillProps) {
   const t = useTranslations('gallery')
 
   const style: CSSProperties = {
-    fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+    fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
     backgroundColor: 'var(--ppg-blue-100)',
     borderWidth: 'var(--ppg-border-2)',
     borderStyle: 'solid',

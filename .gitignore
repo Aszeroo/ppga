@@ -21,3 +21,13 @@ TA-16-Bit.zip
 TA-16-Bit.zip:Zone.Identifier
 *.zip:Zone.Identifier
 .vercel
+
+# ticket #50: heavy flow-board exports stay untracked (committed design sources untouched)
+UI_UX_design/V3 — 05 Learner Flow.png
+UI_UX_design/V3 — 06 Teacher Flow.png
+UI_UX_design/V3 — 07 Admin Flow.png
+UI_UX_design/V3 — 08 Research Instruments.png
+UI_UX_design/V3 — 09 Responsive.png
+UI_UX_design/V3 — 10 Prototype.png
+# ticket #50: owner bug-evidence screenshots (primary checkout v1/) stay untracked
+/v1/

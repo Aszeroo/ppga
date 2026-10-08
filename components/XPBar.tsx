@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 
 /**
  * The XPBar primitive — the gamified XP meter. The numeral is the
- * heading-role `--font-ta16bit` (`--ppg-xp-numeral`) so a swap of the
+ * heading-role `--font-ppg-display` (`--ppg-xp-numeral`) so a swap of the
  * single-token swap point re-tunes the XP digits + the button / badge /
  * heading face all at once. The `progressbar` role + the `aria-valuenow`
  * is the state read (never hue alone), the pastel-pink/blue fill is the
@@ -29,7 +29,7 @@ export function XPBar({ xp, level = 0 }: XPBarProps) {
     borderStyle: 'solid',
     backgroundColor: 'var(--ppg-blue-200)',
     boxShadow: 'var(--ppg-shadow-pixel-1)',
-    fontFamily: 'var(--font-mitr)',
+    fontFamily: 'var(--font-ppg-body)',
   }
 
   return (
@@ -54,7 +54,7 @@ export function XPBar({ xp, level = 0 }: XPBarProps) {
           transition: 'width 0.3s steps(8)', // 8-bit stepped, off in reduced-motion
         }}
       />
-      <span className="ppg-xp-numeral" style={{ fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}>
+      <span className="ppg-xp-numeral">
         {xp}
       </span>
     </div>

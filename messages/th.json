@@ -8,7 +8,13 @@
     "health": "สารภาพ",
     "adminUsers": "ผู่้่ผู้ใชั้",
     "adminAudit": "สารชู่้",
-    "adminProvisioning": "จัด roster"
+    "adminProvisioning": "จัด roster",
+    "course": "แผนท่ีหนว่ย",
+    "badges": "ช่ออ-กิ่",
+    "leaderboard": "กระดานผู้นำ",
+    "reviewQueue": "คิว-ตรวจ",
+    "coursePublication": "เผยแพร่หลักสูตร",
+    "adminExport": "ส่งออกแบบุูลวิจัย"
   },
   "admin": {
     "heading": "ผู่้่ผู้ใชั้",
@@ -27,11 +33,20 @@
       "consentFlag": "ตอง",
       "unlockOverride": "ปล้",
       "unlockSubmit": "ปล้",
-      "linkAuditOverride": "สารชื่ปล้"
+      "linkAuditOverride": "สารชื่ปล้",
+      "title": "จัดการผู้ใช้",
+      "sub": "ค้นหา จัดบทบาท และดูสถานะบัญชีทั้งหมด",
+      "colUser": "ผู้ใช้",
+      "colRole": "บทบาท"
     },
     "audit": {
       "stream": "สายชื่่อ",
-      "linkUsers": "รายชื่่อผู้ใชั้"
+      "linkUsers": "รายชื่่อผู้ใชั้",
+      "title": "บันทึกกิจกรรม (Audit)",
+      "colTime": "เวลา",
+      "colAction": "กิจกรรม",
+      "colTarget": "เป้าหมาย",
+      "colDetails": "ระเยละเอยด"
     },
     "provisioning": {
       "intro": "วาง roster (นัักเรียนหนึ่่งล้าว: บะร.บกะนักเรียน + ชื่่อสับสบ) —ระบบส้าน้างบัญชีนัักเรียนแบบุุมก้วยร.บกะนัักเรียนและรหัสช่วครััง่ที่ให้าได้า บนื่้าก่า; แบบฟอร์มเพิ่่มหนึ่่งล้าวจะเปน็ัลfallback",
@@ -57,7 +72,8 @@
         "denied": "ปฏฏิลทู่",
         "unauthorized": "ลงชื่อ",
         "notConfigured": "บริการไม่มี"
-      }
+      },
+      "title": "📥 นำเข้ารายชื่อนักเรียน"
     },
     "publication": {
       "list": "สถานะ publish (หน่วนเรียน)",
@@ -67,10 +83,13 @@
       "draft": "draft (invisible  learner)",
       "published": "published (visible ตาม lock)",
       "archived": "archived (invisible  learner)",
-      "linkAudit": "audit log (publish)"
+      "linkAudit": "audit log (publish)",
+      "title": "จัดการคอร์ส",
+      "sub": "เตรียม เผยแพร่ และตรวจสอบโมดูลทั้งหมดก่อนถึงมือนักเรียน"
     },
     "export": {
       "heading": "ส่งออข้อมูลวิจัย",
+      "downloadTitle": "📦 ส่งออกข้อมูล",
       "intro": "ไฟล์ CSV, XLSX และ SQL จากตารางข้อมูลวิจัย — หนึ่งแถวต่อผู้เข้าร่วม (ก่อนทดสอบ, หลังทดสอบ, คะแนนรบริก, ความพงใจพอใจ) พร้อมข้อมูลประจำตัวจริงของผู้เรียน ใช้ได้เฉพาะอาจารย์/ผู้ดูแล; ผู้เรียนจะถูกปฏิเสธที่ชั้นฐานข้อมูล ไม่ใช่แค่ที่หน้า",
       "auditNote": "การส่งออกทุกครั้งบันทึกเหตุการณ์ตรวจสอบ (ใคร ทำอะไร เมื่อไร) — การดาวน์โหลดคือรอบที่มีการบันทึก ไม่ใช่การเปิดหน้า",
       "counts": "สถานะกลุ่มตัวอย่างตอนนี้",
@@ -107,12 +126,17 @@
   },
   "login": {
     "intro": "ลงชื่อด้วยร.บกะนักเรียนและรหัสที่ได้นัด",
-    "identifier": "ร.บกะนักเรียน",
-    "password": "รหัส",
-    "submit": "ลงชื่อ",
+    "identifier": "รหัสผู้ใช้งาน",
+    "identifierPlaceholder": "กรอกรหัสผู้ใช้งาน",
+    "password": "รหัสผ่าน",
+    "passwordPlaceholder": "กรอกรหัสผ่าน",
+    "submit": "🚀 เข้าสู่ระบบ",
     "busy": "กำลังลงชื่อ…",
     "afterSuccess": "เมื่อลงชื่อได้ คุณไปที่หน้าโปรไฟล์",
-    "fallbackSuspense": "กำลังเตรียมแบบฟอร์ม..."
+    "fallbackSuspense": "กำลังเตรียมแบบฟอร์ม...",
+    "welcome": "ยินดีต้อนรับ!",
+    "blurbLine1": "🎮 เริ่มต้นการผจญภัย",
+    "blurbLine2": "เรียนรู้ PowerPoint แบบ Gamification"
   },
   "changePassword": {
     "intro": "เปลี่ยนรหัสที่ลงชื่อ",
@@ -133,7 +157,10 @@
       "notConfigured": "บริการไม่ได้"
     },
     "links": "ลิงกค์",
-    "fallbackSuspense": "กำลังอ่านโปรไฟล์..."
+    "fallbackSuspense": "กำลังอ่านโปรไฟล์...",
+    "heroTitle": "นักเรียนของฉัน",
+    "enrolled": "เข้าร่วม PPGA",
+    "editLabel": "✏️ แก้ไขโปรไฟล์"
   },
   "logout": {
     "intro": "ออกชื่อจาก P PGA —คุกกี้ชสชันและรีเฟรสโทเกน",
@@ -144,7 +171,12 @@
   "health": {
     "connectivity": "สารภาพกับฐานข้อมูล",
     "detail": "ความผิด:",
-    "fallbackSuspense": "กำลังสอฐานข้อมูล..."
+    "fallbackSuspense": "กำลังสอฐานข้อมูล...",
+    "systemTitle": "สถานะระบบ",
+    "systemSub": "ตรวจสุขภาพบริการ ทรัพยากร และงานเบื้องหลัง",
+    "statusOk": "ระบบทำงานปกติ ✓",
+    "statusDown": "ระบบตรวจสอบไม่ผ่าน",
+    "statusNotConfigured": "ยังไม่ได้ตั้งค่า"
   },
   "home": {
     "scaffold": " P PGA พร้อม",
@@ -172,8 +204,19 @@
       "unauthorized": "เมิลทู่",
       "notConfigured": "ลาทก์ก่กำล่ง",
       "ok": "ได้าสาย",
-      "fallbackSuspense": "กำลังโหลด..."
-    }
+      "fallbackSuspense": "กำลังโหลด...",
+      "inProgress": "กำลังทำ",
+      "submitted": "ส่งแล้ว รออาจารย์ตรวจ",
+      "needsImprovement": "ต้องแก้ไขแล้วส่งใหม่",
+      "approved": "อนุมัติแล้ว"
+    },
+    "linkReviewStatus": "ดูสถานะการตรวจ Final Project (อยู่กับอาจารย์)",
+    "statusLabel": "สถานะผู้เล่น",
+    "courseProgress": "ความคืบหน้าหลักสูตร",
+    "missionCurrent": "ภารกิจปัจจุบัน",
+    "submissionLabel": "การส่งงาน",
+    "feedbackLabel": "ข้อเสนอแนะจากอาจารย์",
+    "fallbackSuspense": "กำลังโหลด..."
   },
   "pretest": {
     "gateLabel": "ขั้ทกัาน์",
@@ -201,7 +244,17 @@
       "ok": "ได้าสาย",
       "scaffold": " P PGA พร้อม",
       "fallbackSuspense": "กำลังโหลด..."
-    }
+    },
+    "researchTag": "🔬 แบบประเมินเพื่อการวิจัย",
+    "noXpTag": "กิจกรรมนี้ไม่มี XP ⚠️",
+    "autosaveTag": "💾 บันทึกอัตโนมัติแล้ว",
+    "instrumentHeading": "📝 แบบทดสอบก่อนเรียน (Pre-Test)",
+    "noXpSub": "ตอบตามความเข้าใจจริง — ไม่มีผลต่อ XP หรือคะแนนในเกม",
+    "questionTag": "ข้อที่ {n}",
+    "itemProgress": "ข้อ {n}/{total}",
+    "receiptHeading": "ส่งแบบประเมินเรียบร้อยแล้ว",
+    "immutableNote": "คำตอบถูกบันทึกถาวรและเข้ารหัสเพื่อการวิจัย แก้ไขไม่ได้อีกหลังส่ง — ขอบคุณที่ช่วยพัฒนาบทเรียน 💙",
+    "immutableTag": "✓ สถานะ: ส่งแล้ว (Immutable)"
   },
   "posttest": {
     "gateLabel": "สถานะเปิด Post-Test",
@@ -228,7 +281,17 @@
       "notConfigured": "ยงัมได้าตังคา",
       "ok": "ok",
       "fallbackSuspense": "กำลงโหลด..."
-    }
+    },
+    "researchTag": "🔬 แบบประเมินเพื่อการวิจัย",
+    "noXpTag": "กิจกรรมนี้ไม่มี XP ⚠️",
+    "autosaveTag": "💾 บันทึกอัตโนมัติแล้ว",
+    "instrumentHeading": "📝 แบบทดสอบหลังเรียน (Post-Test) ✅",
+    "unlockedSub": "หลังเรียนจบ Module 02 — ตอบตามที่ได้เรียนรู้มา",
+    "questionTag": "ข้อที่ {n}",
+    "itemProgress": "ข้อ {n}/{total}",
+    "receiptHeading": "ส่งแบบประเมินเรียบร้อยแล้ว",
+    "immutableNote": "คำตอบถูกบันทึกถาวรและเข้ารหัสเพื่อการวิจัย แก้ไขไม่ได้อีกหลังส่ง — ขอบคุณที่ช่วยพัฒนาบทเรียน 💙",
+    "immutableTag": "✓ สถานะ: ส่งแล้ว (Immutable)"
   },
   "survey": {
     "gateLabel": "สถานะเปิดแบบสำารวจ",
@@ -254,7 +317,17 @@
       "notConfigured": "ยงัมได้าตั้่งคา",
       "ok": "ok",
       "fallbackSuspense": "กำลังโหลด..."
-    }
+    },
+    "researchTag": "🔬 แบบประเมินเพื่อการวิจัย",
+    "noXpTag": "กิจกรรมนี้ไม่มี XP ⚠️",
+    "autosaveTag": "💾 บันทึกอัตโนมัติแล้ว",
+    "instrumentHeading": "😊 แบบสอบถามความพึงพอใจ",
+    "satisfactionSub": "ให้คะแนนความพึงพอใจ 1–5 (มากที่สุด → น้อยที่สุด)",
+    "questionTag": "ข้อที่ {n}",
+    "itemProgress": "ข้อ {n}/{total}",
+    "receiptHeading": "ส่งแบบประเมินเรียบร้อยแล้ว",
+    "immutableNote": "คำตอบถูกบันทึกถาวรและเข้ารหัสเพื่อการวิจัย แก้ไขไม่ได้อีกหลังส่ง — ขอบคุณที่ช่วยพัฒนาบทเรียน 💙",
+    "immutableTag": "✓ สถานะ: ส่งแล้ว (Immutable)"
   },
   "content": {
     "gateLabel": "ขั้ทกัาน์",
@@ -291,8 +364,12 @@
       "denied": "ปฏฏิลทู่",
       "unauthorized": "ต้องลงชื่อก่อน",
       "notConfigured": "ยังไม่ได้ configuring",
-      "ok": "ได้สาย"
-    }
+      "ok": "ได้สาย",
+      "cleared": "ผ่านแล้ว — จบ มิชชันนี้แล้ว"
+    },
+    "currentStage": "ด่านถัดไป",
+    "continueStage": "ไปต่อ",
+    "progressCleared": "ด่านที่ผ่านแล้ว"
   },
   "lesson": {
     "list": "หน่วนย่อย",
@@ -384,6 +461,16 @@
       "error": "ความผิด",
       "locked": "มถก",
       "neutral": "กลาง"
+    },
+    "stageMap": {
+      "heading": "แผนที่ด่าน",
+      "stage1": "ด่าน 1",
+      "stage2": "ด่าน 2",
+      "stage3": "ด่าน 3"
+    },
+    "challengeDemo": {
+      "heading": "กรอบการท้าทาย (บทเรียนถิงผลลัพธ์)",
+      "panel": "เดโมแผงภารกิจ"
     }
   },
   "header": {
@@ -396,7 +483,9 @@
       "error": "ความผิด",
       "unauthorized": "ไม่อ้อนาญ — เปิกงานก่่อน",
       "notConfigured": "ไม่ไม่่งตั้"
-    }
+    },
+    "levelChip": "LV",
+    "xpUnit": "XP"
   },
   "selfcheck": {
     "section": "Self-Check",
@@ -476,6 +565,10 @@
     "title": "ช่ออ-กิ่",
     "intro": "กิ่-จากเหตุ-จริง — กิ่คก/กิ่ยังไม่คก คอยกั่",
     "criteria": "กั่",
+    "gallerySub": "สะสมแบดจ์ทุกใบ — พิสูจน์ความสามารถ PowerPoint ของคุณ",
+    "tagAll": "ทั้งหมด",
+    "tagEarned": "ปลดล็อค",
+    "tagLocked": "ล็อค",
     "earned": "กิ่คก — จากเหตุ-จริง",
     "locked": "กิ่ยังไม่คก (คอยกั่)",
     "earnedBadge": "กิ่คก",
@@ -493,6 +586,7 @@
   },
   "leaderboard": {
     "tableLabel": "ชื่ิง-XP",
+    "weekSub": "สัปดาห์นี้ใครได้ XP มากที่สุด — แข่งแบบเป็นมิตร!",
     "rank": "ลำดู",
     "level": "ขั้",
     "xp": "XP",
@@ -552,10 +646,57 @@
       "denied": "ไม่คก",
       "unauthorized": "ไม่อ้อนาญ",
       "notConfigured": "ไม่่ตตั้"
-    }
+    },
+    "queueTitle": "📥 คิวงานตรวจ",
+    "queueSub": "เลือกงานเพื่อเปิด Rubric ให้คะแนน 7 ด้าน",
+    "chipAll": "ทั้งหมด",
+    "pendingTag": "รอตรวจ",
+    "rubricTitle": "📋 ตรวจงานด้วย Rubric",
+    "feedbackPlaceholder": "เขียนคำติชมแบบกำลังใจ เช่น จุดที่ทำได้ดี และสิ่งที่ควรปรับปรุงต่อไป…",
+    "approvePass": "✓ อนุมัติผ่าน",
+    "requestRevision": "🔁 ส่งกลับให้แก้ไข"
   },
   "language": {
     "th": "ไทย",
     "en": "English"
+  },
+  "shell": {
+    "identity": "P PGA - ระบบส้างแบบุู PowerPoint",
+    "start": "กด เริ่่ม",
+    "navLabel": "นาทาง-หลัก",
+    "menuLabel": "เปิด-นาทาง",
+    "menuCollapseLabel": "ปิด-นาทาง",
+    "menuOpenLabel": "เปิด-นาทาง",
+    "footerAttribution": "PowerPoint Presentation Creation — การเรียนรู้การนำเสนอ / สำหรับนักเรียนระดับประกาศนียบัตรวิชาชีพชั้นปีที่ 2 (ปวช.2)",
+    "footerAttributionEn": "PowerPoint Presentation Creation — Presentation-Production learning / for certificate-level vocational learners, Year 2 (Por Wor Sor 2)",
+    "footerHealth": "สารภาพ",
+    "logo": "PPGA",
+    "userLearner": "นักเรียน",
+    "userTeacher": "ครูผู้สอน",
+    "userAdmin": "ผู้ดูแลระบบ"
+  },
+  "challenge": {
+    "trackLabel": "ลำดับการท้าทาย",
+    "steps": {
+      "lesson": "บทเรียน",
+      "selfcheck": "Self-Check",
+      "mission": "ภารกิจ",
+      "result": "ผลลัพธ์"
+    },
+    "states": {
+      "cleared": "ผ่านแล้ว",
+      "open": "เปิด — พร้อมสำหรับคุณ",
+      "locked": "ล็อก — ทำการท้าทายก่อนหน้าให้จบกอน",
+      "challenge": "ท้าทาย — ลองเลยตอนนี้",
+      "success": "สำเร็จ — รับรางวัลแล้ว",
+      "clear": "เคลียร์ — โมดูลน้ีจบแล้ว"
+    },
+    "current": "การท้าทายปัจจุบັນ",
+    "rewardNote": "จากบัญชี XP ของคุณ:",
+    "unlockNext": "เคลียร์แล้ว — โมดูลถัดไปเปิดแล้ว:"
+  },
+  "reward": {
+    "title": "รางวัลที่คุณได้รับ",
+    "dismiss": "ปิด"
   }
 }

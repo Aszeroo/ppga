@@ -113,6 +113,15 @@ export default function middleware(req: NextRequest) {
   }
 
   const response = createMiddleware(routing)(req)
+  // PPGA #41 stage 1: the pathname rides the request to the server components
+  // (a Server Component cannot read the current URL — `next/navigation`'s
+  // `usePathname` is a Client Component hook and `next/headers` exposes no
+  // pathname: the Shell's standalone login/logout decision and the contextual
+  // Course/Module title ride this header instead). The rewrite's internal
+  // `X-` header never reaches the browser (the guard's own pathname — UI
+  // plumbing only: the RLS + the RPC gates stay the row-level authority,
+  // unchanged).
+  response.headers.set('x-ppga-path', pathname)
   return response
 }
 

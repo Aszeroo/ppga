@@ -12,8 +12,8 @@ import { useTranslations } from 'next-intl'
  * smoothing curve.
  *
  * Tokens only. The heading role inside the card resolves the single-token
- * swap point `--font-ta16bit` with a Mitr fallback per glyph; the body text
- * inside rides Mitr (`--font-mitr`) for the long-form Thai readability. No
+ * swap point `--font-ppg-display` with a Noto Sans Thai fallback per glyph; the body text
+ * inside rides Noto Sans Thai (`--font-ppg-body`) for the long-form Thai readability. No
  * ad-hoc colour is here: the accent border is the `--ppg-blue-300` token.
  */
 export interface CardProps {
@@ -35,7 +35,7 @@ export function Card({ heading, body, status = 'available' }: CardProps) {
     borderStyle: 'solid',
     boxShadow: 'var(--ppg-shadow-pixel-2)',
     padding: 'var(--ppg-space-3)',
-    fontFamily: 'var(--font-mitr)',
+    fontFamily: 'var(--font-ppg-body)',
   }
 
   return (
@@ -49,7 +49,6 @@ export function Card({ heading, body, status = 'available' }: CardProps) {
     >
       <h1
         className="ppg-heading ppg-heading-text"
-        style={{ fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}
       >
         {heading}
       </h1>

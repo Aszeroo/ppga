@@ -13,16 +13,19 @@ import { useTranslations } from 'next-intl'
  *
  * Respect reduced-motion (`app/globals.css`): the `.ppg-progress-bar` class
  * carries the `transition/animation` off so a keyboard-press does not ease.
- * The number inside the bar is the heading-role `--font-ta16bit` — the XP
+ * The number inside the bar is the heading-role `--font-ppg-display` — the XP
  * digits share the single-token swap point with the badge.
  */
 export interface ProgressBarProps {
   value: number
   min?: number
   max?: number
+  /** Optional region name override (the Course Map names its own progress:
+   * `course.progressCleared`); the gallery default stays `gallery.progress.label`. */
+  label?: string
 }
 
-export function ProgressBar({ value, min = 0, max = 100 }: ProgressBarProps) {
+export function ProgressBar({ value, min = 0, max = 100, label }: ProgressBarProps) {
   const t = useTranslations('gallery')
 
   const style: CSSProperties = {
@@ -32,7 +35,7 @@ export function ProgressBar({ value, min = 0, max = 100 }: ProgressBarProps) {
     borderStyle: 'solid',
     backgroundColor: 'var(--ppg-blue-200)',
     boxShadow: 'var(--ppg-shadow-pixel-1)',
-    fontFamily: 'var(--font-mitr)',
+    fontFamily: 'var(--font-ppg-body)',
   }
 
   return (
@@ -42,7 +45,7 @@ export function ProgressBar({ value, min = 0, max = 100 }: ProgressBarProps) {
       aria-valuenow={value}
       aria-valuemin={min}
       aria-valuemax={max}
-      aria-label={t('progress.label')}
+      aria-label={label ?? t('progress.label')}
       tabIndex={0}
       aria-valuetext={`${t('progress.value')} ${value}/${max}`}
       style={style}
@@ -56,7 +59,7 @@ export function ProgressBar({ value, min = 0, max = 100 }: ProgressBarProps) {
           transition: 'width 0.3s steps(8)', // 8-bit stepped fill, off in reduced-motion
         }}
       />
-      <span className="ppg-progress-text ppg-xp-numeral" style={{ fontFamily: 'var(--font-ta16bit), var(--font-mitr)' }}>
+      <span className="ppg-progress-text ppg-xp-numeral">
         {value}
       </span>
     </div>

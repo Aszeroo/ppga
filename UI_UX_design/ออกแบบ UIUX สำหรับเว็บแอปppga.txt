@@ -1,0 +1,874 @@
+ออกแบบ UI/UX สำหรับเว็บแอปพลิเคชันชื่อ **PPGA — PowerPoint Gamified Learning**
+
+## 1. Product Context
+
+PPGA เป็นเว็บแอปพลิเคชันสำหรับการเรียนรู้การสร้างงานนำเสนอด้วย Microsoft PowerPoint โดยใช้แนวคิด Gamification สำหรับนักเรียนระดับประกาศนียบัตรวิชาชีพชั้นปีที่ 2 (ปวช.2)
+
+เป้าหมายหลักของ UI:
+
+* ทำให้นักเรียนรู้สึกเหมือนกำลังเล่นเกมการเรียนรู้
+* แต่ยังคงความเป็นระบบการเรียนรู้จริง
+* ทุกหน้าต้องชัดเจนว่า "ตอนนี้ฉันอยู่ตรงไหน / ต้องทำอะไรต่อ / ได้อะไรจากการทำ"
+* ลดความรู้สึกเหมือนระบบ LMS หรือระบบราชการ
+* ใช้ visual language แบบ 8-bit pixel art + cute + bright + pastel
+* UI ต้องใช้งานได้จริง ไม่ใช่เพียงภาพ mockup
+* รองรับ Desktop, Tablet และ Mobile
+* Accessibility ต้องดี อ่านง่าย contrast เพียงพอ keyboard navigation ได้ และรองรับ reduced motion
+
+---
+
+# 2. Visual Direction
+
+สร้าง Visual Identity หลักเป็น:
+
+**8-bit Pixel Art + Cute + Bright + Pastel + Educational Game**
+
+Mood:
+
+* สนุก
+* เป็นมิตร
+* สดใส
+* น่ารัก
+* มีความสำเร็จและความก้าวหน้า
+* ไม่เด็กเกินไป
+* เหมาะกับนักเรียน ปวช.2
+
+ใช้:
+
+* Pixel borders
+* Pixel corners
+* Pixel shadows
+* Chunky buttons
+* Pixel icons
+* Small decorative stars / sparkles / clouds / arrows
+* XP bars
+* Level indicators
+* Badge cards
+* Mission cards
+* Unlock indicators
+* Course map
+* Progress indicators
+
+หลีกเลี่ยง:
+
+* Glassmorphism หนัก ๆ
+* Gradient เยอะ
+* Neon cyberpunk
+* Dark gaming UI
+* CRT effect หนัก
+* Scanline เต็มหน้าจอ
+* Animation เยอะจนรบกวนการเรียน
+* UI ที่ดูเหมือนเกมสำหรับเด็กเล็ก
+* Dashboard แบบ corporate SaaS
+* Sidebar ที่ซับซ้อน
+
+---
+
+# 3. Color System
+
+สร้าง Design Tokens ก่อนออกแบบหน้าจอ
+
+Primary:
+
+* Pastel Pink
+* Pastel Blue
+
+Supporting:
+
+* Soft Purple
+* Mint
+* Warm Yellow
+* Peach
+* White / Off-white
+
+Text:
+
+* Dark navy / charcoal สำหรับข้อความหลัก
+* Muted blue-gray สำหรับข้อความรอง
+
+Semantic:
+
+* Success = green
+* Warning = yellow/orange
+* Error = red
+* Locked = muted gray/blue
+
+สีต้องสดใสแต่ไม่แสบตา
+
+ห้ามใช้สีจากหน้าหนึ่งแบบสุ่ม ให้สร้างเป็น reusable color tokens
+
+---
+
+# 4. Typography
+
+ใช้ font ที่อ่านภาษาไทยได้ดี
+
+Primary Thai font:
+
+* Noto Sans Thai หรือ font ที่มี Thai glyph ครบ
+
+สำหรับ decorative pixel heading สามารถใช้ pixel-style font ได้เฉพาะ heading / labels ที่เหมาะสม
+
+Body text ต้องอ่านง่ายและไม่ใช้ pixel font
+
+สร้าง Typography tokens:
+
+* Display
+* H1
+* H2
+* H3
+* Body Large
+* Body
+* Body Small
+* Caption
+* Button
+* Label
+
+---
+
+# 5. Design System Components
+
+สร้าง Component Library ก่อนสร้างหน้าจอ
+
+Components ที่ต้องมี:
+
+### Navigation
+
+* App Header
+* Logo / Product Identity
+* Desktop Navigation
+* Mobile Navigation
+* Language Switcher
+* User Menu
+* Logout
+
+### Gamification HUD
+
+* Level Badge
+* XP Counter
+* XP Progress Bar
+* Course Progress
+* Badge Counter
+* Streak/achievement area เฉพาะเมื่อมีข้อมูลจริง
+* Unlock Indicator
+
+ห้ามสร้าง lives, energy, hearts, timers หรือ game mechanics ที่ไม่ได้อยู่ใน product specification
+
+### Buttons
+
+* Primary
+* Secondary
+* Ghost
+* Success
+* Danger
+* Disabled
+* Loading
+
+มี states:
+
+* Default
+* Hover
+* Focus
+* Active
+* Disabled
+* Loading
+
+### Cards
+
+* Course Card
+* Module Card
+* Lesson Card
+* Mission Card
+* Achievement Card
+* Progress Card
+* Result Card
+* Locked Card
+* Completed Card
+
+### Learning
+
+* Lesson Header
+* Lesson Content Card
+* Learning Objective
+* Why This Matters
+* Self-Check Question
+* Multiple Choice Option
+* Selected Option
+* Correct Answer
+* Incorrect Answer
+* Feedback Panel
+* Mission Brief
+* Mission Requirements
+* Submission Panel
+* Teacher Review Status
+
+### Gamification
+
+* XP Reward
+* Level Up
+* Badge Earned
+* Unlock Notification
+* Course Map Node
+* Completed Node
+* Current Node
+* Locked Node
+
+### Forms
+
+* Text Input
+* Password Input
+* Select
+* Radio
+* Checkbox
+* File Upload
+* Search
+
+### Feedback
+
+* Success Alert
+* Error Alert
+* Warning Alert
+* Info Alert
+* Empty State
+* Loading State
+
+ทุก component ต้องมี variants และ states ที่เหมาะสม
+
+---
+
+# 6. App Shell
+
+Authenticated pages ใช้ App Shell เดียวกัน
+
+Desktop:
+
+## TOP HEADER
+
+## PPGA logo | Dashboard | Course | Badges | Leaderboard | Profile | Language | XP | User
+
+CONTENT AREA
+
+FOOTER
+
+ไม่ใช้ sidebar เป็น navigation หลัก
+
+Header ต้องมี:
+
+* Product identity ด้านซ้าย
+* Role-appropriate navigation ตรงกลาง
+* Language switcher
+* XP / Level HUD
+* User menu / logout ด้านขวา
+
+Mobile:
+
+* compact header
+* logo
+* XP / Level
+* hamburger/menu
+* navigation เป็น accessible mobile menu
+
+Login และ logout/start screens ไม่ต้องอยู่ใน authenticated shell
+
+---
+
+# 7. Learner Information Architecture
+
+สร้าง navigation สำหรับ Learner:
+
+Dashboard
+Course
+Badges
+Leaderboard
+Profile
+
+หน้าเรียนหลัก:
+
+Dashboard
+→ Course
+→ Module
+→ Lesson
+→ Self-Check
+→ Mission
+→ Submit
+→ Result
+→ XP / Badge / Unlock
+→ Next Lesson
+→ Practical Work
+→ Final Project
+
+---
+
+# 8. SCREEN 01 — Login
+
+ออกแบบหน้า Login ให้เป็น game-like learning portal
+
+Layout:
+
+* PPGA logo
+* Pixel mascot / decorative illustration
+* Welcome message
+* Login form
+* Login ID
+* Password
+* Login button
+* Language switcher
+
+Visual:
+
+* pastel blue/pink background
+* pixel decorative elements
+* large friendly card
+* strong primary CTA
+
+ไม่ทำให้ดูเหมือน enterprise login page
+
+---
+
+# 9. SCREEN 02 — Learner Dashboard
+
+Dashboard เป็น "Next Action Hub" ไม่ใช่ analytics dashboard
+
+ด้านบน:
+
+* Welcome
+* Level
+* XP
+* XP progress bar
+
+Main hero:
+"ภารกิจต่อไปของคุณ"
+
+แสดง:
+
+* Current Course
+* Current Module
+* Current Lesson
+* Current Mission
+* Progress
+* Primary CTA เพียงหนึ่งปุ่ม เช่น "ทำภารกิจต่อ"
+
+ส่วนถัดไป:
+
+* Course Progress
+* Current Module
+* Recent Achievement
+* Badge
+* Submission / Teacher Review status ถ้ามี
+
+อย่าใส่ข้อมูลมากเกินไป
+
+Dashboard ต้องตอบคำถามทันที:
+
+1. ฉันอยู่ตรงไหน
+2. ฉันทำอะไรไปแล้ว
+3. ฉันต้องทำอะไรต่อ
+4. ฉันได้ XP เท่าไร
+5. ฉันปลดล็อกอะไรแล้ว
+
+---
+
+# 10. SCREEN 03 — Course Map
+
+ออกแบบ Course เป็น game map
+
+แสดง Module เป็น stages:
+
+Module 01 → Module 02 → Module 03 → Module 04 ...
+
+แต่ละ module มีสถานะ:
+
+* Locked
+* Available
+* In Progress
+* Completed
+
+Visual:
+
+* pixel map
+* stage nodes
+* path connecting stages
+* completed node มี check
+* current node เด่นที่สุด
+* locked node มี lock icon
+
+ไม่ทำเป็น card grid แบบ LMS ทั่วไป
+
+---
+
+# 11. SCREEN 04 — Module
+
+เมื่อเปิด Module:
+
+Header:
+
+* Module title
+* Description
+* Progress
+* XP available
+
+แสดง Lessons เป็น progression:
+
+Lesson 01
+Lesson 02
+Lesson 03
+Mission
+Practical Work
+
+แต่ละ lesson:
+
+* number
+* title
+* status
+* estimated learning effort
+* completion state
+
+Current lesson ต้องเด่น
+
+---
+
+# 12. SCREEN 05 — Lesson
+
+Lesson page ต้องให้ความรู้สึกเหมือน "learning level"
+
+ส่วนบน:
+
+* Breadcrumb
+* Module
+* Lesson
+* Progress
+
+Main content:
+
+* Lesson title
+* Learning objective
+* Why this matters
+* Main lesson content
+* Images / PowerPoint examples
+* Tips
+* Key takeaway
+
+ด้านล่าง:
+"พร้อมทดสอบความเข้าใจหรือยัง?"
+
+Primary CTA:
+"เริ่ม Self-Check"
+
+---
+
+# 13. SCREEN 06 — Self-Check
+
+ออกแบบเป็น interactive challenge
+
+Header:
+SELF-CHECK
+
+แสดง:
+
+* Question 1 / 5
+* Progress
+* Question
+* Multiple choice options
+
+Selected state:
+
+* clear visual feedback
+* accessible focus state
+
+หลัง submit:
+
+Correct:
+
+* success panel
+* explanation
+* XP reward
+* continue CTA
+
+Incorrect:
+
+* friendly error state
+* explanation
+* retry CTA
+
+ห้ามทำให้ผู้เรียนรู้สึกว่าตอบผิดแล้วถูกลงโทษ
+
+---
+
+# 14. SCREEN 07 — Mission
+
+Mission ต้องดูเหมือน challenge แต่ยังเป็น educational task
+
+แสดง:
+
+MISSION
+
+Title:
+"สร้างสไลด์แนะนำตัวเอง"
+
+Mission description
+
+Requirements:
+✓ ต้องมี title
+✓ ต้องมีรูปภาพ
+✓ ต้องจัดรูปแบบข้อความ
+✓ ต้องใช้ theme
+✓ ต้องบันทึกเป็น PowerPoint
+
+ด้านข้างหรือด้านล่าง:
+
+* Mission status
+* Expected output
+* Submission requirements
+
+Primary CTA:
+"เริ่มภารกิจ"
+
+---
+
+# 15. SCREEN 08 — Submission
+
+ออกแบบ file submission UI
+
+แสดง:
+
+* Mission title
+* Requirements checklist
+* Upload PowerPoint file
+* File name
+* File size
+* Validation state
+
+Primary CTA:
+"ส่งภารกิจ"
+
+หลังส่ง:
+
+* Submission status
+* Submitted timestamp
+* Waiting for teacher review
+
+---
+
+# 16. SCREEN 09 — Mission Result
+
+สร้าง result screen ที่มีความรู้สึกเหมือน "Level Clear"
+
+ถ้าผ่าน:
+
+ใหญ่:
+🎉 MISSION CLEAR!
+
+แสดง:
+
+* Success
+* XP earned
+* Badge earned ถ้ามี
+* Module progress
+* Next lesson unlocked
+
+มี pixel celebration แต่ไม่ใช้ animation หนัก
+
+Primary CTA:
+"ไปบทเรียนถัดไป"
+
+Secondary:
+"ดูผลลัพธ์"
+
+ถ้าไม่ผ่าน:
+
+"ลองอีกครั้ง"
+
+แสดง feedback ที่ชัดเจนว่าต้องแก้ตรงไหน
+
+ห้ามลด XP หรือสร้าง punishment mechanic
+
+---
+
+# 17. SCREEN 10 — Progress / Profile
+
+Profile แสดง:
+
+* Avatar
+* Display name
+* Level
+* Total XP
+* Course progress
+* Completed lessons
+* Completed missions
+* Badges
+
+ใช้ visual แบบ game profile
+
+---
+
+# 18. SCREEN 11 — Badges
+
+Badge collection
+
+แบ่งสถานะ:
+
+* Earned
+* Locked
+
+แต่ละ badge:
+
+* pixel icon
+* name
+* description
+* earned date ถ้ามีข้อมูล
+
+Locked badge ต้องแสดงเงื่อนไขการปลดล็อก
+
+---
+
+# 19. SCREEN 12 — Leaderboard
+
+Leaderboard เป็น optional competition surface
+
+ใช้เฉพาะ XP ที่มีจริง
+
+แสดง:
+
+* Rank
+* Learner
+* Level
+* XP
+
+อย่าใช้คำว่า "Points"
+
+ไม่ใช้ leaderboard เป็น primary learning navigation
+
+---
+
+# 20. Teacher UI
+
+Teacher ใช้ App Shell เดียวกันแต่ layout utilitarian มากกว่า learner
+
+Navigation:
+
+* Dashboard
+* Review Queue
+* Profile
+
+Teacher Dashboard:
+
+* learners requiring review
+* pending submissions
+* recent activity
+* course progress overview
+
+Review Queue:
+
+* Learner
+* Mission
+* Submission
+* Status
+* Review action
+
+Rubric Review:
+7 criteria:
+
+1. Content Structure
+2. Text Formatting
+3. Images & Elements
+4. Slide Design
+5. PowerPoint Tools
+6. Creativity
+7. Completeness
+
+แต่ละ criterion:
+1–5 score
+
+Total:
+7–35
+
+ต้องมี:
+
+* feedback
+* approve
+* needs improvement
+
+---
+
+# 21. Admin UI
+
+Admin ใช้ visual system เดียวกันแต่เน้น productivity
+
+Navigation:
+
+* Dashboard
+* Course
+* Publication
+* Users
+* Audit
+* Provisioning
+* Export
+* Health
+* Profile
+
+หลีกเลี่ยงการทำ admin UI ให้เหมือนเกมมากเกินไป
+
+---
+
+# 22. Research Instrument Screens
+
+สร้าง UI สำหรับ:
+
+Pre-Test
+Post-Test
+Satisfaction Survey
+
+ต้องดูเป็นส่วนหนึ่งของ product แต่ไม่ให้ XP จากการทำแบบทดสอบ
+
+แสดง:
+
+* progress
+* question
+* answer
+* autosave status
+* submit confirmation
+
+หลัง submit:
+
+* immutable submitted state
+
+---
+
+# 23. Footer
+
+ใช้ footer แบบเรียบง่าย:
+
+PowerPoint Presentation Creation
+การเรียนรู้การนำเสนอ
+สำหรับนักเรียนระดับประกาศนียบัตรวิชาชีพชั้นปีที่ 2 (ปวช.2)
+
+ไม่ใส่ชื่อบุคคลหรือข้อมูลที่ไม่จำเป็น
+
+---
+
+# 24. Responsive Design
+
+สร้างอย่างน้อย 3 breakpoints:
+
+Mobile: 360px
+Tablet: 768px
+Desktop: 1280px
+
+Mobile ต้อง:
+
+* ไม่ horizontal scroll
+* navigation ใช้งานง่าย
+* cards stack
+* CTA อยู่ในตำแหน่งที่เข้าถึงง่าย
+* typography readable
+* touch target เพียงพอ
+
+---
+
+# 25. Accessibility
+
+ทุกหน้าต้องคำนึงถึง:
+
+* WCAG-friendly contrast
+* keyboard navigation
+* visible focus state
+* semantic hierarchy
+* accessible labels
+* form error messages
+* ไม่ใช้สีเพียงอย่างเดียวในการบอกสถานะ
+* reduced motion
+* readable Thai typography
+
+---
+
+# 26. Figma File Structure
+
+จัดหน้าใน Figma ดังนี้:
+
+00 — Cover
+01 — Design Tokens
+02 — Components
+03 — Icons
+04 — Illustrations
+05 — Learner Flow
+06 — Teacher Flow
+07 — Admin Flow
+08 — Research Instruments
+09 — Responsive
+10 — Prototype
+
+สร้าง component และ variants ให้ reusable
+
+---
+
+# 27. Prototype
+
+สร้าง clickable prototype สำหรับ Learner Happy Path:
+
+Login
+→ Dashboard
+→ Course Map
+→ Module
+→ Lesson
+→ Self-Check
+→ Self-Check Result
+→ Mission
+→ Submission
+→ Mission Result
+→ XP / Badge
+→ Next Lesson
+
+สร้าง interaction:
+
+* button navigation
+* course node navigation
+* locked node
+* self-check selection
+* success result
+* retry result
+* mission submission
+* badge earned
+* unlock next module
+
+Prototype ต้องสื่อให้เห็น learning loop:
+
+**Learn → Practice → Mission → Submit → Feedback → XP → Level/Badge → Progress → Unlock → Continue**
+
+---
+
+# 28. Critical UX Rule
+
+ทุกหน้าที่เป็น authenticated learning surface ต้องมี "next action" ที่ชัดเจน
+
+ผู้เรียนไม่ควรเจอหน้าแล้วไม่รู้ว่าต้องกดอะไรต่อ
+
+ทุกหน้าต้องตอบ:
+
+* Where am I?
+* What am I doing?
+* What should I do next?
+* What did I earn?
+* What did I unlock?
+
+สร้าง UI ที่มี visual hierarchy ชัดเจน และมี primary CTA เพียงหนึ่ง action ต่อ context
+
+---
+
+# 29. Final Design Goal
+
+ผลลัพธ์สุดท้ายต้องดูเหมือน:
+
+"Duolingo-style learning progression + 8-bit pixel game + modern educational web app"
+
+แต่ไม่ copy design ของ Duolingo หรือเกมใดโดยตรง
+
+ต้องเป็น visual identity ของ PPGA เอง:
+
+**Cute 8-bit PowerPoint Learning Adventure**
+
+ทำให้ผู้ใช้เปิดหน้า Dashboard แล้วรู้สึกทันทีว่า:
+
+"นี่คือเกมสำหรับเรียน PowerPoint และฉันรู้ว่าภารกิจต่อไปคืออะไร"
+
+สร้าง high-fidelity UI mockups พร้อม reusable components, responsive variants และ clickable prototype
+สำหรับ flow หลักทั้งหมด

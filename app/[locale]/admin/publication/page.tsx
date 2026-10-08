@@ -4,15 +4,20 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../../lib/i18n/routing'
 
 import { readCourseMapViaRpc } from '../../../../lib/sup/curriculum'
+import { StatusPill } from '../../../../components/StatusPill'
 
 /**
- * Ticket #9 publication console: the admin's map (every module incl
- * draft/arched, the lock states the rule computes) + the publication toggle
- * control. `force-dynamic` because the page reads the map through the RPC
- * with the request's session JWT — `next build` must never pre-render
- * someone else's console. A teacher/learner who reaches the pathname is
- * denied by the toggle RPC's gate (the map read is learner/teacher/admin
- * too), never a blank screen or a UI-only hide; every state
+ * Ticket #9 publication console, #55 V3 utilitarian dressing (presentation
+ * only — the map read, the toggle form and its fields/pattern/action are
+ * BYTE-IDENTICAL): the admin's map wearing the gallery's `#a-course` frame —
+ * the heading block + one row per module (every module incl draft/arched,
+ * the lock states the rule computes) with the publication state as a
+ * COPY+icon StatusPill beside the tone (success/locked/warning — state never
+ * colour alone) + the toggle panel. `force-dynamic` because the page reads
+ * the map through the RPC with the request's session JWT — `next build` must
+ * never pre-render someone else's console. A teacher/learner who reaches the
+ * pathname is denied by the toggle RPC's gate (the map read is learner/
+ * teacher/admin too), never a blank screen or a UI-only hide; every state
  * (`admin.publication.list`, `admin.publication.toggle`,
  * `admin.states.*`) has its own copy in `messages`.
  */
@@ -24,21 +29,45 @@ async function PublicationList() {
   const state = await readCourseMapViaRpc()
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
   return (
-    <section aria-label={t('publication.list')}>
-      {state.status === 'ok'
-        ? state.modules
-          ?.sort((a, b) => a.order_index - b.order_index)
-          .map((row) => (
-            <p key={row.module_key}>
-              {row.order_index}. {pick(row.title_th, row.title_en)} — {row.publication_state ?? 'draft'} / {row.lock_state}
-            </p>
-          ))
-        : null}
-      {state.status === 'empty' ? <p>{t('states.empty')} {state.detail}</p> : null}
-      {state.status === 'error' ? <p>{t('states.error')} {state.detail}</p> : null}
-      {state.status === 'denied' ? <p>{t('states.denied')} {state.detail}</p> : null}
-      {state.status === 'unauthorized' ? <p>{t('states.unauthorized')} {state.detail}</p> : null}
-      {state.status === 'not-configured' ? <p>{t('states.notConfigured')} {state.detail}</p> : null}
+    <section aria-label={t('publication.list')} className="ppg-work-card">
+      <h2 className="ppg-list-title">{t('publication.list')}</h2>
+      {state.status === 'ok' ? (
+        <div className="ppg-board-list">
+          {state.modules
+            ?.sort((a, b) => a.order_index - b.order_index)
+            .map((row) => {
+              const pub = row.publication_state ?? 'draft'
+              const label =
+                pub === 'published'
+                  ? t('publication.published')
+                  : pub === 'archived'
+                    ? t('publication.archived')
+                    : t('publication.draft')
+              const tone =
+                pub === 'published'
+                  ? 'success'
+                  : pub === 'archived'
+                    ? 'locked'
+                    : 'warning'
+              return (
+                <div className="ppg-board-item" key={row.module_key}>
+                  <div className="ppg-queue-info">
+                    <b>
+                      {row.order_index}. {pick(row.title_th, row.title_en)}
+                    </b>
+                    <span className="ppg-queue-meta">{row.lock_state}</span>
+                  </div>
+                  <StatusPill tone={tone} label={label} />
+                </div>
+              )
+            })}
+        </div>
+      ) : null}
+      {state.status === 'empty' ? <p className="ppg-state-line">{t('states.empty')} {state.detail}</p> : null}
+      {state.status === 'error' ? <p className="ppg-state-line">{t('states.error')} {state.detail}</p> : null}
+      {state.status === 'denied' ? <p className="ppg-state-line">{t('states.denied')} {state.detail}</p> : null}
+      {state.status === 'unauthorized' ? <p className="ppg-state-line">{t('states.unauthorized')} {state.detail}</p> : null}
+      {state.status === 'not-configured' ? <p className="ppg-state-line">{t('states.notConfigured')} {state.detail}</p> : null}
     </section>
   )
 }
@@ -46,7 +75,8 @@ async function PublicationList() {
 async function PublicationToggleControl() {
   const t = await getTranslations('admin')
   return (
-    <section>
+    <section className="ppg-work-card">
+      <h2 className="ppg-list-title">{t('publication.toggle')}</h2>
       {/* Ticket #9 publication toggle: the ADMIN's only authoring surface in
         v1 (ADR-0003 — content as migrations, the UI toggles what already
         exists, in one with the #8 consent/override native-form pattern the
@@ -56,27 +86,29 @@ async function PublicationToggleControl() {
         (action `publication`, details old/new state). */}
       <form
         data-ppg-admin-form="publication"
+        className="ppg-work-form"
         aria-label={t('publication.toggle')}
         method="POST"
         action="/api/curriculum/publication"
       >
-        <label htmlFor="admin_publication_key">{t('publication.targetKey')}</label>
+        <label className="ppg-field-label" htmlFor="admin_publication_key">{t('publication.targetKey')}</label>
         <input
+          className="ppg-input"
           id="admin_publication_key"
           name="target_key"
           required
           pattern="^(module-\d{2})|(module-\d{2}-lesson-\d{2})$"
         />
-        <label htmlFor="admin_publication_state">{t('publication.newState')}</label>
-        <select id="admin_publication_state" name="new_state" required>
+        <label className="ppg-field-label" htmlFor="admin_publication_state">{t('publication.newState')}</label>
+        <select className="ppg-input" id="admin_publication_state" name="new_state" required>
           <option value="draft">{t('publication.draft')}</option>
           <option value="published">{t('publication.published')}</option>
           <option value="archived">{t('publication.archived')}</option>
         </select>
-        <button type="submit">{t('users.submit')}</button>
+        <button className="ppg-btn-secondary" type="submit">{t('users.submit')}</button>
       </form>
       <p>
-        <Link href="/admin/audit">{t('users.linkAudit')}</Link>
+        <Link className="ppg-link" href="/admin/audit">{t('users.linkAudit')}</Link>
       </p>
     </section>
   )
@@ -86,8 +118,14 @@ export default async function AdminPublicationPage() {
   const t = await getTranslations('admin')
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <PublicationList />
-      <PublicationToggleControl />
+      <div className="ppg-page-wrap">
+        <div className="ppg-work-head">
+          <h1 className="ppg-heading ppg-heading-text ppg-work-head-title">{t('publication.title')}</h1>
+          <p className="ppg-work-head-sub">{t('publication.sub')}</p>
+        </div>
+        <PublicationList />
+        <PublicationToggleControl />
+      </div>
     </Suspense>
   )
 }
