@@ -268,6 +268,14 @@ body {
   box-shadow: var(--ppg-shadow-pixel-1);
 }
 
+/* PPGA #49: the design's placeholders ride a deterministic AA token (the
+ * faint text colour, 4.62:1 on the white field — never the browser's own
+ * placeholder grey, which varies per engine and would drift the axe scan). */
+.ppg-input::placeholder {
+  color: var(--ppg-faint);
+  opacity: 1;
+}
+
 /*
  * The focus ring is OUTLINE-ONLY here on purpose: bumping `border-width` on
  * focus reflows the input (content-box inputs grow by the border delta), and
@@ -442,6 +450,9 @@ body {
 }
 
 .ppg-login-card {
+  width: 100%;
+  max-width: 480px;
+  box-sizing: border-box;
   background-color: #fff;
   border-width: 6px;
   border-style: solid;
@@ -483,6 +494,10 @@ body {
   font-size: 44px;
   color: var(--ppg-pink-300);
   text-shadow: 4px 4px 0 var(--ppg-blue-300), 6px 6px 0 var(--ppg-purple);
+  text-align: center;
+  line-height: 1.7;
+  margin: 0 0 14px;
+  word-break: break-all;
 }
 
 .ppg-title-h1-small {
@@ -612,11 +627,130 @@ body {
   box-shadow: 0 6px 18px rgba(230, 80, 144, 0.45);
 }
 
-.ppg-title-screen-body {
+/*
+ * PPGA #49 (owner preview review): the V3 `#s-login` title SCREEN — the
+ * standalone stage the Shell renders (pastel `bg-a` gradient + the floating
+ * `.deco` clouds / star8 sparkles / squares, verbatim geometry from the
+ * design sheet), the card the pages ride (the `.ppg-login-card` face above,
+ * now width-capped like the gallery's), and the card's own rows: the two-line
+ * blurb, the stacked login fields, the full-width CTA inside the card, the
+ * `.lang-sw` language row, and the after-success line. Literal colours stay
+ * ONLY in this file (the token-purity suite scans `components/*`); the deco
+ * animations are ZEROED under `prefers-reduced-motion` below.
+ */
+.ppg-login-stage {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 44px 20px;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
+  /* the gallery's `.screen.bg-a`, one-for-one on the tint tokens. */
+  background: linear-gradient(135deg, var(--ppg-pink-100), var(--ppg-blue-100) 55%, var(--ppg-purple-tint));
+}
+
+.ppg-deco {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.ppg-deco-cloud {
+  width: 110px;
+  height: 52px;
+  background-color: #fff;
+  border-radius: var(--ppg-radius-pill);
+  opacity: 0.75;
+  animation: ppg-floaty 8s ease-in-out infinite;
+}
+
+.ppg-deco-cloud::before {
+  content: '';
+  position: absolute;
+  top: -22px;
+  left: 22px;
+  width: 46px;
+  height: 46px;
+  background-color: #fff;
+  border-radius: 50%;
+}
+
+.ppg-deco-cloud::after {
+  content: '';
+  position: absolute;
+  top: -14px;
+  left: 56px;
+  width: 32px;
+  height: 32px;
+  background-color: #fff;
+  border-radius: 50%;
+}
+
+.ppg-deco-star8 {
+  width: 30px;
+  height: 30px;
+  background-color: var(--ppg-yellow);
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  animation: ppg-sparkle 4s ease-in-out infinite;
+}
+
+.ppg-deco-sq {
+  width: 14px;
+  height: 14px;
+  background-color: var(--ppg-pink-300);
+  opacity: 0.5;
+  animation: ppg-floaty 5s ease-in-out infinite;
+}
+
+.ppg-deco-sq-purple {
+  background-color: var(--ppg-purple);
+}
+
+.ppg-deco-sq-blue {
+  background-color: var(--ppg-blue-300);
+}
+
+/* The card's two-line gamified blurb (the design's centered muted `p` with
+ * the <br>) + the after-success line below the switch. */
+.ppg-title-blurb {
+  text-align: center;
+  margin: 0 0 28px;
+}
+
+.ppg-title-after {
+  text-align: center;
+  font-size: 13px;
+  margin: 18px 0 0;
+}
+
+/* One stacked field (the design's `.mb` group): label above input, the pair
+ * spaced from the next by the design's field-group rhythm. */
+.ppg-login-field {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+/* The design's CTA inside the card: full card width, the gallery's
+ * `padding:16px;font-size:18px`. The pink face + focus ring ride `.ppg-cta`. */
+.ppg-cta-block {
   width: 100%;
+  box-sizing: border-box;
+  padding: 16px;
+  font-size: 18px;
+}
+
+/* The design's `.lang-sw` row: the centered pill group the title screens'
+ * switch rides (the pill face itself is the shipped `.ppg-lang-compact`). */
+.ppg-lang-sw {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 18px;
 }
 
 .ppg-title-welcome {
@@ -628,7 +762,7 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin: 0;
+  margin: 0 0 6px;
 }
 
 .ppg-login-form {
@@ -666,6 +800,21 @@ body {
   }
   50% {
     transform: translateY(-12px);
+  }
+}
+
+@keyframes ppg-sparkle {
+  0% {
+    transform: rotate(0) scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: rotate(180deg) scale(1.25);
+    opacity: 0.75;
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+    opacity: 1;
   }
 }
 
@@ -716,6 +865,15 @@ body {
     animation-duration: 0s;
   }
   .ppg-mascot {
+    animation-name: none;
+    animation-duration: 0s;
+  }
+  /* PPGA #49: the title-screen decoration never moves under
+   * `prefers-reduced-motion` — the clouds/sparkles/squares sit still
+   * (the design's own mandate for the `#s-login` stage). */
+  .ppg-deco-cloud,
+  .ppg-deco-star8,
+  .ppg-deco-sq {
     animation-name: none;
     animation-duration: 0s;
   }

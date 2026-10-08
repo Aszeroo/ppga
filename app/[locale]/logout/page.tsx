@@ -7,6 +7,8 @@ import { useCallback, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '../../../lib/i18n/routing'
 
+import { LanguageSelectorPill } from '../../../components/LanguageSelectorPill'
+
 /**
  * Ticket #3 logout page: one button that clears the httpOnly session cookies
  * and revokes the refresh token at the service. Both outcomes render as text —
@@ -21,6 +23,7 @@ export const dynamic = 'force-dynamic'
 
 export default function LogoutPage() {
   const t = useTranslations('logout')
+  const tShell = useTranslations('shell')
   const [message, setMessage] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -46,19 +49,31 @@ export default function LogoutPage() {
     [],
   )
 
+  /**
+   * PPGA #49 (owner preview review): the logout title screen rides the SAME
+   * standalone V3 card as login (the Shell renders the decorated stage — the
+   * design ships no dedicated logout screen, so the card idiom is the
+   * derivation: mascot + the pixel `PPGA` wordmark + the page's own intro
+   * line + the ONE CTA + the language switch on the card). The MECHANICS are
+   * byte-identical to what #3 shipped: the same `confirm: true` POST to
+   * `/api/auth/logout`, the same revoke + observable redirect, the same
+   * busy/message copy lines and the same follow-up links.
+   */
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <section className="ppg-title-screen-body">
-        <p className="ppg-card-text">{t('intro')}</p>
-        {/** PPGA #51: the logout title screen rides the SAME V3 card + the
-         * one primary CTA (`.ppg-cta`); the handler + the revoke + the
-         * observable redirect are UNTOUCHED. */}
-        <button type="button" className="ppg-button ppg-cta" onClick={handleClick}>
+      <section className="ppg-login-card ppg-strip-top">
+        <div className="ppg-mascot" aria-hidden="true">
+          🎓
+        </div>
+        <h1 className="ppg-title-h1">{tShell('logo')}</h1>
+        <p className="ppg-title-sub ppg-title-blurb">{t('intro')}</p>
+        <button type="button" className="ppg-button ppg-cta ppg-cta-block" onClick={handleClick}>
           {t('submit')}
         </button>
         {busy ? <p className="ppg-form-note">{t('busy')}</p> : null}
         {message ? <p className="ppg-form-note">{message}</p> : null}
-        <p className="ppg-title-sub">
+        <LanguageSelectorPill />
+        <p className="ppg-title-sub ppg-title-after">
           <Link href="/profile">{t('intro')}</Link> ·{' '}
           <Link href="/login">{t('intro')}</Link>
         </p>

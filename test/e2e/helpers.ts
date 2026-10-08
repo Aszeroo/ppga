@@ -197,17 +197,21 @@ export async function expectShellNav(page: Page, locale: string, role: 'learner'
 }
 
 /**
- * PPGA #41 stage 1: the login/logout standalone 8-bit title screen OUTSIDE the
- * Shell frame — the journey's observable proof rides the LANDMARKS: the
- * title-screen copy (`shell.identity` + `shell.start`) is present while the
- * Shell's landmarks are ABSENT — no `navigation` landmark named
- * `shell.navLabel`, no `contentinfo` footer (the logout page's copy may
- * contain words like "profile" verbatim, so a body-text absence check would
- * be a false alarm — the landmark is the honest observable).
+ * PPGA #49 (the V3 design-fidelity pass): the login/logout STANDALONE title
+ * screens outside the Shell frame — the observable proof rides the LANDMARKS
+ * and the card's OWN copy: the pixel `PPGA` wordmark (the design's title
+ * screen heading, `shell.logo`) is present while the Shell's landmarks are
+ * ABSENT — no `navigation` landmark named `shell.navLabel`, no `contentinfo`
+ * footer, and no mobile menu toggle (the `#ppg-menu-toggle` `☰` button lives
+ * inside the framed header's `Nav`, so it can NEVER float over a title
+ * screen; the owner's preview review flagged exactly that). The design's
+ * `.lang-sw` switch IS on the card (the `selector.label` nav landmark, never
+ * the frame's) — the language choice works from the title screens too.
  */
 export async function expectStandaloneScreen(page: Page, locale: string) {
-  await expect(page.locator('body')).toContainText(t(['shell', 'start'], locale))
-  await expect(page.locator('body')).toContainText(t(['shell', 'identity'], locale))
+  await expect(page.getByRole('heading', { level: 1, name: t(['shell', 'logo'], locale) })).toBeVisible()
   await expect(page.getByRole('navigation', { name: t(['shell', 'navLabel'], locale) })).toHaveCount(0)
   await expect(page.getByRole('contentinfo')).toHaveCount(0)
+  await expect(page.locator('#ppg-menu-toggle')).toHaveCount(0)
+  await expect(page.locator('#ppga-locale-selector')).toBeVisible()
 }

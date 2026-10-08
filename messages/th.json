@@ -126,14 +126,17 @@
   },
   "login": {
     "intro": "ลงชื่อด้วยร.บกะนักเรียนและรหัสที่ได้นัด",
-    "identifier": "ร.บกะนักเรียน",
-    "password": "รหัส",
-    "submit": "ลงชื่อ",
+    "identifier": "รหัสผู้ใช้งาน",
+    "identifierPlaceholder": "กรอกรหัสผู้ใช้งาน",
+    "password": "รหัสผ่าน",
+    "passwordPlaceholder": "กรอกรหัสผ่าน",
+    "submit": "🚀 เข้าสู่ระบบ",
     "busy": "กำลังลงชื่อ…",
     "afterSuccess": "เมื่อลงชื่อได้ คุณไปที่หน้าโปรไฟล์",
     "fallbackSuspense": "กำลังเตรียมแบบฟอร์ม...",
     "welcome": "ยินดีต้อนรับ!",
-    "gameBlurb": "🎮 เริ่มต้นการผจญภัย เรียนรู้ PowerPoint แบบ Gamification"
+    "blurbLine1": "🎮 เริ่มต้นการผจญภัย",
+    "blurbLine2": "เรียนรู้ PowerPoint แบบ Gamification"
   },
   "changePassword": {
     "intro": "เปลี่ยนรหัสที่ลงชื่อ",

@@ -36,10 +36,10 @@ import { Shell } from '../../components/Shell'
  * cannot drop the parent frame either). The guard's own `middleware.ts` — the
  * file that already reads the pathname for its session/consent/force-change
  * redirects — rides it to the render on the `x-ppga-path` request header.
- * Login/logout ride STANDALONE (outside the Shell frame: the issue's 8-bit
- * title/start screens — identity + `shell.start` + the page's own form, never
- * the HUD bar / nav / footer); every other pathname under the locale rides
- * the frame.
+ * Login/logout ride STANDALONE (outside the Shell frame: the V3 design's
+ * decorated title screens — the stage + floating deco, the page's own card
+ * as the centred child; never the HUD bar / nav / footer); every other
+ * pathname under the locale rides the frame.
  *
  * The contextual title is `where appropriate`: on a Course/Module pathname it
  * rides the existing `course.title` copy (PowerPoint Presentation Creation);

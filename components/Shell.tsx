@@ -26,10 +26,14 @@ import { Nav } from './Nav'
  * button, the HUD cluster stays visible.
  *
  * Login/logout render STANDALONE outside the frame as the V3 title screens —
- * the gallery's login-card idiom (6px pink card + `::before` strip + bouncing
- * mascot + the pixel wordmark), the page's own form/button riding the children,
- * and the compact switcher on the card (`expectStandaloneScreen`'s landmark
- * proof: no `navigation` landmark named `shell.navLabel`, no `contentinfo`).
+ * the gallery's `#s-login` decorated stage (the pastel `bg-a` gradient + the
+ * floating `.deco` clouds/sparkles/squares, all `aria-hidden`), the page's
+ * own `.ppg-login-card` riding as the centred child (mascot + pixel wordmark
+ * + copy + form + the language switch ON the card, rendered by the page's
+ * `LanguageSelectorPill` — its `nav` landmark is named `selector.label`,
+ * never the frame's `shell.navLabel`). `expectStandaloneScreen`'s landmark
+ * proof: no `navigation` landmark named `shell.navLabel`, no `contentinfo`,
+ * and no mobile menu toggle (it lives inside the framed header's `Nav`).
  *
  * Composition is the design's; the BEHAVIOUR is unchanged: the role→nav-items
  * mapping (`Nav`), the locale routing (`LanguageSelector`), the XP read
@@ -55,8 +59,8 @@ export interface ShellProps {
    * derives it from the pathname over the existing `course.*` copy). */
   contextTitle?: string | null
   /** Login/logout render standalone as the V3 title screens — the Shell
-   * returns the login-card screen (identity + `shell.start` + the children +
-   * the switcher), never the HUD bar / nav / footer. */
+   * returns the decorated `#s-login` stage with the page's own card as its
+   * centred child, never the HUD bar / nav / footer. */
   standalone?: boolean
   /** The pathname AFTER the locale prefix (`''`, `course`,
    * `course/module-01`, …) the layout read off `x-ppga-path` — the ACTIVE
@@ -80,36 +84,46 @@ const ROLE_COPY: Record<'learner' | 'teacher' | 'admin', 'userLearner' | 'userTe
   admin: 'userAdmin',
 }
 
+/** The design's `#s-login` floating decoration (the gallery's `.deco`
+ * clouds/star8-squares, positions/delays verbatim). Colour + animation ride
+ * the `.ppg-deco-*` classes in `app/globals.css` (the token-purity
+ * discipline — this file carries NO colour); the inline styles here are pure
+ * geometry (percent positions, the one 20px sparkle). All aria-hidden: the
+ * stage is decoration, never content. */
+const TITLE_DECO = [
+  { className: 'ppg-deco ppg-deco-cloud', style: { top: '12%', left: '6%' } },
+  { className: 'ppg-deco ppg-deco-cloud', style: { top: '22%', right: '7%', animationDelay: '2s' } },
+  { className: 'ppg-deco ppg-deco-star8', style: { top: '16%', left: '16%' } },
+  { className: 'ppg-deco ppg-deco-star8', style: { bottom: '18%', right: '11%', animationDelay: '1.2s' } },
+  { className: 'ppg-deco ppg-deco-star8', style: { top: '60%', left: '9%', animationDelay: '2.4s', width: '20px', height: '20px' } },
+  { className: 'ppg-deco ppg-deco-sq', style: { top: '30%', right: '20%', animationDelay: '.6s' } },
+  { className: 'ppg-deco ppg-deco-sq ppg-deco-sq-purple', style: { bottom: '26%', left: '18%', animationDelay: '1.4s' } },
+  { className: 'ppg-deco ppg-deco-sq ppg-deco-sq-blue', style: { top: '70%', right: '28%', animationDelay: '2s' } },
+] as const
+
 export async function Shell({ role, contextTitle, standalone, activeSection, children }: ShellProps) {
   const t = await getTranslations('shell')
   const navT = await getTranslations('nav')
 
-  /** The V3 title screen — the login/logout frame OUTSIDE the app frame. */
+  /**
+   * PPGA #49 (owner preview review): the standalone title screens are the
+   * design's `#s-login` STAGE — the full-viewport pastel background + the
+   * floating decoration — and the page's own card rides as the centred
+   * child (login/logout render their design cards: mascot + pixel wordmark +
+   * copy + form + the language switch ON the card). NO header, NO nav, NO
+   * rainbow strips, NO footer here — the landmark proof holds: the Shell's
+   * `shell.navLabel` nav and its `contentinfo` never render standalone, and
+   * the mobile menu toggle (the `☰` button inside `Nav`) is part of the
+   * framed header, so it can never float over a title screen.
+   */
   if (standalone) {
     return (
-      <section
-        className="ppg-login-card ppg-strip-top"
-        data-ppg-standalone="true"
-        aria-label={`${t('identity')} — ${t('start')}`}
-      >
-        <div className="ppg-mascot" aria-hidden="true">
-          🎓
-        </div>
-        <h1 className="ppg-title-h1" style={{ textAlign: 'center' }}>
-          {t('logo')}
-        </h1>
-        <p className="ppg-title-sub" style={{ textAlign: 'center' }}>
-          {t('identity')}
-        </p>
-        <p className="ppg-title-sub" style={{ textAlign: 'center' }}>
-          {t('start')}
-        </p>
+      <div className="ppg-login-stage" data-ppg-standalone="true">
+        {TITLE_DECO.map((deco, i) => (
+          <span key={i} className={deco.className} style={deco.style} aria-hidden="true" />
+        ))}
         {children}
-        {/** The compact switcher rides the card — the language choice works
-         * from the title screens too (AC: any page). Its `nav` landmark is
-         * named `selector.label`, never the frame's `shell.navLabel`. */}
-        <LanguageSelector />
-      </section>
+      </div>
     )
   }
 

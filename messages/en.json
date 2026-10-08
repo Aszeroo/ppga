@@ -142,14 +142,17 @@
   },
   "login": {
     "intro": "Login with your provisioned student-ID and password.",
-    "identifier": "Student ID",
+    "identifier": "Username",
+    "identifierPlaceholder": "Enter your username",
     "password": "Password",
-    "submit": "Sign in",
+    "passwordPlaceholder": "Enter your password",
+    "submit": "🚀 Sign in",
     "busy": "Signing in…",
     "afterSuccess": "after a successful login you land on /profile.",
     "fallbackSuspense": "Preparing the login form…",
     "welcome": "Welcome!",
-    "gameBlurb": "🎮 Start the gamified PowerPoint learning adventure"
+    "blurbLine1": "🎮 Start the adventure",
+    "blurbLine2": "Learn PowerPoint with Gamification"
   },
   "changePassword": {
     "intro": "Change the password you signed in with.",

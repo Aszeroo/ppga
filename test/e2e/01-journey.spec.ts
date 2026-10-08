@@ -62,12 +62,14 @@ test.describe('PPGA #18 critical journey', () => {
     // 0. The anonymous caller reaches the login page — the unauthorized
     // state is the login page, never a blank screen (/health is the public
     // deployment probe; /profile is the guard's protected pathname). The
-    // login is the STANDALONE 8-bit title/start screen OUTSIDE the Shell
-    // frame (the issue: the login/logout render standalone): the Shell's
-    // title copy is present and the learner's nav destinations never.
+    // login is the STANDALONE V3 title screen OUTSIDE the Shell frame
+    // (PPGA #49, the design's `#s-login`): the design's own card copy (the
+    // gradient welcome + the pixel wordmark's heading) is present while the
+    // Shell's landmarks never render.
     await page.goto(`/${locale}/profile`)
     await expect(page).toHaveURL(RegExp(`/${locale}/login$`))
     await expect(page.locator('body')).toContainText(t(['login', 'submit'], locale))
+    await expect(page.locator('body')).toContainText(t(['login', 'welcome'], locale))
     await rawLeakCheck(page)
     await expectStandaloneScreen(page, locale)
 
