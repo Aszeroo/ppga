@@ -6,6 +6,14 @@ A bilingual (Thai/English) gamified web platform for ปวช.2 vocational lear
 
 Next.js (App Router, TypeScript) + Supabase (Auth, Postgres, Storage), GitHub → Vercel. Zod validation later; Vitest, React Testing Library, Playwright.
 
+## Documentation & operations
+
+- **Runbook** — env vars, Supabase link/migrations, the `ppg-submissions` bucket, deploys, rollback, known failure modes, post-deploy health checks: [`docs/operations/runbook.md`](docs/operations/runbook.md).
+- **Production probe** — `scripts/verify-production.sh` checks the public health endpoint, the served build generation, and the Supabase host's DNS. Read-only, takes no credentials, prints no secrets. Run it after every deploy (and pass the project ref for the DNS check).
+- **UI design** — the app is being redesigned to the user-authored V3 design; the decision is recorded in `docs/adr/0004-adopt-user-authored-v3-design.md`, which lands with the V3 reskin PR #57 (issues #50–#56). Until that PR merges, `main` (and production) serve the previous design.
+- **Middleware** — the app runs `middleware.ts` on Next 16 (the installed version). Next 16 deprecates the `middleware` convention in favour of `proxy.ts` (same functionality; `npx @next/codemod@canary middleware-to-proxy` migrates it — see `node_modules/next/dist/docs/01-app/02-guides/upgrading/version-16.md`). The rename is tracked as future work; `middleware.ts` remains the file in use.
+
+
 ## Scripts
 
 - `npm run dev` — Next.js dev server (local dev)
@@ -28,14 +36,20 @@ The workflow lives in `supabase/`:
 Commands (run from the project root; the CLI is available via `npx supabase …`):
 
 ```bash
-npx supabase init              # one-time: write supabase/config.toml
+npx supabase init              # already run once — supabase/config.toml is committed
 npx supabase start           # local Postgres (dev environment), seeds, UI
 npx supabase migration new  # create a new migration file
 npx supabase migration up   # apply local migrations to the local database
 npx supabase link --project-ref <ref> # link to the hosted project (preview/prod)
 npx supabase db pull        # capture an existing schema from the linked project
 npx supabase db push        # push local migration changes to the linked project
+npx supabase migration list --linked  # drift check: remote history vs local files
 ```
+
+The private `ppg-submissions` storage bucket rides migration
+`20260926001000_practical_missions_submissions.sql` (idempotent insert + RLS
+policies) and `supabase/seed.sql` for the local stack; hosted verification and
+the dashboard fallback are in runbook §4.
 
 Environment mapping:
 
@@ -61,7 +75,7 @@ Copy `.env.example` — the file documents every variable and is not committed i
      rules banning browser-context use of the server client factory and reading
      `SUP_SERVICE_ROLE_KEY` outside server-only files.
 
-Secrets are provided by your deploy environment (Verc/Supabase project secret sets), never committed.
+Secrets are provided by your deploy environment (Vercel/Supabase project secret sets), never committed. The Production-scope listing, re-set procedure, and the secret-value rules live in [`docs/operations/runbook.md`](docs/operations/runbook.md) §1.
 
 ## Health page
 
@@ -70,16 +84,19 @@ Secrets are provided by your deploy environment (Verc/Supabase project secret se
 
 ## Vercel deployment (operator action, preview + production)
 
-The framework is auto-detected by Vercel (Next.js). Deployment steps, documented here —
-run when you have your Vercel credentials:
+The framework is auto-detected by Vercel (Next.js); production is aliased to
+`https://ppga.vercel.app`. Deployment steps — run when you have your Vercel credentials:
 
 ```bash
 vercel deploy --preview --token <vercel-token>  # preview environment
 vercel deploy --prod --token <vercel-token>  # production environment
 ```
 
-Preview/production reachability is pending operator action; the scaffold is buildable,
-runnable, and lint-checked locally.
+The earlier "reachability pending operator action" note is stale: production was
+restored in #48 (2026-10-08). The 2026-10-19 data-layer regression is tracked in
+#64 — the owner restore checklist, env-var procedure, migration drift checks,
+bucket provisioning, deploy/rollback and post-deploy health checks all live in
+[`docs/operations/runbook.md`](docs/operations/runbook.md).
 
 ## CI
 
@@ -99,7 +116,7 @@ Routes:
 
 - `/login` — student-ID handle + password (JSON POST to `/api/auth/login`)
 - `/api/auth/login` — sign-in against the real Supabase Auth service; the token
-  bundle lands in `httpOnly`, `SameSite=cuda` cookies on `/`.
+  bundle lands in `httpOnly`, `SameSite=lax` cookies on `/`.
 - `/api/auth/logout` + `/logout` — the refresh token is revoked at the service
   and both session cookies are cleared.
 - `/api/auth/change-password` + `/change-password` — PUT to the service; the
