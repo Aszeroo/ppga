@@ -86,21 +86,47 @@ export default function LoginPage() {
 
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <section>
-        <p>{t('intro')}</p>
+      {/**
+       * PPGA #41 stage 1: the login form rides the STANDALONE 8-bit
+       * title/start screen the Shell renders outside the frame (the
+       * locale layout's `standalone` decision) — identity + `shell.start` +
+       * this form. A MINIMAL restyle only: the controls take the token
+       * pixel classes (`.ppg-input` / `.ppg-button` — the focus-ring +
+       * reduced-motion targets, state never colour-alone); the submit
+       * handler, the Zod gate, the API route and the observable redirect
+       * are UNTOUCHED (no new auth logic).
+       */}
+      <section className="ppg-title-screen-body">
+        <p className="ppg-card-text">{t('intro')}</p>
         <form onSubmit={handleSubmit}>
           <label htmlFor="identifier">{t('identifier')}</label>
-          <input id="identifier" name="identifier" required minLength={3} maxLength={50} />
+          <input id="identifier" name="identifier" className="ppg-input" required minLength={3} maxLength={50} />
           <label htmlFor="password">{t('password')}</label>
           <input
             id="password"
             name="password"
             type="password"
+            className="ppg-input"
             required
             minLength={8}
             maxLength={72}
           />
-          <button type="submit">{t('submit')}</button>
+          <button
+            type="submit"
+            className="ppg-button"
+            style={{
+              fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+              borderWidth: 'var(--ppg-border-2)',
+              borderStyle: 'solid',
+              borderColor: 'var(--ppg-blue-300)',
+              backgroundColor: 'var(--ppg-state-available-bg)',
+              color: 'var(--ppg-state-available-fg)',
+              boxShadow: 'var(--ppg-shadow-pixel-1)',
+              padding: 'var(--ppg-space-2) var(--ppg-space-3)',
+            }}
+          >
+            {t('submit')}
+          </button>
         </form>
         {busy ? <p>{t('busy')}</p> : null}
         {message ? <p>{message}</p> : null}

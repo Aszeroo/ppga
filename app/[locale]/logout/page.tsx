@@ -48,9 +48,27 @@ export default function LogoutPage() {
 
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <section>
-        <p>{t('intro')}</p>
-        <button type="button" onClick={handleClick}>
+      <section className="ppg-title-screen-body">
+        <p className="ppg-card-text">{t('intro')}</p>
+        {/** PPGA #41 stage 1: the logout button rides the standalone title
+         * screen too — a MINIMAL token restyle (`.ppg-button` focus target +
+         * the token face); the handler + the revoke + the observable redirect
+         * are UNTOUCHED. */}
+        <button
+          type="button"
+          className="ppg-button"
+          onClick={handleClick}
+          style={{
+            fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+            borderWidth: 'var(--ppg-border-2)',
+            borderStyle: 'solid',
+            borderColor: 'var(--ppg-status-error)',
+            backgroundColor: 'var(--ppg-state-available-bg)',
+            color: 'var(--ppg-status-error)',
+            boxShadow: 'var(--ppg-shadow-pixel-1)',
+            padding: 'var(--ppg-space-2) var(--ppg-space-3)',
+          }}
+        >
           {t('submit')}
         </button>
         {busy ? <p>{t('busy')}</p> : null}

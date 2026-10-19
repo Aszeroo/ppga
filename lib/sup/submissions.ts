@@ -442,3 +442,29 @@ function gateCodeDetail(message: string): string {
   const code = GATE_CODES.find((c) => lowered.includes(c))
   return code ? `${code}: ${message}` : message
 }
+/**
+ * Ticket #45 (#41 stage 4): the practical-mission module set the challenge
+ * framing reads to know WHICH screen a module's Mission is (upload vs
+ * knowledge attempt) — the same catalog list the dashboard hub reads for the
+ * current-Mission link. A plain read-only SELECT through the caller's session
+ * JWT (the shipped SELECT grants every signed-in role this content catalog;
+ * no service-role, no rule, no write). Missing env yields `not-configured`,
+ * a missing session `unauthorized` — the page speaks the state, never guesses.
+ */
+export interface PracticalMissionKeysRead {
+  status: 'ok' | 'error' | 'not-configured' | 'unauthorized'
+  detail?: string
+  keys?: string[]
+}
+
+export async function readPracticalMissionKeysViaTable(): Promise<PracticalMissionKeysRead> {
+  const sup = await createSupaSessionClient()
+  if (!sup) return { status: 'not-configured', detail: 'NEXT_PUBLIC_SUP_* missing' }
+
+  const { data: session } = await sup.auth.getSession()
+  if (!session || !session.session) return { status: 'unauthorized', detail: 'no session' }
+
+  const { data, error } = await sup.from('ppg_practical_missions').select('module_key')
+  if (error) return { status: 'error', detail: error.message }
+  return { status: 'ok', keys: ((data ?? []) as Array<{ module_key: string }>).map((r) => r.module_key) }
+}
