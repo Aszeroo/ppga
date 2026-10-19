@@ -26,6 +26,14 @@ export async function createSupaSessionClient() {
   return createClient(url, anonKey, {
     auth: {
       storageKey: 'ppga_session',
+      // PPGA #49: this jar CANNOT persist (setItem is a no-op), so an
+      // auto-refresh here would trade the rotation token and throw the fresh
+      // bundle away — the caller's NEXT request would then speak for a spent
+      // token. The middleware refreshes + persists the bundle BEFORE any
+      // render reaches this client; a refresh it could not reach leaves the
+      // read to fail exactly as an unauthorized state (observable, never a
+      // silent burn).
+      autoRefreshToken: false,
       storage: {
         isServer: true as const,
         getItem: (key: string) => jar.get(key)?.value ?? null,

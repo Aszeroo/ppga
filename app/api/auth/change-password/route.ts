@@ -4,6 +4,7 @@ import {
   changePasswordViaSupaHttp,
   changePasswordFormSchema,
   createSupaSessionClientForRoute,
+  newSessionCookieJar,
 } from '../../../../lib/sup/auth'
 
 /**
@@ -31,13 +32,20 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  // The supa call here only reads the request cookie; password changes do not
-  // rotate the session cookie, so the factory receives no response object.
-  const sup = createSupaSessionClientForRoute(req)
+  // PPGA #49: the factory's freshness guard MAY rotate a stale bundle before
+  // this route reads — the jar captures that rotation (or a refusal's clear)
+  // and merges onto every response below so the caller's NEXT request rides
+  // the traded token instead of burning it a second time.
+  const cookieJar = newSessionCookieJar()
+  const sup = await createSupaSessionClientForRoute(req, cookieJar.res)
   if (!sup) return NextResponse.json({ ok: false, detail: 'not-configured' })
 
   const { data: session } = await sup.auth.getSession()
-  if (!session || !session.session) return NextResponse.json({ ok: false, detail: 'no session' })
+  if (!session || !session.session) {
+    const res = NextResponse.json({ ok: false, detail: 'no session' })
+    cookieJar.mergeInto(res)
+    return res
+  }
 
   const viaHttp = await changePasswordViaSupaHttp(
     session.session.access_token,
@@ -54,6 +62,7 @@ export async function POST(req: NextRequest) {
   // httpOnly flag cookie is cleared on the same success path so the
   // middleware's redirect can speak `/profile` verbatim from now on.
   const res = NextResponse.json(viaHttp)
+  cookieJar.mergeInto(res)
   if (viaHttp.ok) {
     const { error: clearError } = await sup
       .from('ppg_profiles')
@@ -73,8 +82,11 @@ export async function POST(req: NextRequest) {
     if (clearError) {
       // The observable note only lands in `detail`'s body (the DATABASE read
       // failed — the next login's flag read below speaks the redirect again),
-      // never a blank screen.
-      return NextResponse.json({ ...viaHttp, detail: `${viaHttp.detail}; flag read: ${clearError.message}` })
+      // never a blank screen. PPGA #49: this replaces `res`, so the guard's
+      // session rotation has to ride the new response too.
+      const flagRes = NextResponse.json({ ...viaHttp, detail: `${viaHttp.detail}; flag read: ${clearError.message}` })
+      cookieJar.mergeInto(flagRes)
+      return flagRes
     }
   }
   return res

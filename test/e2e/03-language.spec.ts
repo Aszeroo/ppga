@@ -20,10 +20,12 @@ test.describe('PPGA #18 language selection & persistence', () => {
     const other = locale === 'th' ? 'en' : 'th'
     const learner = accounts.learners[locale]
 
-    // 0. An anonymous caller landing on the root reaches the Thai default —
-    // the routing middleware's `/` → `/th` redirect, never a blank screen.
+    // 0. An anonymous caller landing on the root reaches the Thai default LOGIN
+    // title screen — the routing middleware's `/` → `/th` redirect, then the
+    // guard's anonymous-root rule (`#49`: the anonymous landing is never the
+    // bare no-session dashboard).
     await page.goto('/')
-    await expect(page).toHaveURL(/\/th$/)
+    await expect(page).toHaveURL(/\/th\/login$/)
 
     // 1. The learner signs in (the journey's own helper: the real login
     // page + the real `/api/auth/login`; the gate's redirect is observable).

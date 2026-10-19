@@ -2,7 +2,7 @@
   "nav": {
     "home": "หน้าแรก",
     "login": "ลงชื่อ",
-    "logout": "ออกชื่อ",
+    "logout": "ออกจากระบบ",
     "profile": "โปรไฟล์",
     "changePassword": "เปลี่ยนรหัส",
     "health": "สารภาพ",
@@ -481,7 +481,7 @@
     "states": {
       "ok": "ปกติ",
       "error": "ความผิด",
-      "unauthorized": "ไม่อ้อนาญ — เปิกงานก่่อน",
+      "unauthorized": "ไม่ได้รับอนุญา — เข้าสู่ระบบก่อน",
       "notConfigured": "ไม่ไม่่งตั้"
     },
     "levelChip": "LV",

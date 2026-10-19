@@ -7,10 +7,13 @@ import {
 } from '../../../../lib/sup/auth'
 
 /**
- * Ticket #3 logout: the refresh token is revoked at the Supabase Auth service
- * and both session cookies are cleared on `/` so a later request carries no
- * authority. A missing service still clears the cookie (the observable state is
- * "signed out, service unavailable", not a blank screen).
+ * Ticket #3 logout: the session is revoked at the Supabase Auth service (the
+ * #49-corrected call: POST /auth/v1/logout Bearer-authenticated by the access
+ * token) and both session cookies are cleared on `/` so a later request
+ * carries no authority. A refused or unreachable revoke still clears the
+ * cookies (the observable state is "signed out, service said otherwise",
+ * never a stuck signed-in caller), and a missing environment still renders
+ * not-configured.
  *
  * `force-dynamic` so `next build` never pre-render this POST.
  */
@@ -30,17 +33,26 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  const sup = createSupaSessionClientForRoute(req)
+  const sup = await createSupaSessionClientForRoute(req)
   if (!sup) {
     return NextResponse.json({ ok: false, detail: 'not-configured' })
   }
 
+  // PPGA #49 (the owner preview's `logout failing`): the service revoke is
+  // best-effort and speaks through the ACCESS token (POST /auth/v1/logout is
+  // a Bearer-authenticated endpoint). What NEVER depends on it is the
+  // observable sign-out below: every session cookie clears even when the
+  // service refuses (revoked token, unreachable, expired JWT), because a
+  // refused revoke must leave the caller signed OUT with a reported detail,
+  // never stuck signed IN.
   const { data: session } = await sup.auth.getSession()
   const revoked = session && session.session
-    ? await signOutViaSupaHttp(session.session.refresh_token)
+    ? await signOutViaSupaHttp(session.session.access_token)
     : { ok: true, detail: 'no session to revoke' }
 
-  const res = NextResponse.json(revoked)
+  const res = NextResponse.json(
+    revoked.ok ? revoked : { ok: true, detail: revoked.detail, redirect: '/' },
+  )
   res.cookies.set('ppga_session', '', { path: '/', maxAge: 0 })
   res.cookies.set('ppga_refresh', '', { path: '/', maxAge: 0 })
   // supa-js's own storage key is cleared too so a stale bundle can never be

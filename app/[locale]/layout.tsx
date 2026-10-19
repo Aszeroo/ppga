@@ -2,7 +2,7 @@ import 'server-only'
 
 import { getLocale, getTranslations } from 'next-intl/server'
 
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 
 import { type ReactNode } from 'react'
 
@@ -11,6 +11,7 @@ import { readOwnProfile } from '../../lib/sup/profile'
 import { hasCourseContext, isStandaloneScreen, localePathSuffix } from '../../lib/shellFrame'
 
 import { Shell } from '../../components/Shell'
+import { IdleLogout } from '../../components/IdleLogout'
 
 /**
  * Ticket #41 stage 1: the locale layout — the ONE reusable App Shell frame
@@ -78,5 +79,18 @@ export default async function LocaleLayout({ children }: Readonly<{ children: Re
   const profile = await readOwnProfile()
   const role = profile.status === 'ok' ? profile.row?.role : undefined
 
-  return <Shell role={role} contextTitle={contextTitle} standalone={standalone} activeSection={suffix}>{children}</Shell>
+  /** PPGA #49 (idle auto-logout): the 30-minute idle countdown mounts ONCE,
+   * on the FRAMED path only, and only when a session cookie is present (the
+   * guard's own presence check, verbatim). A standalone title screen (the
+   * login card is the signed-OUT state — an auto-logout there is nonsense)
+   * and a caller with no session never carry the timer. */
+  const cookieJar = await cookies()
+  const sessioned = Boolean(cookieJar.get('ppga_session')?.value)
+
+  return (
+    <>
+      <Shell role={role} contextTitle={contextTitle} standalone={standalone} activeSection={suffix}>{children}</Shell>
+      {!standalone && sessioned ? <IdleLogout locale={locale} /> : null}
+    </>
+  )
 }
