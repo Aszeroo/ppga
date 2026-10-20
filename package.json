@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "validate:content": "python3 scripts/validate-content.py",
     "test": "vitest run",
     "test:watch": "vitest watch"
   },
