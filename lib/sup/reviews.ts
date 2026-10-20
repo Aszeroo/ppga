@@ -298,6 +298,105 @@ export async function readReviewHistoryViaRpc(
 
 // ─── latest ───────────────────────────────────────────────────────────────────
 
+type LatestReviewRow = {
+  submission_seq: number
+  scores: {
+    content_structure: number
+    text_formatting: number
+    images_visual: number
+    slide_design: number
+    powerpoint_tool_usage: number
+    creativity: number
+    completeness: number
+  }
+  total_score: number
+  decision: string
+  feedback_th: string | null
+  feedback_en: string | null
+}
+
+type LatestReviewRpcResult = {
+  latest: LatestReviewRow | null
+  history: Array<{
+    mission_id: string
+    submission_seq: number
+    scores: {
+      content_structure: number
+      text_formatting: number
+      images_visual: number
+      slide_design: number
+      powerpoint_tool_usage: number
+      creativity: number
+      completeness: number
+    }
+    total_score: number
+    decision: string
+    feedback_th: string | null
+    feedback_en: string | null
+    teacher_id: string
+    created_at: string
+  }>
+} | null
+
+/**
+ * Map the `ppg_read_latest_review` payload to the result page's state.
+ *
+ * PPGA #60: the RPC initialises `v_latest jsonb := '{}'::jsonb`, but a
+ * PL/pgSQL `select ... into` with ZERO rows sets the target to NULL (the
+ * initialiser is overwritten), so a caller with no review receives
+ * `{"latest": null, "history": [...]}`. An empty object `{}` (the declared
+ * initialiser) carries no `submission_seq` either. Both mean "no review yet"
+ * and must render that state instead of dereferencing a missing row.
+ */
+export function latestReviewStateFromRpc(
+  result: LatestReviewRpcResult,
+): LatestReviewState {
+  if (!result) return { status: 'empty', detail: 'no review yet' }
+
+  const latest = result.latest
+  if (!latest || typeof latest.submission_seq !== 'number')
+    return { status: 'empty', detail: 'no review yet' }
+
+  return {
+    status: 'ok',
+    latest: {
+      submission_seq: latest.submission_seq,
+      scores: {
+        content_structure: latest.scores.content_structure,
+        text_formatting: latest.scores.text_formatting,
+        images_visual: latest.scores.images_visual,
+        slide_design: latest.scores.slide_design,
+        tool_usage: latest.scores.powerpoint_tool_usage,
+        creativity: latest.scores.creativity,
+        completeness: latest.scores.completeness,
+      },
+      total_score: latest.total_score,
+      decision: latest.decision as 'approved' | 'needs_improvement',
+      feedback_th: latest.feedback_th,
+      feedback_en: latest.feedback_en,
+    },
+    history: result.history.map((row) => ({
+      mission_id: row.mission_id,
+      submission_seq: row.submission_seq,
+      scores: {
+        content_structure: row.scores.content_structure,
+        text_formatting: row.scores.text_formatting,
+        images_visual: row.scores.images_visual,
+        slide_design: row.scores.slide_design,
+        tool_usage: row.scores.powerpoint_tool_usage,
+        creativity: row.scores.creativity,
+        completeness: row.scores.completeness,
+      },
+      total_score: row.total_score,
+      decision: row.decision as 'approved' | 'needs_improvement',
+      feedback_th: row.feedback_th,
+      feedback_en: row.feedback_en,
+      teacher_id: row.teacher_id,
+      created_at: row.created_at,
+    })),
+  }
+}
+
 export async function readLatestReviewViaRpc(
   moduleKey: string,
 ): Promise<LatestReviewState> {
@@ -320,84 +419,7 @@ export async function readLatestReviewViaRpc(
     return { status: 'error', detail: error.message }
   }
 
-  const result = data as {
-    latest: {
-      submission_seq: number
-      scores: {
-        content_structure: number
-        text_formatting: number
-        images_visual: number
-        slide_design: number
-        powerpoint_tool_usage: number
-        creativity: number
-        completeness: number
-      }
-      total_score: number
-      decision: string
-      feedback_th: string | null
-      feedback_en: string | null
-    }
-    history: Array<{
-      mission_id: string
-      submission_seq: number
-      scores: {
-        content_structure: number
-        text_formatting: number
-        images_visual: number
-        slide_design: number
-        powerpoint_tool_usage: number
-        creativity: number
-        completeness: number
-      }
-      total_score: number
-      decision: string
-      feedback_th: string | null
-      feedback_en: string | null
-      teacher_id: string
-      created_at: string
-    }>
-  } | null
-
-  if (!result) return { status: 'empty', detail: 'no review yet' }
-
-  return {
-    status: 'ok',
-    latest: {
-      submission_seq: result.latest.submission_seq,
-      scores: {
-        content_structure: result.latest.scores.content_structure,
-        text_formatting: result.latest.scores.text_formatting,
-        images_visual: result.latest.scores.images_visual,
-        slide_design: result.latest.scores.slide_design,
-        tool_usage: result.latest.scores.powerpoint_tool_usage,
-        creativity: result.latest.scores.creativity,
-        completeness: result.latest.scores.completeness,
-      },
-      total_score: result.latest.total_score,
-      decision: result.latest.decision as 'approved' | 'needs_improvement',
-      feedback_th: result.latest.feedback_th,
-      feedback_en: result.latest.feedback_en,
-    },
-    history: result.history.map((row) => ({
-      mission_id: row.mission_id,
-      submission_seq: row.submission_seq,
-      scores: {
-        content_structure: row.scores.content_structure,
-        text_formatting: row.scores.text_formatting,
-        images_visual: row.scores.images_visual,
-        slide_design: row.scores.slide_design,
-        tool_usage: row.scores.powerpoint_tool_usage,
-        creativity: row.scores.creativity,
-        completeness: row.scores.completeness,
-      },
-      total_score: row.total_score,
-      decision: row.decision as 'approved' | 'needs_improvement',
-      feedback_th: row.feedback_th,
-      feedback_en: row.feedback_en,
-      teacher_id: row.teacher_id,
-      created_at: row.created_at,
-    })),
-  }
+  return latestReviewStateFromRpc(data as LatestReviewRpcResult)
 }
 
 // ─── types ───────────────────────────────────────────────────────────────────
