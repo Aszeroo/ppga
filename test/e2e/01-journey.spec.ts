@@ -277,6 +277,8 @@ test.describe('PPGA #18 critical journey', () => {
     await expectXpLine(page, 250, 50)
     await page.goto(`/${locale}/course/module-02/mission`)
     await page.locator('#answer_1_a').click()
+    await page.locator('#answer_2_a').click()
+    await page.locator('#answer_3_a').click()
     await submitForm(page, '[data-ppg-mission-form=mission]', '/api/mission/submit', true)
     await page.goto(`/${locale}`)
     await expectXpLine(page, 350, 50)
