@@ -6,10 +6,10 @@
     "profile": "โปรไฟล์",
     "changePassword": "เปลี่ยนรหัส",
     "health": "สารภาพ",
-    "adminUsers": "ผู่้่ผู้ใชั้",
-    "adminAudit": "สารชู่้",
+    "adminUsers": "รายชื่อผู้ใช้",
+    "adminAudit": "บันทึกการตรวจสอบ",
     "adminProvisioning": "จัด roster",
-    "course": "แผนท่ีหนว่ย",
+    "course": "หลักสูตร",
     "badges": "ช่ออ-กิ่",
     "leaderboard": "กระดานผู้นำ",
     "reviewQueue": "คิว-ตรวจ",
@@ -17,17 +17,18 @@
     "adminExport": "ส่งออกแบบุูลวิจัย"
   },
   "admin": {
-    "heading": "ผู่้่ผู้ใชั้",
+    "fallbackSuspense": "กำลังเตรียมหน้าจัดการ…",
+    "heading": "หน้าจัดการผู้ดูแล",
     "users": {
-      "list": "รายชื่่อผู้ใชั้",
+      "list": "รายชื่อผู้ใช้",
       "studentId": "ร.บกะนักเรียน",
-      "fullName": "ชื่่อสับสบ",
+      "fullName": "ชื่อ-นามสกุล",
       "role": "บทบาท",
       "changeRole": "เปลี่ยนบทบาท",
       "target": "ผู้ใชั้ที่ตี่งสับ",
       "newRole": "บทบาทใหม่",
       "submit": "เปลี่ยน",
-      "linkAudit": "สารชื่่อ",
+      "linkAudit": "บันทึกการตรวจสอบ",
       "targetRequired": "ตี่งกรออทที่ดที่อยู่",
       "setConsent": "ตังตอง",
       "consentFlag": "ตอง",
@@ -40,8 +41,8 @@
       "colRole": "บทบาท"
     },
     "audit": {
-      "stream": "สายชื่่อ",
-      "linkUsers": "รายชื่่อผู้ใชั้",
+      "stream": "บันทึกการตรวจสอบ",
+      "linkUsers": "รายชื่อผู้ใช้",
       "title": "บันทึกกิจกรรม (Audit)",
       "colTime": "เวลา",
       "colAction": "กิจกรรม",
@@ -49,23 +50,23 @@
       "colDetails": "ระเยละเอยด"
     },
     "provisioning": {
-      "intro": "วาง roster (นัักเรียนหนึ่่งล้าว: บะร.บกะนักเรียน + ชื่่อสับสบ) —ระบบส้าน้างบัญชีนัักเรียนแบบุุมก้วยร.บกะนัักเรียนและรหัสช่วครััง่ที่ให้าได้า บนื่้าก่า; แบบฟอร์มเพิ่่มหนึ่่งล้าวจะเปน็ัลfallback",
-      "paste": "Roster (ร.บกะนัักเรียน + ชื่่อสับสบ, หนึ่่งล้าวหนึ่่งบร.บก)",
-      "placeholder": "64110001 Lew A. Boonthi\n64110002 Sam B. Boonthee",
-      "single": "แบบฟอร์มเพิ่่มหนึ่่งบร.บก",
-      "submit": "จััด",
-      "busy": "กำลังจััด…",
-      "report": "ผลรายงานการจััด",
+      "intro": "วางรายชื่อ (บรรทัดละหนึ่งคน: รหัสนักเรียน + ชื่อ) — ระบบจะสร้างบัญชีเป็นชุดพร้อมรหัสเข้าสู่ระบบเป็นรหัสนักเรียนและรหัสผ่านชั่วคราวสำหรับแจกบนกระดาษ ส่วนแบบฟอร์มเพิ่มทีละคนเป็นทางเลือกสำรอง",
+      "paste": "รายชื่อ (รหัสนักเรียน + ชื่อ, บรรทัดละหนึ่งคน)",
+      "placeholder": "64110001 สมชาย ใจดี\n64110002 สมหญิง ใจงาม",
+      "single": "เพิ่มทีละคน (ทางเลือกสำรอง)",
+      "submit": "สร้างบัญชี",
+      "busy": "กำลังสร้างบัญชี…",
+      "report": "รายงานการสร้างบัญชี",
       "ok": "สร้าน้างได้า",
       "line": {
         "created": "สร้าน้าง",
-        "duplicate": "พั่้มซัับ —ปฏฏิล",
+        "duplicate": "ซ้ำ — ถูกปฏิเสธ",
         "malformed": "ไม่มีรูปบบ —ปฏฏิล"
       },
       "handout": "ล้าวสิ่วขั้อมูล (พิม์",
-      "handoutHint": "ล้าวสร้าน้าง: บะร.บกะนัักเรียน + รหัสชั่่วครััง; ครัังแรกจะต้องเปลี่ยนรหัส",
-      "linkUsers": "รายชื่่อผู้ใชั้",
-      "linkProvision": "จััด roster",
+      "handoutHint": "แต่ละบรรทัดที่สร้าง: รหัสนักเรียน + รหัสผ่านชั่วคราว; การเข้าสู่ระบบครั้งแรกบังคับให้เปลี่ยนรหัส",
+      "linkUsers": "รายชื่อผู้ใช้",
+      "linkProvision": "สร้างบัญชีเป็นชุด",
       "states": {
         "empty": "สายวา่ง",
         "error": "กำลลัง",
@@ -119,9 +120,9 @@
       "fallbackSuspense": "กำลังเตรียมแบบฟอร์ม..."
     },
     "roles": {
-      "learner": "นัักเรียน",
+      "learner": "นักเรียน",
       "teacher": "อาจาร์ย์ย",
-      "admin": "นัักกะก่า"
+      "admin": "ผู้ดูแลระบบ"
     }
   },
   "login": {
@@ -187,7 +188,7 @@
     "linkContent": "ขั้ทกัาน์",
     "linkContentLocked": "ขั้ทกัาน์",
     "linkCourse": "แผนที่หน่วนเรียน",
-    "linkLeaderboard": "ชื่ิง-XP",
+    "linkLeaderboard": "อันดับ XP",
     "closeLabel": "ปปิดหลกัสูตร (วิจยั)",
     "linkPostTest": "ทำ Post-Test (เปิดเมื่อาจารยย์อมรบั Final Project)",
     "linkSurvey": "ทำแบบสำารวจความพงึพอใจ (เปิดหลังหวัง Post-Test)",
@@ -196,8 +197,8 @@
       "consentNoSubmit": "ลงชื่อ",
       "gateOpen": "ปล้",
       "score": "คะแนน",
-      "closeLocked": "ปปิดวิจยัยงัปิิด — Post-Test จะเปิดเมื่อาจารยย์อมรบั Final Project",
-      "closeDone": "ปปิดวิจยัครบแล้ว — ส่ง Post-Test + แบบสำารวจแล้ว (ไม่ีมุ่ลได้าตามแบบ)",
+      "closeLocked": "ยังปิดการวิจัย — Post-Test จะเปิดเมื่ออาจารย์ยอมรับ Final Project",
+      "closeDone": "ปิดการวิจัยครบแล้ว — ส่ง Post-Test + แบบสำรวจแล้ว (ไม่มีรางวัลตามแบบ)",
       "empty": "สายวา่ง",
       "error": "กำลัง",
       "denied": "ปฏฏิลทู่",
@@ -268,18 +269,18 @@
     "fallbackSuspense": "กำลงโหลด...",
     "states": {
       "locked": "Post-Test ยงัปิด — การยอมรบ Final Project ของอาจารยจ์ะเปิดในระดบัฐานข้อมูล",
-      "unlocked": "ยอมรบ Final Project แล้ว — Post-Test เปิด (สaingเดียว)",
+      "unlocked": "ยอมรับ Final Project แล้ว — Post-Test เปิด (ครั้งเดียว)",
       "score": "บันทกึคะแนนพร้อม version เครื่องมือ + ภาษา (ไมี่ XP ไมี่ badge — วิจัยไมี่ให้อะไร)",
       "submittedOnce": "ส่งแล้วครั้เดียว (single attempt; แกไຂไมไ่ด้าหลังส่ง)",
       "autosave": "ออโตเซฟ (ตอได้าหลังทบาวสญหาย)",
       "itemsEmpty": "ไมี่เครื่องมือ (อานได้า, ตารางวาง)",
-      "itemsError": "error",
+      "itemsError": "โหลดข้อมูลไม่สำเร็จ",
       "empty": "วาง",
-      "error": "error",
+      "error": "ผิดพลาด",
       "denied": "ปฏเสธ",
       "unauthorized": "ไมี่สทิธิ",
       "notConfigured": "ยงัมได้าตังคา",
-      "ok": "ok",
+      "ok": "สำเร็จ",
       "fallbackSuspense": "กำลงโหลด..."
     },
     "researchTag": "🔬 แบบประเมินเพื่อการวิจัย",
@@ -299,23 +300,23 @@
     "answerLabel": "เลอก",
     "autosaveLabel": "ออโตเซฟ",
     "submitLabel": "ส่งครั้เดียว",
-    "linkPostTest": "Post-Test",
-    "linkCourse": "แผนท่ีหนวายเรียน",
+    "linkPostTest": "แบบทดสอบหลังเรียน",
+    "linkCourse": "แผนที่หลักสูตร",
     "linkDashboard": "หนาแรก",
     "fallbackSuspense": "กำลังโหลด...",
     "states": {
       "locked": "แบบสำารวยยงัปิด — จะเปิดหลังส่ง Post-Test",
-      "unlocked": "ส่ง Post-Test แล้ว — แบบสำารวจความพงึพอใจเปิด (สaingเดียว)",
+      "unlocked": "ส่ง Post-Test แล้ว — แบบสำรวจความพึงพอใจเปิด (ครั้งเดียว)",
       "submittedOnce": "ส่งแล้วครั้เดียว (single attempt; ไมี่คะแนน ไมี่รางวล — ความพงึพอใจไมไชการประเมิน)",
       "autosave": "ออโตเซฟ (ตอได้าหลังทบาบสญหาย)",
       "itemsEmpty": "ไมี่เครื่องมือ (อานได้า, ตารางวาง)",
-      "itemsError": "error",
+      "itemsError": "โหลดข้อมูลไม่สำเร็จ",
       "empty": "วาง",
-      "error": "error",
+      "error": "ผิดพลาด",
       "denied": "ปฏเสธ",
       "unauthorized": "ไมี่สิทธิ์",
-      "notConfigured": "ยงัมได้าตั้่งคา",
-      "ok": "ok",
+      "notConfigured": "ยังไม่ได้ตั้งค่า",
+      "ok": "สำเร็จ",
       "fallbackSuspense": "กำลังโหลด..."
     },
     "researchTag": "🔬 แบบประเมินเพื่อการวิจัย",
@@ -378,7 +379,7 @@
     "whyHeading": "ส้างเปราะ",
     "bodyHeading": "ส้างเรียน",
     "nextHeading": "ส้างต่อไป",
-    "linkMap": "แผนท่ี่-หนว่ย",
+    "linkMap": "แผนที่หลักสูตร",
     "linkModule": "หนว่ย-นี้",
     "linkMission": "ภารกจิ-ควารู้-หนว่ย-นี้",
     "fallbackSuspense": "กำลลังโหลด…",
@@ -400,7 +401,7 @@
     "current": "ภาษาปัจจุบัน: {language}",
     "option": {
       "th": "ไทย (ภาษาไทย)",
-      "en": "English"
+      "en": "อังกฤษ"
     },
     "switchHint": "เลือกภาษา การเลือกจะจาจำหลังทีเปลี่ยนหน้า โหลดออกชื่อและลงชื่อ"
   },
@@ -413,36 +414,36 @@
   },
   "gallery": {
     "title": "กลาลังแบบฟอร์ม",
-    "intro": "การบิระบบ 8-bit นุม pastel —ทุกถ่วนท่ีแบบฟอร์มเปสสในภาษาของของคัณ.การตองจะเจเจโดยอาารยะ",
+    "intro": "ระบบดีไซน์ 8-bit พาสเทล — ทุกองค์ประกอบถูกสาธิตสดในภาษาของคุณ สถานะถูกประกาศด้วยข้อความ + aria-disabled/aria-label ไม่ใช่ด้วยสีเพียงอย่างเดียว",
     "healthLink": "สารภาพ",
     "fallbackSuspense": "กำลังโหลด...",
     "button": {
-      "available": "ชัันเรียน",
-      "locked": "ชัันถก",
-      "warning": "ชัันตดใจ",
-      "error": "ชัันตวอความผิด"
+      "available": "บทเรียนที่เปิด",
+      "locked": "บทเรียนที่ล็อก",
+      "warning": "บทเรียนเตือน",
+      "error": "บทเรียนผิดพลาด"
     },
     "card": {
       "heading": "การบิ",
-      "body": "ถ่วนท่ีจะเจในพืชนี้",
+      "body": "สไลด์อยู่บนพื้นผิวนี้",
       "lockedHeading": "การบิตด",
-      "lockedBody": "ถ่วนท่ีจะเจโดยอาารยะ"
+      "lockedBody": "พื้นผิวนี้ถูกล็อก — แถบสี + ข้อความ Locked ประกาศสถานะ ไม่ใช่สีเพียงอย่างเดียว"
     },
     "badge": {
-      "success": "เบดความท่ี",
+      "success": "ป้ายความสำเร็จ",
       "warning": "เบดตดใจ",
       "error": "เบดความผิด",
       "locked": "เบด",
       "neutral": "เบดกลาง"
     },
     "pill": {
-      "success": "ท่ี",
+      "success": "สำเร็จ",
       "warning": "ตดใจ",
       "error": "ความผิด",
       "locked": "ถก"
     },
     "progress": {
-      "label": "คาวหน้าชััน",
+      "label": "ความคืบหน้าบทเรียน",
       "value": "คาวหน้า"
     },
     "xp": {
@@ -450,13 +451,13 @@
       "value": "XP"
     },
     "states": {
-      "available": "มมีชััน",
+      "available": "เปิด",
       "locked": "มถก",
       "warning": "ตดใจ",
       "error": "ความผิด"
     },
     "tones": {
-      "success": "ท่ี",
+      "success": "สำเร็จ",
       "warning": "ตดใจ",
       "error": "ความผิด",
       "locked": "มถก",
@@ -476,19 +477,19 @@
   "header": {
     "label": "ขึ้ลกับ-XP",
     "level": "ขึ้ล",
-    "progress": "ขึ้้ล่ไปสู่ขึ้ลต่อไป",
+    "progress": "ความคืบหน้าสู่ Level ถัดไป",
     "badge": "กิ่",
     "states": {
       "ok": "ปกติ",
       "error": "ความผิด",
       "unauthorized": "ไม่ได้รับอนุญา — เข้าสู่ระบบก่อน",
-      "notConfigured": "ไม่ไม่่งตั้"
+      "notConfigured": "ยังไม่ได้ตั้งค่า"
     },
     "levelChip": "LV",
     "xpUnit": "XP"
   },
   "selfcheck": {
-    "section": "Self-Check",
+    "section": "ตรวจสอบตัวเอง",
     "optionLabel": "คอย",
     "submitLabel": "ผิดคอย (ไม่มถก)",
     "retryHint": "ผิดอีกไม่มถก — ผ่านจะมถก-งิ่ชั, ไม่คคอย",
@@ -497,16 +498,16 @@
     "failNote": "ยัง — ไม่คอย (ไม่ผิด)",
     "states": {
       "ok": "ปกติ",
-      "empty": "มชััา (ไม่คอย",
+      "empty": "ว่าง (ไม่พบคำถามฝั่งเซิร์ฟเวอร์)",
       "error": "ความผิด",
       "denied": "ไม่คก",
       "unauthorized": "ไม่อ้อนาญ",
-      "notConfigured": "ไม่ไม่่งตั้"
+      "notConfigured": "ยังไม่ได้ตั้งค่า"
     }
   },
   "mission": {
     "section": "ภารกิจ-ความรู้",
-    "instructionsHeading": "คำสั่่ง-ภารกิจ",
+    "instructionsHeading": "คำสั่งภารกิจ",
     "submitLabel": "ผิดคอย (ไม่มถก)",
     "retryHint": "ผิดอีกไม่มถก — คอย 70% ผ่าน; คอย-ประวัตคก",
     "passState": "ผ่าน 70% (+100 XP — ครั้แรกคก",
@@ -521,11 +522,11 @@
     "fallbackSuspense": "กม-ภารกิจ",
     "states": {
       "ok": "ปกติ",
-      "empty": "มชััา (ไม่คอย",
+      "empty": "ว่าง (ไม่พบภารกิจฝั่งเซิร์ฟเวอร์)",
       "error": "ความผิด",
       "denied": "ไม่คก",
       "unauthorized": "ไม่อ้อนาญ",
-      "notConfigured": "ไม่ไม่่ตตั้",
+      "notConfigured": "ยังไม่ได้ตั้งค่า",
       "historyEmpty": "ไม่ประวัตคร (ยังไม่อมถก)"
     }
   },
@@ -534,7 +535,7 @@
     "scenarioHeading": "เรท-เรย",
     "requirementsHeading": "ไป-เรย",
     "expectedHeading": "เรย-ไป-เรย",
-    "lessonsFlowNote": "คำสั่่ง-จาก-บทเรย:",
+    "lessonsFlowNote": "คำสั่งจากบทเรียนของคุณ:",
     "uploadLabel": "อัป-ไฟ-เรย(.pptx/.ppt) + คอย-คอย-คอย",
     "fileLabel": "ไฟล์งานของคุณ (.pptx/.ppt)",
     "reflectionPlaceholder": "คอย-คอย-เรย-สึด",
@@ -543,7 +544,7 @@
     "historySection": "ประวัต-ไป-เรย (-append-only)",
     "historyRound": "ครัง",
     "historyStatus": "เรท",
-    "historyAction": "ปฏบิ ัติการ",
+    "historyAction": "การกระทำ",
     "submitForReview": "ส่ง-เพือ-ตรวจ (เรย-เพือ-ครู-ตรวจ)",
     "historyDownload": "โหลด-เรย(-URL)",
     "linkModule": "มชนี้",
@@ -585,7 +586,7 @@
     }
   },
   "leaderboard": {
-    "tableLabel": "ชื่ิง-XP",
+    "tableLabel": "อันดับ XP",
     "weekSub": "สัปดาห์นี้ใครได้ XP มากที่สุด — แข่งแบบเป็นมิตร!",
     "rank": "ลำดู",
     "level": "ขั้",
@@ -594,13 +595,13 @@
     "topNote": "ไม่-ใคร-บนคณุ — คณุ-ลำ-บน-สุด",
     "gap": "{n} XP เ-กั-บ-ลำ-{r} (ลำ-บน-คณุ)",
     "linkDashboard": "ห้น-หลัก",
-    "fallbackSuspense": "กม-ชื่ิง",
+    "fallbackSuspense": "กำลังโหลดอันดับ…",
     "states": {
       "empty": "มชัา (ไม่-ลำ-นเรียน)",
       "error": "ความผิด",
       "denied": "ไม่คก",
       "unauthorized": "ไม่อ้อนาญ",
-      "notConfigured": "ไม่่ตตั้"
+      "notConfigured": "ยังไม่ได้ตั้งค่า"
     }
   },
   "review": {
@@ -645,7 +646,7 @@
       "error": "ความผิด",
       "denied": "ไม่คก",
       "unauthorized": "ไม่อ้อนาญ",
-      "notConfigured": "ไม่่ตตั้"
+      "notConfigured": "ยังไม่ได้ตั้งค่า"
     },
     "queueTitle": "📥 คิวงานตรวจ",
     "queueSub": "เลือกงานเพื่อเปิด Rubric ให้คะแนน 7 ด้าน",
@@ -658,17 +659,17 @@
   },
   "language": {
     "th": "ไทย",
-    "en": "English"
+    "en": "อังกฤษ"
   },
   "shell": {
     "identity": "P PGA - ระบบส้างแบบุู PowerPoint",
-    "start": "กด เริ่่ม",
+    "start": "กด START เพื่อเริ่มเกมการเรียนรู้",
     "navLabel": "นาทาง-หลัก",
     "menuLabel": "เปิด-นาทาง",
     "menuCollapseLabel": "ปิด-นาทาง",
     "menuOpenLabel": "เปิด-นาทาง",
     "footerAttribution": "PowerPoint Presentation Creation — การเรียนรู้การนำเสนอ / สำหรับนักเรียนระดับประกาศนียบัตรวิชาชีพชั้นปีที่ 2 (ปวช.2)",
-    "footerAttributionEn": "PowerPoint Presentation Creation — Presentation-Production learning / for certificate-level vocational learners, Year 2 (Por Wor Sor 2)",
+    "footerAttributionEn": "การสร้างงานนำเสนอ PowerPoint — การเรียนรู้การผลิตงานนำเสนอ / สำหรับผู้เรียนระดับประกาศนียบัตรวิชาชีพ ชั้นปีที่ 2",
     "footerHealth": "สารภาพ",
     "logo": "PPGA",
     "userLearner": "นักเรียน",
@@ -679,7 +680,7 @@
     "trackLabel": "ลำดับการท้าทาย",
     "steps": {
       "lesson": "บทเรียน",
-      "selfcheck": "Self-Check",
+      "selfcheck": "ตรวจสอบตัวเอง",
       "mission": "ภารกิจ",
       "result": "ผลลัพธ์"
     },
@@ -689,7 +690,7 @@
       "locked": "ล็อก — ทำการท้าทายก่อนหน้าให้จบกอน",
       "challenge": "ท้าทาย — ลองเลยตอนนี้",
       "success": "สำเร็จ — รับรางวัลแล้ว",
-      "clear": "เคลียร์ — โมดูลน้ีจบแล้ว"
+      "clear": "เคลียร์ — โมดูลนี้จบแล้ว"
     },
     "current": "การท้าทายปัจจุบັນ",
     "rewardNote": "จากบัญชี XP ของคุณ:",
