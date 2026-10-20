@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import {
   createSupaSessionClientForRoute,
   loginFormSchema,
+  newSessionCookieJar,
   syntheticEmail,
 } from '../../../../lib/sup/auth'
 
@@ -34,7 +35,12 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  const sup = createSupaSessionClientForRoute(req)
+  // PPGA #49: the factory may TRADE a stale stored bundle before building the
+  // client — the jar captures that rotation (and a refusal's clear) so the
+  // error responses below can still persist it; the success path always rides
+  // the fresh sign-in's own cookies, set after the merge below.
+  const cookieJar = newSessionCookieJar()
+  const sup = await createSupaSessionClientForRoute(req, cookieJar.res)
   if (!sup) {
     return NextResponse.json({ ok: false, detail: 'not-configured' })
   }
@@ -45,10 +51,14 @@ export async function POST(req: NextRequest) {
   })
 
   if (error || !data) {
-    return NextResponse.json({
+    const res = NextResponse.json({
       ok: false,
       detail: error?.message ?? 'empty session',
     })
+    // A guard-rotated old session rides this response (the caller is still
+    // signed in with a FRESH token); a guard-deadened one is cleared here.
+    cookieJar.mergeInto(res)
+    return res
   }
 
   // Ticket #7 first-login force-change gate: the account's `must_change_
@@ -165,6 +175,10 @@ export async function POST(req: NextRequest) {
         : 'signed in; gate opened (content readable server-side)',
     redirect: gateRedirect,
   })
+  // The guard's capture first, the login's own envelope after (same name+path
+  // — the last write speaks): a re-login on a spent-but-tradable cookie both
+  // persists the fresh session AND leaves nothing stale on the jar.
+  cookieJar.mergeInto(res)
   // The refresh/access tokens ride httpOnly cookies set here, not in the body.
   // PPGA #18 (production verification, finding #4): the session clients every
   // server read builds (lib/sup/*, `storageKey: 'ppga_session'` + the request

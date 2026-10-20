@@ -2,7 +2,7 @@ import { ZodIssue } from 'zod'
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
-import { createSupaSessionClientForRoute } from '../../../lib/sup/auth'
+import { createSupaSessionClientForRoute, newSessionCookieJar } from '../../../lib/sup/auth'
 import { updateOwnLocale } from '../../../lib/sup/profile'
 import { localeSchema } from '../../../lib/i18n/localeSchema'
 
@@ -34,12 +34,17 @@ export async function POST(req: NextRequest) {
     })
   }
 
-  const sup = createSupaSessionClientForRoute(req)
+  // PPGA #49: the guard may trade a stale bundle before this write — ride the
+  // rotation back so the caller's next request carries the traded token.
+  const cookieJar = newSessionCookieJar()
+  const sup = await createSupaSessionClientForRoute(req, cookieJar.res)
   if (!sup) {
     return NextResponse.json({ ok: false, detail: 'not-configured' })
   }
 
   const result = await updateOwnLocale(sup as ReturnType<typeof createClient>, parsed.data.locale)
 
-  return NextResponse.json(result)
+  const res = NextResponse.json(result)
+  cookieJar.mergeInto(res)
+  return res
 }

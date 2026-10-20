@@ -49,11 +49,12 @@ export function LanguageSelectorSelect({ labels }: Props) {
     <select
       aria-label={labels.label}
       id="ppga-locale-selector"
+      className="ppg-lang-compact"
       value={locale}
       onChange={handleChange}
       role="listbox"
       tabIndex={0}
-      style={{ minWidth: 80, maxWidth: '33vw', minHeight: 0 }}
+      style={{ minWidth: 72, maxWidth: '33vw', minHeight: 0 }}
       data-current-locale={locale}
     >
       <option aria-current={locale === 'th' ? 'true' : undefined} value="th">

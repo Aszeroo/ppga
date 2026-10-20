@@ -1,8 +1,8 @@
 import 'server-only'
 
-import { cookies } from 'next/headers'
-
 import { createClient } from '@supabase/supabase-js'
+
+import { createSupaSessionClient } from './sessionClient'
 
 /**
  * Ticket #3 profile read: the learner's own profile (or a teacher/admin's view
@@ -32,34 +32,27 @@ export interface ProfileState {
 }
 
 export async function readOwnProfile(): Promise<ProfileState> {
-  const url = process.env.NEXT_PUBLIC_SUP_URL
-  const anonKey = process.env.NEXT_PUBLIC_SUP_ANON_KEY
-
-  if (!url || !anonKey)
+  // read-only cookie jar for server-render: the session JWT is carried in,
+  // cookies are never written from a page (the shared factory — PPGA #43
+  // extracted it so the hub read reuses ONE copy).
+  const sup = await createSupaSessionClient()
+  if (!sup)
     return { status: 'not-configured', detail: 'NEXT_PUBLIC_SUP_* missing' }
 
-  // read-only cookie jar for server-render: the session JWT is carried in,
-  // cookies are never written from a page. `next/headers` is async, so the
-  // jar is resolved before the (sync) storage callback is built.
-  const jar = await cookies()
-  const sup = createClient(url, anonKey, {
-    auth: {
-      storageKey: 'ppga_session',
-      storage: {
-        isServer: true as const,
-        getItem: (key: string) => jar.get(key)?.value ?? null,
-        setItem: () => undefined,
-        removeItem: () => undefined,
-      },
-    },
-  })
-
   const { data: session } = await sup.auth.getSession()
-  if (!session) return { status: 'unauthorized', detail: 'no session' }
+  const uid = session.session?.user.id
+  if (!uid) return { status: 'unauthorized', detail: 'no session' }
 
+  // OWN row, by the session's own user id: the `ppg_profiles_select` policy
+  // lets a teacher/admin see the WHOLE table (the queue/provisioning reads),
+  // so an unfiltered `limit(1)` would hand back SOMEONE ELSE's row (the
+  // first by physical order — the admin) — Ticket #41 stage 1's Shell role
+  // read proved this: a Teacher rendered the admin's nav. The id filter is
+  // the function's OWN name: `readOwnProfile`.
   const { data, error } = await sup
     .from('ppg_profiles')
     .select('id, student_id, full_name, role, locale')
+    .eq('id', uid)
     .limit(1)
 
   if (error) return { status: 'error', detail: error.message }

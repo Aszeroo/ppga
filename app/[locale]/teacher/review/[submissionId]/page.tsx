@@ -4,17 +4,21 @@ import { getTranslations } from 'next-intl/server'
 import { Link } from '../../../../../lib/i18n/routing'
 
 import { readRubricCriteriaViaRpc } from '../../../../../lib/sup/reviews'
-import { Card } from '../../../../../components/Card'
+import { RubricRunningTotal } from '../../../../../components/RubricRunningTotal'
 
 /**
- * Ticket #14 teacher review form (one submission round): the 7 criterion
- * scores 1–5 each with the bilingual written descriptors (the rubric
- * taxonomy rides `ppg_read_rubric_criteria`; ADR-0003), the bilingual
- * written feedback, and the decision approved | needs_improvement. The form
- * POSTs to /api/review/submit — the SERVER validates (a 0/6/8 smuggle NEVER
- * rides — `rubric_score_denied`; the total 7–35 the SERVER computes, never a
- * client count; one row PER round — the PK denies a second INSERT). The
- * teacher/admin-only gate rides the RPC (`denied_role`), never a UI hide.
+ * Ticket #14 teacher review form (one submission round), #55 V3 utilitarian
+ * dressing (presentation only — the 7 criteria 1–5 radios, the bilingual
+ * feedback fields, the `decision` submit buttons and the form POST are
+ * BYTE-IDENTICAL): the rubric taxonomy (ADR-0003, `ppg_read_rubric_criteria`)
+ * wearing the gallery's `#t-rubric` frame — the 📋 heading, one row per
+ * criterion (label + the bilingual descriptors + the 1–5 score tiles DRESS
+ * the shipped radios, they never replace them), the cream/gold RUNNING TOTAL
+ * out of 35 (display-only — the SERVER still computes the authoritative
+ * 7–35 sum; a 0/6/8 smuggle NEVER rides, `rubric_score_denied`; one row PER
+ * round — the PK denies a second INSERT), the feedback card, and the approve
+ * / request-revision actions (✓/🔁 copy + icon, state never colour alone).
+ * The teacher/admin-only gate rides the RPC (`denied_role`), never a UI hide.
  */
 export const dynamic = 'force-dynamic'
 
@@ -53,13 +57,18 @@ async function ReviewForm({
   const criteria = await readRubricCriteriaViaRpc()
 
   return (
-    <section aria-label={t('reviewHeading')}>
+    <section aria-label={t('reviewHeading')} className="ppg-page-wrap">
       <p>
-        <Link href="/teacher/review">{t('backToQueue')}</Link>
+        <Link className="ppg-link" href="/teacher/review">
+          {t('backToQueue')}
+        </Link>
       </p>
-      <h1 className="ppg-heading">
-        {t('reviewHeading')} — {moduleKey} #{submissionSeq}
-      </h1>
+      <div className="ppg-work-head">
+        <h1 className="ppg-heading ppg-heading-text ppg-work-head-title">
+          {t('rubricTitle')} — {moduleKey} #{submissionSeq}
+        </h1>
+        <p className="ppg-work-head-sub">{t('rubricHeading')}</p>
+      </div>
 
       {criteria.status === 'ok' ? (
         <form
@@ -72,69 +81,74 @@ async function ReviewForm({
           <input name="submissionSeq" defaultValue={submissionSeq} hidden={true} />
           {learnerId ? <input name="learnerId" defaultValue={learnerId} hidden={true} /> : null}
 
-          <fieldset>
-            <legend>{t('rubricHeading')}</legend>
-            {(criteria.criteria ?? []).map((criterion: RubricCriteria) => {
-              const descriptors = (criteria.descriptors ?? []).filter(
-                (d: RubricDescriptor) => d.criterion_key === criterion.criterion_key,
-              )
-              return (
-                <div
-                  key={criterion.criterion_key}
-                  style={{ borderBottom: '1px solid var(--ppg-blue-300)', paddingBlock: 'var(--ppg-space-2)' }}
-                >
-                  <div style={{ fontWeight: 700 }}>{criterion.label_en}</div>
-                  <div style={{ fontSize: '0.9rem' }}>
-                    {descriptors
-                      .slice()
-                      .sort((a: RubricDescriptor, b: RubricDescriptor) => a.score_band - b.score_band)
-                      .map((d: RubricDescriptor) => (
-                        <div key={`${d.criterion_key}-${d.score_band}`}>
-                          <strong>{d.score_band}</strong> — {d.descriptor_en} / {d.descriptor_th}
-                        </div>
+          <div className="ppg-work-card">
+            <fieldset className="ppg-work-form">
+              <legend className="ppg-list-title">{t('rubricHeading')}</legend>
+              {(criteria.criteria ?? []).map((criterion: RubricCriteria) => {
+                const descriptors = (criteria.descriptors ?? []).filter(
+                  (d: RubricDescriptor) => d.criterion_key === criterion.criterion_key,
+                )
+                return (
+                  <div
+                    key={criterion.criterion_key}
+                    className="ppg-rubric-crit"
+                  >
+                    <div className="ppg-rubric-crit-label">
+                      <span>{criterion.ordinal}. {criterion.label_en}</span>
+                      <span>1–5</span>
+                    </div>
+                    <ul className="ppg-rubric-descriptors">
+                      {descriptors
+                        .slice()
+                        .sort((a: RubricDescriptor, b: RubricDescriptor) => a.score_band - b.score_band)
+                        .map((d: RubricDescriptor) => (
+                          <li key={`${d.criterion_key}-${d.score_band}`}>
+                            <strong>{d.score_band}</strong> — {d.descriptor_en} / {d.descriptor_th}
+                          </li>
+                        ))}
+                    </ul>
+                    <div role="radiogroup" aria-label={criterion.label_en} className="ppg-rubric-scores">
+                      {[1, 2, 3, 4, 5].map((score) => (
+                        <label key={score} className="ppg-rubric-score">
+                          <input type="radio" name={`score_${criterion.criterion_key}`} value={score} required />
+                          <span>{score}</span>
+                        </label>
                       ))}
+                    </div>
                   </div>
-                  <div role="radiogroup" aria-label={criterion.label_en} style={{ display: 'flex', gap: '0.5rem' }}>
-                    {[1, 2, 3, 4, 5].map((score) => (
-                      <label key={score} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <input type="radio" name={`score_${criterion.criterion_key}`} value={score} required />
-                        <span>{score}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
-          </fieldset>
+                )
+              })}
+              {/* display-only running total — the server still recomputes 7–35 */}
+              <RubricRunningTotal />
+            </fieldset>
+          </div>
 
-          <fieldset>
-            <legend>{t('feedbackHeading')}</legend>
-            <label htmlFor="review_feedback_th">{t('feedbackTh')}</label>
-            <textarea id="review_feedback_th" name="feedbackTh" rows={4} required />
-            <label htmlFor="review_feedback_en">{t('feedbackEn')}</label>
-            <textarea id="review_feedback_en" name="feedbackEn" rows={4} required />
-          </fieldset>
+          <div className="ppg-work-card">
+            <fieldset className="ppg-work-form">
+              <legend className="ppg-list-title">{t('feedbackHeading')}</legend>
+              <label className="ppg-field-label" htmlFor="review_feedback_th">{t('feedbackTh')}</label>
+              <textarea className="ppg-input" id="review_feedback_th" name="feedbackTh" rows={4} required placeholder={t('feedbackPlaceholder')} />
+              <label className="ppg-field-label" htmlFor="review_feedback_en">{t('feedbackEn')}</label>
+              <textarea className="ppg-input" id="review_feedback_en" name="feedbackEn" rows={4} required placeholder={t('feedbackPlaceholder')} />
+            </fieldset>
+          </div>
 
           {/* the decision: the two buttons ride `decision` — approve |
               needs_improvement (the RPC's own gate is the authority) */}
-          <button type="submit" name="decision" value="approved">
-            {t('approve')}
-          </button>
-          <button type="submit" name="decision" value="needs_improvement">
-            {t('needsImprovement')}
-          </button>
+          <div className="ppg-work-chips">
+            <button type="submit" name="decision" value="approved" className="ppg-cta">
+              {t('approvePass')}
+            </button>
+            <button type="submit" name="decision" value="needs_improvement" className="ppg-btn-secondary">
+              {t('requestRevision')}
+            </button>
+          </div>
         </form>
       ) : criteria.status === 'unauthorized' ? (
-        <p>{t('queueUnauthorized')} {criteria.detail}</p>
+        <p className="ppg-state-line">{t('queueUnauthorized')} {criteria.detail}</p>
       ) : (
-        <p>{t('queueError')} {criteria.detail}</p>
+        <p className="ppg-state-line">{t('queueError')} {criteria.detail}</p>
       )}
-
-      <Card
-        heading={t('rubricHeading')}
-        body={t('totalScore') + ': 7–35'}
-        status="available"
-      />
     </section>
   )
 }

@@ -2,6 +2,7 @@ import createMiddleware from 'next-intl/middleware'
 
 import { NextRequest, NextResponse } from 'next/server'
 
+import { refreshStaleSession } from './lib/sup/auth'
 import { locales, type Locale } from './lib/i18n/locales'
 import { routing } from './lib/i18n/routing'
 
@@ -12,9 +13,12 @@ import { routing } from './lib/i18n/routing'
  * Order: the guard speaks first so the role-proof (the session cookie) decides
  * before any locale redirect; a protected pathname without the proof goes back
  * to `/<locale>/login` (the unauthorized state is the login page, never a blank
- * screen) and keeps the locale the pathname already carries. The i18n
- * middleware then does the `[locale]` rewrite, the default `/` → `/th`, the
- * `/en` explicit switch, and writes the `ppga-locale` cookie (routing.ts).
+ * screen) and keeps the locale the pathname already carries. The session
+ * freshness step (PPGA #49) then trades a stale-but-tradable bundle at the
+ * Auth service — the ONE place a rotation can be persisted before a render —
+ * and the i18n middleware then does the `[locale]` rewrite, the default
+ * `/` → `/th`, the `/en` explicit switch, and writes the `ppga-locale` cookie
+ * (routing.ts).
  *
  * `middleware.ts` is live by definition; Next never pre-renders it.
  */
@@ -26,7 +30,7 @@ const unlockedCookie = 'ppga_pretest_unlocked'
 const submittedCookie = 'ppga_pretest_submitted'
 
 // fallow-ignore-next-line complexity
-export default function middleware(req: NextRequest) {
+export default async function middleware(req: NextRequest) {
   const pathname = new URL(req.url).pathname
   const locale = resolveLocale(pathname, req.cookies.get('ppga-locale')?.value, req.headers.get('accept-language'))
   const hasSession = Boolean(req.cookies.get(sessionCookie)?.value)
@@ -43,6 +47,22 @@ export default function middleware(req: NextRequest) {
   // chain (the EN journey's no-cookie empty jar; see resolveLocale).
   if (!hasSession && pathname === '/' && !req.cookies.get('ppga-locale')?.value) {
     return NextResponse.redirect(new URL('/th', req.url))
+  }
+
+  // PPGA #49 (owner preview review, the anonymous-landing fix): the anonymous
+  // caller's landing is the LOGIN TITLE SCREEN — never the bare no-session
+  // dashboard. Every read the dashboard speaks is the SESSION's own (the RLS
+  // denies each one anonymously), so the "home" an anonymous caller met was
+  // an empty shell of a signed-in screen. An anonymous caller who reaches ANY
+  // root form — the bare `/` (the cookie-carrying caller; the no-cookie
+  // caller the rule above just landed on `/th`), the `/<locale>` root, or its
+  // trailing-slash twin — goes to `/<locale>/login` and keeps the locale the
+  // pathname already carries (the Thai-first default rule above composes
+  // first: no cookie resolves `th`, so the fresh browser speaks `/th/login`).
+  // A SIGNED-IN caller never rides this rule — their root IS the dashboard;
+  // the protectedRoutes guard + the #7/#8 gates below stay untouched.
+  if (!hasSession && (pathname === '/' || pathname === `/${locale}` || pathname === `/${locale}/`)) {
+    return NextResponse.redirect(new URL(`/${locale}/login`, req.url))
   }
 
   if (!hasSession && protectedRoutes.some((route) => pathname.startsWith(`/${locale}${route}`) || pathname.startsWith(route))) {
@@ -112,7 +132,60 @@ export default function middleware(req: NextRequest) {
     }
   }
 
+  // PPGA #49 (session persistence, the owner preview's rotting session): a
+  // STALE bundle (access JWT past, refresh token in hand) is traded HERE —
+  // the one place that can persist the rotation BEFORE a render (server
+  // components read a frozen jar; a route handler can only save its own
+  // POST). The forwarded request carries the rotated bundle so THIS render
+  // already speaks a live token, and the response sets it as the httpOnly
+  // cookie so the NEXT request arrives fresh. A REFUSED token (the session is
+  // genuinely dead — revoked, spent, expired with the cookie) clears both
+  // cookies and lands the caller on the login title screen: the silent
+  // `unauthorized` rot becomes an observable sign-in, exactly what the
+  // freshness guard's own policy says. A refresh the service could not be
+  // REACHED for (network wobble, 5xx) leaves everything untouched — a flaky
+  // transport must never kill a live session, and the next request tries
+  // again. The gate redirects above deliberately run FIRST: they never render,
+  // so they can ride the still-stale bundle, and the request they land the
+  // caller on hits this rule.
+  if (hasSession) {
+    const stale = await refreshStaleSession(req)
+    if (stale === 'invalidated') {
+      const response = NextResponse.redirect(new URL(`/${locale}/login`, req.url))
+      response.cookies.set('ppga_session', '', { path: '/', maxAge: 0 })
+      response.cookies.set('ppga_refresh', '', { path: '/', maxAge: 0 })
+      return response
+    }
+    if (stale && stale !== 'transient') {
+      const headers = new Headers(req.headers)
+      headers.set('cookie', swapSessionCookies(headers.get('cookie'), stale.bundle, stale.refreshToken))
+      const routed = createMiddleware(routing)(new NextRequest(req.url, { headers }))
+      let response: NextResponse
+      if (routed.status >= 300 && routed.status < 400) {
+        // The routing's own locale redirect: persist on top of it (the
+        // follow-up request reads the rewritten-bundle cookie anyway).
+        response = routed
+      } else {
+        response = NextResponse.next({ request: { headers } })
+        for (const cookie of routed.cookies.getAll()) response.cookies.set(cookie)
+      }
+      response.cookies.set('ppga_session', stale.bundle, sessionCookieAttrs)
+      response.cookies.set('ppga_refresh', stale.refreshToken, sessionCookieAttrs)
+      response.headers.set('x-ppga-path', pathname)
+      return response
+    }
+  }
+
   const response = createMiddleware(routing)(req)
+  // PPGA #41 stage 1: the pathname rides the request to the server components
+  // (a Server Component cannot read the current URL — `next/navigation`'s
+  // `usePathname` is a Client Component hook and `next/headers` exposes no
+  // pathname: the Shell's standalone login/logout decision and the contextual
+  // Course/Module title ride this header instead). The rewrite's internal
+  // `X-` header never reaches the browser (the guard's own pathname — UI
+  // plumbing only: the RLS + the RPC gates stay the row-level authority,
+  // unchanged).
+  response.headers.set('x-ppga-path', pathname)
   return response
 }
 
@@ -182,6 +255,48 @@ function decodeJwtPayload(payload: string): { role?: string } | null {
   } catch {
     return null
   }
+}
+
+/** The session cookie attributes, verbatim the login route's (httpOnly,
+ * Secure, SameSite=lax on `/`, 7-day window) — a rotation RE-ARMS the window
+ * exactly like a fresh sign-in does (the ticket's 7-day cookie semantics; the
+ * access JWT inside stays the service's ~1h token the guard keeps trading). */
+const sessionCookieAttrs = {
+  path: '/',
+  httpOnly: true,
+  secure: true,
+  sameSite: 'lax',
+  maxAge: 60 * 60 * 24 * 7,
+} as const
+
+/**
+ * PPGA #49 (session persistence): the incoming `cookie` request header with
+ * the two session values swapped for the rotated pair — everything else the
+ * caller carries rides UNCHANGED (a rotation never smuggles, widens, or
+ * drops another cookie). Values ride `encodeURIComponent`, exactly what the
+ * browser echoes back for the cookies the login route sets (the cookie jar's
+ * default encode), so the rewritten request parses identically upstream.
+ */
+function swapSessionCookies(incoming: string | null, bundle: string, refresh: string): string {
+  const replacement = new Map([
+    ['ppga_session', encodeURIComponent(bundle)],
+    ['ppga_refresh', encodeURIComponent(refresh)],
+  ])
+  const parts = (incoming ?? '')
+    .split('; ')
+    .filter(Boolean)
+    .map((pair) => {
+      const eq = pair.indexOf('=')
+      const name = eq < 0 ? pair : pair.slice(0, eq)
+      const swapped = replacement.get(name)
+      if (swapped === undefined) return pair
+      replacement.delete(name)
+      return `${name}=${swapped}`
+    })
+  for (const [name, value] of replacement) {
+    parts.push(`${name}=${value}`)
+  }
+  return parts.join('; ')
 }
 
 export const config = {

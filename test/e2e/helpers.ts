@@ -42,8 +42,11 @@ export function t(path: string[], locale: string): string {
 
 /** The raw-key-leak regex: the key namespace + a dot + a letter/dot tail.
  * The legit copy has dots only inside numerals/parens (`(8.1-8.4)`,
- * `Total 28 / 35`) — never a letter-prefixed `word.word`. */
-export const RAW_KEY_LEAK = /(?:login|logout|home|course|pretest|posttest|survey|lesson|selfcheck|mission|practical|review|header|leaderboard|badges|gallery|profile|change|admin|content|health)\.[a-z.]+/i
+ * `Total 28 / 35`) — never a letter-prefixed `word.word`. Ticket #46 adds the
+ * Shell epic's namespaces (`shell`/`nav`/`challenge`) — the Shell frame + the
+ * stage/challenge framing ride EVERY signed-in page, so their keys leak there
+ * first. */
+export const RAW_KEY_LEAK = /(?:login|logout|home|course|pretest|posttest|survey|lesson|selfcheck|mission|practical|review|header|leaderboard|badges|gallery|profile|change|admin|content|health|shell|nav|challenge)\.[a-z.]+/i
 
 export const accounts = {
   admin: 'admin',
@@ -121,9 +124,18 @@ export async function submitForm(
   return body
 }
 
-/** The award the real record shows: `badge <badge_key>` text per award. */
+/**
+ * The award the real record shows. PPGA #51: the V3 HUD is chip-only (XP +
+ * LV — the header never shows badges), so the earned badge's observable is
+ * the dashboard hub's badge row: the `header.badge` copy line + the award
+ * row's own `badge_key` marker (`[data-ppg-badge]`, the `data-ppg-xp-event`
+ * PK-marker idiom). The count-1 check keeps the once-per-learner authority
+ * gate (the award PK renders exactly once).
+ */
 export async function expectBadge(page: Page, locale: string, badgeKey: string) {
-  await expect(page.locator('body')).toContainText(`${t(['header', 'badge'], locale)} ${badgeKey}`)
+  const hub = page.locator('[data-ppg-hub="status"]')
+  await expect(hub).toContainText(t(['header', 'badge'], locale))
+  await expect(hub.locator(`[data-ppg-badge="${badgeKey}"]`)).toHaveCount(1)
 }
 
 /** The XP + Level the gamified spine shows on the signed-in learner. */
@@ -131,7 +143,75 @@ export async function expectXpLine(page: Page, xp: number, xpToNext: number) {
   await expect(page.locator('body')).toContainText(`${xp} / ${xpToNext}`)
 }
 
+/**
+ * PPGA #41 stage 4: the XP reward chip the REAL ledger row makes visible —
+ * pinned by the ledger's own PK marker (`data-ppg-xp-event="event_type:
+ * event_ref"`), showing the row's own `+N XP`. The chip renders ONLY where
+ * a real grant landed, so the count-1 assertion is also the exactly-once
+ * gate: a granted XP never renders twice, and an absent grant renders
+ * nothing (the journey pairs it with a zero-count check pre-pass).
+ */
+export async function expectXpChip(page: Page, eventAttr: string, amount: number) {
+  const chip = page.locator(`[data-ppg-xp-event="${eventAttr}"]`)
+  await expect(chip).toHaveCount(1)
+  await expect(chip).toContainText(`+${amount} XP`)
+}
+
 /** The lock/unlock copy the course map shows per module card. */
 export function lockStateCopy(locale: string, open: boolean): string {
   return t(['course', 'states', open ? 'open' : 'locked'], locale)
+}
+
+/** The CLEARED copy the #44 stage map shows per cleared Module stage. */
+export function clearedStateCopy(locale: string): string {
+  return t(['course', 'states', 'cleared'], locale)
+}
+
+/**
+ * PPGA #41 stage 2: the role→nav-items mapping, verbatim (the issue's lists —
+ * the journey's observable proof that every destination a role can reach
+ * appears in the Shell, and nothing another-role's destination does). The
+ * copy rides the `nav.*` keys: the learner sees Dashboard, Course, Badges,
+ * Leaderboard, Profile; the teacher sees Dashboard, Review Queue, Profile;
+ * the admin sees Dashboard, Course / Publication, User list, Audit stream,
+ * Provision roster, Export, Health, Profile.
+ */
+const NAV_BY_ROLE = {
+  learner: ['home', 'course', 'badges', 'leaderboard', 'profile'] as string[],
+  teacher: ['home', 'reviewQueue', 'profile'] as string[],
+  admin: ['home', 'coursePublication', 'adminUsers', 'adminAudit', 'adminProvisioning', 'adminExport', 'health', 'profile'] as string[],
+}
+
+/** The Shell's nav shows EXACTLY the session role's destinations — asserted
+ * on the NAV LANDMARK itself (never body text: a page's own copy may repeat a
+ * label, the landmark cannot lie about which links the Shell renders). The
+ * link count is the exactness gate: the learner's five, the teacher's three,
+ * the admin's eight — nothing another-role's destination renders. */
+export async function expectShellNav(page: Page, locale: string, role: 'learner' | 'teacher' | 'admin') {
+  const nav = page.getByRole('navigation', { name: t(['shell', 'navLabel'], locale) })
+  await expect(nav).toBeVisible()
+  for (const key of NAV_BY_ROLE[role]) {
+    await expect(nav.getByRole('link', { name: t(['nav', key], locale), exact: true })).toBeVisible()
+  }
+  await expect(nav.getByRole('link')).toHaveCount(NAV_BY_ROLE[role].length)
+}
+
+/**
+ * PPGA #49 (the V3 design-fidelity pass): the login/logout STANDALONE title
+ * screens outside the Shell frame — the observable proof rides the LANDMARKS
+ * and the card's OWN copy: the pixel `PPGA` wordmark (the design's title
+ * screen heading, `shell.logo`) is present while the Shell's landmarks are
+ * ABSENT — no `navigation` landmark named `shell.navLabel`, no `contentinfo`
+ * footer, and no mobile menu toggle (the `#ppg-menu-toggle` `☰` button lives
+ * inside the framed header's `Nav`, so it can NEVER float over a title
+ * screen; the owner's preview review flagged exactly that). The design's
+ * `.lang-sw` switch IS on the card (the `selector.label` nav landmark, never
+ * the frame's) — the language choice works from the title screens too.
+ */
+export async function expectStandaloneScreen(page: Page, locale: string) {
+  await expect(page.getByRole('heading', { level: 1, name: t(['shell', 'logo'], locale) })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: t(['shell', 'navLabel'], locale) })).toHaveCount(0)
+  await expect(page.getByRole('contentinfo')).toHaveCount(0)
+  await expect(page.locator('#ppg-menu-toggle')).toHaveCount(0)
+  await expect(page.locator('#ppga-locale-selector')).toBeVisible()
 }

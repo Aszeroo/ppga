@@ -54,3 +54,8 @@ export const { Link, usePathname, useRouter } = createNavigation(routing)
 /** Consumers of this module need the names too; re-export them. */
 export { locales }
 export type { Locale }
+
+/** The exact `Link` href type (static pathname literals + the parameterized
+ * descriptors) — components that take a route as a prop pin it here (#44:
+ * `StageNode` receives the module route from the server page). */
+export type AppHref = Parameters<typeof Link>[0]['href']

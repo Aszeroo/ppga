@@ -1,6 +1,12 @@
 {
   "nav": {
     "home": "Home",
+    "course": "Course",
+    "badges": "Badges",
+    "leaderboard": "Leaderboard",
+    "reviewQueue": "Review Queue",
+    "coursePublication": "Course / Publication",
+    "adminExport": "Export",
     "login": "Login",
     "logout": "Logout",
     "profile": "Profile",
@@ -9,6 +15,21 @@
     "adminUsers": "User list",
     "adminAudit": "Audit stream",
     "adminProvisioning": "Provision roster"
+  },
+  "shell": {
+    "identity": "PPGA — Gamified PowerPoint Learning Platform",
+    "start": "Press START to begin the learning game",
+    "navLabel": "Primary navigation",
+    "menuLabel": "Open the navigation menu",
+    "menuCollapseLabel": "Close the navigation menu",
+    "menuOpenLabel": "Open the navigation menu",
+    "footerAttribution": "PowerPoint Presentation Creation — การเรียนรู้การนำเสนอ / สำหรับนักเรียนระดับประกาศนียบัตรวิชาชีพชั้นปีที่ 2 (ปวช.2)",
+    "footerAttributionEn": "PowerPoint Presentation Creation — Presentation-Production learning / for certificate-level vocational learners, Year 2 (Por Wor Sor 2)",
+    "footerHealth": "Health",
+    "logo": "PPGA",
+    "userLearner": "Learner",
+    "userTeacher": "Teacher",
+    "userAdmin": "Admin"
   },
   "admin": {
     "fallbackSuspense": "Preparing the console…",
@@ -28,11 +49,20 @@
       "consentFlag": "Consent (paper consent offline)",
       "unlockOverride": "Unlock past the gate",
       "unlockSubmit": "Unlock",
-      "linkAuditOverride": "Audit stream (override)"
+      "linkAuditOverride": "Audit stream (override)",
+      "title": "User management",
+      "sub": "Browse accounts and manage roles, consent and unlocks",
+      "colUser": "User",
+      "colRole": "Role"
     },
     "audit": {
       "stream": "Audit stream",
-      "linkUsers": "User list"
+      "linkUsers": "User list",
+      "title": "Activity log (Audit)",
+      "colTime": "Time",
+      "colAction": "Action",
+      "colTarget": "Target",
+      "colDetails": "Details"
     },
     "provisioning": {
       "intro": "Paste the roster (one learner per line: student ID + name) — accounts are bulk-created with student-ID logins and one-time temporary passwords to hand out on paper; the single-add form is the fallback.",
@@ -58,7 +88,8 @@
         "denied": "denied — provisioning is admin/teacher-only",
         "unauthorized": "unauthorized — sign in first",
         "notConfigured": "not-configured"
-      }
+      },
+      "title": "📥 Import learner roster"
     },
     "publication": {
       "list": "Publication states (modules)",
@@ -68,10 +99,13 @@
       "draft": "draft (invisible to Learners)",
       "published": "published (visible per the lock rule)",
       "archived": "archived (invisible to Learners)",
-      "linkAudit": "Audit log (publication events)"
+      "linkAudit": "Audit log (publication events)",
+      "title": "Course management",
+      "sub": "Draft, publish and lock states of every module"
     },
     "export": {
       "heading": "Research export",
+      "downloadTitle": "📦 Data export",
       "intro": "CSV, XLSX and SQL extracts of the research tables — one row per participant (Pre-Test, Post-Test, rubric totals, satisfaction) with the real student identity. Teacher/Admin only — a learner is denied at the database, not just the page.",
       "auditNote": "Every export run writes one audit event (who, what, when): the download itself is the audited call, never the page view.",
       "counts": "The cohort right now",
@@ -108,12 +142,17 @@
   },
   "login": {
     "intro": "Login with your provisioned student-ID and password.",
-    "identifier": "Student ID",
+    "identifier": "Username",
+    "identifierPlaceholder": "Enter your username",
     "password": "Password",
-    "submit": "Sign in",
+    "passwordPlaceholder": "Enter your password",
+    "submit": "🚀 Sign in",
     "busy": "Signing in…",
     "afterSuccess": "after a successful login you land on /profile.",
-    "fallbackSuspense": "Preparing the login form…"
+    "fallbackSuspense": "Preparing the login form…",
+    "welcome": "Welcome!",
+    "blurbLine1": "🎮 Start the adventure",
+    "blurbLine2": "Learn PowerPoint with Gamification"
   },
   "changePassword": {
     "intro": "Change the password you signed in with.",
@@ -134,7 +173,10 @@
       "notConfigured": "Service not configured:"
     },
     "links": "Links",
-    "fallbackSuspense": "Reading your profile…"
+    "fallbackSuspense": "Reading your profile…",
+    "heroTitle": "Learner profile",
+    "enrolled": "Joined PPGA",
+    "editLabel": "Edit profile"
   },
   "logout": {
     "intro": "Sign out of PPGA — your session cookies are cleared and the refresh token is revoked at the service.",
@@ -145,7 +187,12 @@
   "health": {
     "connectivity": "Database connectivity:",
     "detail": "Detail:",
-    "fallbackSuspense": "Checking Supabase Postgres…"
+    "fallbackSuspense": "Checking Supabase Postgres…",
+    "systemTitle": "System status",
+    "systemSub": "Service health and database connectivity",
+    "statusOk": "System operating normally ✓",
+    "statusDown": "System check failed ✗",
+    "statusNotConfigured": "Not configured ⚠"
   },
   "home": {
     "fallbackSuspense": "Preparing the dashboard…",
@@ -174,8 +221,18 @@
       "unauthorized": "unauthorized",
       "notConfigured": "not-configured",
       "ok": "ok",
-      "fallbackSuspense": "Loading…"
-    }
+      "fallbackSuspense": "Loading…",
+      "inProgress": "in progress",
+      "submitted": "submitted — awaiting review",
+      "needsImprovement": "needs improvement — resubmit",
+      "approved": "approved"
+    },
+    "linkReviewStatus": "Check the Final Project review status (with the Teacher)",
+    "statusLabel": "Player status",
+    "courseProgress": "Course progress",
+    "missionCurrent": "Current mission",
+    "submissionLabel": "Submission",
+    "feedbackLabel": "Teacher feedback"
   },
   "pretest": {
     "gateLabel": "Pre-Test gate",
@@ -202,7 +259,17 @@
       "notConfigured": "not-configured",
       "ok": "ok",
       "fallbackSuspense": "Loading…"
-    }
+    },
+    "researchTag": "Research instrument",
+    "noXpTag": "This activity grants no XP",
+    "autosaveTag": "Autosaved",
+    "instrumentHeading": "Pre-Test",
+    "noXpSub": "Answer with your real understanding — no effect on XP or game scores",
+    "questionTag": "Question",
+    "itemProgress": "Question {n}/{total}",
+    "receiptHeading": "Instrument submitted",
+    "immutableNote": "Your answers are stored permanently and encrypted for the research — they cannot be edited after the submit. Thank you for helping improve the course",
+    "immutableTag": "Status: submitted (immutable)"
   },
   "posttest": {
     "gateLabel": "Post-Test unlock",
@@ -229,7 +296,17 @@
       "notConfigured": "not-configured",
       "ok": "ok",
       "fallbackSuspense": "Loading…"
-    }
+    },
+    "researchTag": "Research instrument",
+    "noXpTag": "This activity grants no XP",
+    "autosaveTag": "Autosaved",
+    "instrumentHeading": "Post-Test",
+    "unlockedSub": "After the Module 02 study — answer with what you learned",
+    "questionTag": "Question",
+    "itemProgress": "Question {n}/{total}",
+    "receiptHeading": "Instrument submitted",
+    "immutableNote": "Your answers are stored permanently and encrypted for the research — they cannot be edited after the submit. Thank you for helping improve the course",
+    "immutableTag": "Status: submitted (immutable)"
   },
   "survey": {
     "gateLabel": "Survey unlock",
@@ -255,7 +332,17 @@
       "notConfigured": "not-configured",
       "ok": "ok",
       "fallbackSuspense": "Loading…"
-    }
+    },
+    "researchTag": "Research instrument",
+    "noXpTag": "This activity grants no XP",
+    "autosaveTag": "Autosaved",
+    "instrumentHeading": "Satisfaction Survey",
+    "satisfactionSub": "Rate your satisfaction 1–5 (highest → lowest)",
+    "questionTag": "Question",
+    "itemProgress": "Question {n}/{total}",
+    "receiptHeading": "Instrument submitted",
+    "immutableNote": "Your answers are stored permanently and encrypted for the research — they cannot be edited after the submit. Thank you for helping improve the course",
+    "immutableTag": "Status: submitted (immutable)"
   },
   "content": {
     "gateLabel": "Content gate",
@@ -291,8 +378,12 @@
       "denied": "denied",
       "unauthorized": "unauthorized",
       "notConfigured": "not-configured",
-      "ok": "ok"
-    }
+      "ok": "ok",
+      "cleared": "cleared — Mission complete"
+    },
+    "currentStage": "next stage",
+    "continueStage": "Continue",
+    "progressCleared": "Stages cleared"
   },
   "lesson": {
     "list": "Lessons",
@@ -384,6 +475,16 @@
       "error": "Error",
       "locked": "Locked",
       "neutral": "Neutral"
+    },
+    "stageMap": {
+      "heading": "Stage map",
+      "stage1": "Stage 1",
+      "stage2": "Stage 2",
+      "stage3": "Stage 3"
+    },
+    "challengeDemo": {
+      "heading": "Challenge framing (Lesson to Result)",
+      "panel": "Mission panel demo"
     }
   },
   "header": {
@@ -396,7 +497,9 @@
       "error": "error",
       "unauthorized": "unauthorized — sign in first",
       "notConfigured": "not-configured"
-    }
+    },
+    "levelChip": "LV",
+    "xpUnit": "XP"
   },
   "selfcheck": {
     "section": "Self-Check",
@@ -476,6 +579,10 @@
     "title": "Badge gallery",
     "intro": "Criteria-based awards from real events — earned and locked states with the criteria shown in your language.",
     "criteria": "Criteria",
+    "gallerySub": "Earned and locked badges side by side — the criteria shown in both states",
+    "tagAll": "All badges",
+    "tagEarned": "Earned",
+    "tagLocked": "Locked",
     "earned": "Earned — a real achievement's record",
     "locked": "Locked — no award yet (the criteria stay visible)",
     "earnedBadge": "Earned badge",
@@ -493,6 +600,7 @@
   },
   "leaderboard": {
     "tableLabel": "XP leaderboard",
+    "weekSub": "This week's top XP — friendly competition!",
     "rank": "Rank",
     "level": "Level",
     "xp": "XP",
@@ -552,10 +660,42 @@
       "denied": "denied",
       "unauthorized": "unauthorized",
       "notConfigured": "not-configured"
-    }
+    },
+    "queueTitle": "📥 Review queue",
+    "queueSub": "Pick a submission to open the 7-criterion rubric.",
+    "chipAll": "All",
+    "pendingTag": "Pending review",
+    "rubricTitle": "📋 Rubric review",
+    "feedbackPlaceholder": "Write encouraging feedback — what worked well, and what to improve next…",
+    "approvePass": "✓ Approve & pass",
+    "requestRevision": "🔁 Send back for revision"
   },
   "language": {
     "th": "Thai",
     "en": "English"
+  },
+  "challenge": {
+    "trackLabel": "Challenge sequence",
+    "steps": {
+      "lesson": "Lesson",
+      "selfcheck": "Self-Check",
+      "mission": "Mission",
+      "result": "Result"
+    },
+    "states": {
+      "cleared": "cleared — done",
+      "open": "open — ready for you",
+      "locked": "locked — finish the challenge before it first",
+      "challenge": "challenge — attempt it now",
+      "success": "success — the reward has landed",
+      "clear": "clear — the Module is complete"
+    },
+    "current": "current challenge",
+    "rewardNote": "From your XP ledger:",
+    "unlockNext": "Cleared — the next Module is open:"
+  },
+  "reward": {
+    "title": "Rewards you received",
+    "dismiss": "Close"
   }
 }

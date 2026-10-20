@@ -13,9 +13,9 @@ import { LockedState } from './State'
  *
  * Tokens only: every colour / border / shadow / font resolves a `var(--ppg-…)
  * `from `app/globals.css` (no ad-hoc colors). The heading-role family is the
- * single-token swap point `--font-ta16bit` with the Mitr fallback per glyph —
- * a Thai button label falls to Mitr automatically (`app/fonts/LICENSE-TA16BIT
- * .md`). The focus ring is a *visible* one (outline + thickened border) and
+ * single-token swap point `--font-ppg-display` with the Noto Sans Thai fallback per glyph —
+ * a Thai button label falls to Noto Sans Thai automatically — both families
+ * are loaded by `next/font/google` in `app/layout.tsx`). The focus ring is a *visible* one (outline + thickened border) and
  * the `:focus-visible` rule in `app/globals.css` rides the `.ppg-button` class
  * here, so focus is never conveyed by hue-shift only.
  *
@@ -37,8 +37,8 @@ export function Button({ label, status = 'available', busy, tone }: ButtonProps)
   const locked = status === 'locked'
 
   const base: CSSProperties = {
-    // heading / button role → TA16BIT first, Mitr next (Thai falls per glyph)
-    fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+    // heading / button role → Press Start 2P first, Noto Sans Thai next (Thai falls per glyph)
+    fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
     borderWidth: 'var(--ppg-border-2)',
     borderStyle: 'solid',
     borderColor: locked ? 'var(--ppg-state-locked-fg)' : 'var(--ppg-blue-300)',

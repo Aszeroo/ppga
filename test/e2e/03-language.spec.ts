@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-import { accounts, signIn, signOut } from './helpers'
+import { accounts, signIn, signOut, t, RAW_KEY_LEAK } from './helpers'
 
 /**
  * PPGA #18 (the verification ticket): the language selection + persistence
@@ -20,10 +20,12 @@ test.describe('PPGA #18 language selection & persistence', () => {
     const other = locale === 'th' ? 'en' : 'th'
     const learner = accounts.learners[locale]
 
-    // 0. An anonymous caller landing on the root reaches the Thai default —
-    // the routing middleware's `/` → `/th` redirect, never a blank screen.
+    // 0. An anonymous caller landing on the root reaches the Thai default LOGIN
+    // title screen — the routing middleware's `/` → `/th` redirect, then the
+    // guard's anonymous-root rule (`#49`: the anonymous landing is never the
+    // bare no-session dashboard).
     await page.goto('/')
-    await expect(page).toHaveURL(/\/th$/)
+    await expect(page).toHaveURL(/\/th\/login$/)
 
     // 1. The learner signs in (the journey's own helper: the real login
     // page + the real `/api/auth/login`; the gate's redirect is observable).
@@ -55,11 +57,25 @@ test.describe('PPGA #18 language selection & persistence', () => {
     // letter-prefixed `word.word`).
     await page.goto(`/${other}/course`)
     const text = await page.locator('body').textContent()
-    expect(/(?:login|logout|home|course|pretest|posttest|survey|lesson|selfcheck|mission|practical|review|header|leaderboard|badges|gallery|profile|change|admin|content|health)\.[a-z.]+/i.exec(text ?? '')).toBeFalsy()
+    expect(RAW_KEY_LEAK.exec(text ?? '')).toBeFalsy()
 
     // 5. The screen-reader-visible cue: the current option carries
     // `aria-current="true"` (state never by colour alone) and the switch's
     // hint copy explains what happens on the change.
     await expect(page.locator('#ppga-locale-selector').locator(`option[value=${other}]`)).toHaveAttribute('aria-current', 'true')
+
+    // 6. PPGA #41 stage 2 (story #31): the learner's nav copy is COMPLETE in
+    // the OTHER locale — the Shell nav landmark's five learner links (Home,
+    // Course, Badges, Leaderboard, Profile) every `nav.*` string appears in
+    // the new language (asserted ON the landmark: nothing falls back
+    // awkwardly or shows raw keys — the leak regex below double-checks the
+    // body). No raw keys anywhere (a legit copy has dots only inside
+    // numerals/parens, never a letter-prefixed `word.word`).
+    const nav = page.getByRole('navigation', { name: t(['shell', 'navLabel'], other) })
+    for (const key of ['home', 'course', 'badges', 'leaderboard', 'profile'] as string[]) {
+      await expect(nav.getByRole('link', { name: t(['nav', key], other), exact: true })).toBeVisible()
+    }
+    const textOther = await page.locator('body').textContent()
+    expect(RAW_KEY_LEAK.exec(textOther ?? '')).toBeFalsy()
   })
 })

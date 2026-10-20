@@ -6,9 +6,9 @@ import { useTranslations } from 'next-intl'
 
 /**
  * The Badge primitive — the pixel label that names a slide / a lesson rank.
- * Its face is the heading-role `--font-ta16bit` (a numeral badge reads the
+ * Its face is the heading-role `--font-ppg-display` (a numeral badge reads the
  * XP digits in the same single-token-swap-pointed family) with a per-glyph
- * Mitr fallback for Thai labels. A focusable `status` badge is a real
+ * Noto Sans Thai fallback for Thai labels. A focusable `status` badge is a real
  * `aria-label` so a screen-reader names it, not a pixel only.
  *
  * Tokens only: the pastel-pink face, the pastel-blue border, the pixel
@@ -25,7 +25,7 @@ export function Badge({ text, tone = 'neutral' }: BadgeProps) {
   const t = useTranslations('gallery')
 
   const style: CSSProperties = {
-    fontFamily: 'var(--font-ta16bit), var(--font-mitr)',
+    fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
     backgroundColor: 'var(--ppg-pink-200)',
     borderWidth: 'var(--ppg-border-1)',
     borderStyle: 'solid',

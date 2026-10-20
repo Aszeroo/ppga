@@ -248,3 +248,43 @@ export async function readXpSummaryViaRpc(): Promise<XpSummaryState> {
     badges: row.badges,
   }
 }
+/**
+ * Ticket #45 (#41 stage 4): the learner's OWN XP LEDGER rows the challenge
+ * framing reads — the raw `ppg_xp_ledger` events (type/ref/amount) behind the
+ * reward display. A plain read-only SELECT through the caller's session JWT
+ * (the shipped `ppg_xp_ledger_select` policy decides the rows; no
+ * service-role, no rule, no write): a learner sees only their own rows, but
+ * the policy grants teacher/admin the WHOLE ledger — so the CALLER must
+ * filter to `learner_id === uid` (the pure `ownLedgerEvents`) before any
+ * reward shows, or a Teacher would see a stranger's granted XP. Missing env
+ * yields `not-configured`, a missing session `unauthorized` — the page speaks
+ * the state, never a fake grant.
+ */
+export interface XpLedgerRead {
+  status: 'ok' | 'error' | 'not-configured' | 'unauthorized'
+  detail?: string
+  uid?: string
+  rows?: Array<{
+    learner_id: string
+    event_type: string
+    event_ref: string
+    amount: number
+  }>
+}
+
+export async function readOwnXpEventsViaTable(): Promise<XpLedgerRead> {
+  const sup = await createSupaSessionClient()
+  if (!sup) return { status: 'not-configured', detail: 'NEXT_PUBLIC_SUP_* missing' }
+
+  const { data: session } = await sup.auth.getSession()
+  const uid = session?.session?.user.id
+  if (!session || !session.session || !uid)
+    return { status: 'unauthorized', detail: 'no session' }
+
+  const { data, error } = await sup
+    .from('ppg_xp_ledger')
+    .select('learner_id, event_type, event_ref, amount')
+
+  if (error) return { status: 'error', detail: error.message }
+  return { status: 'ok', uid, rows: (data ?? []) as XpLedgerRead['rows'] }
+}
