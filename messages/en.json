@@ -258,6 +258,7 @@
       "unauthorized": "unauthorized",
       "notConfigured": "not-configured",
       "ok": "ok",
+      "scaffold": "PPGA ready",
       "fallbackSuspense": "Loading…"
     },
     "researchTag": "Research instrument",
@@ -360,6 +361,7 @@
       "unauthorized": "unauthorized",
       "notConfigured": "not-configured",
       "ok": "ok",
+      "scaffold": "PPGA ready",
       "fallbackSuspense": "Loading…"
     }
   },
