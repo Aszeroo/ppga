@@ -23,6 +23,11 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      # No Postgres here: the validator deterministically replays the
+      # migrations and checks the EFFECTIVE seeded Thai copy + placeholder
+      # seed markers (#62). Python 3 ships on ubuntu-latest.
+      - name: Validate seeded content (Thai copy + placeholder markers)
+        run: npm run validate:content
 
   test:
     name: Tests
@@ -68,6 +73,10 @@ jobs:
       # One fresh baseline: the workflow resets before the run; globalSetup
       # skips its own reset via this env so CI pays for it exactly once.
       - run: supabase db reset
+      # The same gate against the real reset DB — proves the replayer and a
+      # live scan agree in the one job that owns a local stack (#62).
+      - name: Validate seeded content (live local DB)
+        run: npm run validate:content -- --mode live
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - name: Playwright critical journey (th + en, single shard)
