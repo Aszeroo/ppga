@@ -17,6 +17,7 @@ update public.ppg_skill_domains set label_th = 'กราฟิก SmartArt' whe
 update public.ppg_skill_domains set label_th = 'การจัดวางวัตถุ' where domain = 'Object Layout';
 update public.ppg_skill_domains set label_th = 'การเปลี่ยนสไลด์และแอนิเมชัน' where domain = 'Transition & Animation';
 update public.ppg_skill_domains set label_th = 'การตรวจทาน การเผยแพร่ และการส่งออก' where domain = 'Review Publish Export';
+update public.ppg_skill_domains set label_th = 'โครงงานสุดท้าย' where domain = 'Final Project';
 
 -- public.ppg_courses — title_th
 update public.ppg_courses set title_th = 'การสร้างงานนำเสนอ PowerPoint' where course_key = 'powerpoint-creation';
@@ -32,6 +33,7 @@ update public.ppg_modules set title_th = 'กราฟิก SmartArt', summary_
 update public.ppg_modules set title_th = 'การจัดวางวัตถุและรูปภาพ', summary_th = 'วางรูปภาพ คัดลอก จัดเลย์เอาต์ และตัดข้อความล้อมรูป' where module_key = 'module-08';
 update public.ppg_modules set title_th = 'การเปลี่ยนสไลด์และแอนิเมชัน', summary_th = 'เปลี่ยนทราบซิชัน เลื่อนอัตโนมัติเมื่อคลิก และตั้งเวลาสไลด์โชว์' where module_key = 'module-09';
 update public.ppg_modules set title_th = 'การตรวจทาน การเผยแพร่ และการส่งออก', summary_th = 'ตรวจทานและทำงานร่วมกัน เผยแพร่เป็น PDF พิมพ์ และแชร์' where module_key = 'module-10';
+update public.ppg_modules set title_th = 'โครงงานสุดท้าย', summary_th = 'สร้างชุดสไลด์ 8 สไลด์ที่รวมทุกทักษะในหลักสูตร: การเปิดงาน สไลด์ ข้อความ การออกแบบ แบบอักษร รูปร่าง SmartArt การจัดวางวัตถุ การเปลี่ยนสไลด์ และการตรวจทาน/ส่งออก' where module_key = 'module-11';
 
 -- public.ppg_lessons — title/what_learn/why/body/what_next
 update public.ppg_lessons set title_th = 'การเปิด PowerPoint', what_learn_th = 'เปิด PowerPoint และสร้างงานนำเสนอใหม่', why_th = 'การเปิดโปรแกรมเป็นขั้นแรกที่ทุกทักษะต่อยอด', body_th = 'เปิด PowerPoint คลิก Home คลิก New เลือก Blank แล้วเพิ่มสไลด์', what_next_th = 'ต่อไปคือการสลับมุมมอง' where lesson_key = 'module-01-lesson-01';
@@ -52,6 +54,7 @@ update public.ppg_lessons set title_th = 'การเผยแพร่แล�
 update public.ppg_practical_missions set scenario_th = 'นำบทเรียนของคุณขึ้นระบบ LMS จริง: เผยแพร่บทเรียนบนระบบจริง (การออกแบบบทเรียน)', requirements_th = 'ส่งออกบทเรียนของโมดูลคุณ: บทเรียนโมดูล 8 (8.1–8.4) + ส่วนการออกแบบ (8.5)', expected_out_th = 'ชุดสไลด์ที่สอนได้จริง: ไฟล์ .pptx — สไลด์ชื่อเรื่องและสรุป สิ่งส่งมอบ และหมายเหตุว่าไม่มีข้อมูลปลอม' where module_key = 'module-08';
 update public.ppg_practical_missions set scenario_th = 'นำภารกิจความรู้ของคุณขึ้นระบบ LMS จริง: เผยแพร่ภารกิจความรู้ของโมดูลบนระบบจริง (การออกแบบการประเมิน)', requirements_th = 'ส่งออกภารกิจความรู้ของโมดูลคุณ: บทเรียนโมดูล 9 (9.1–9.4) + ส่วนการออกแบบ (9.5)', expected_out_th = 'ชุดสไลด์ที่สอนได้จริง: ไฟล์ .pptx — สไลด์ชื่อเรื่องและสรุป สิ่งส่งมอบ และหมายเหตุว่าไม่มีข้อมูลปลอม' where module_key = 'module-09';
 update public.ppg_practical_missions set scenario_th = 'นำโครงงานออกแบบของคุณขึ้นระบบ LMS จริง: เผยแพร่โครงงานออกแบบของโมดูลบนระบบจริง (การออกแบบการเผยแพร่)', requirements_th = 'ส่งออกโครงงานออกแบบของโมดูลคุณ: บทเรียนโมดูล 10 (10.1–10.4) + ส่วนการออกแบบ (10.5)', expected_out_th = 'ชุดสไลด์ที่สอนได้จริง: ไฟล์ .pptx — สไลด์ชื่อเรื่องและสรุป สิ่งส่งมอบ และหมายเหตุว่าไม่มีข้อมูลปลอม' where module_key = 'module-10';
+update public.ppg_practical_missions set scenario_th = 'งานส่งมอบสุดท้ายของหลักสูตร: สร้างงานนำเสนอ 8 สไลด์ชื่อ ทักษะ PowerPoint ของฉัน ที่รวมทุกทักษะที่เรียนตั้งแต่โมดูล 1 ถึง 10', requirements_th = 'แปดสไลด์ สไลด์แรกเป็นชื่อเรื่อง ใช้ข้อความพร้อมแบบอักษรและสี มีรูปภาพ รูปร่าง และกราฟิก SmartArt อย่างน้อยอย่างละหนึ่ง ใช้ทราบซิชัน ตรวจทานผลงาน ส่งออกเป็น PDF แล้วอัปโหลดไฟล์ .pptx พร้อมข้อคิดเห็นสั้น ๆ', expected_out_th = 'ไฟล์ .pptx ครบ 8 สไลด์ที่ใช้ทุกทักษะในหลักสูตร ตรวจทานแล้วก่อนส่ง' where module_key = 'module-11';
 
 -- public.ppg_rubric_criteria — label_th
 update public.ppg_rubric_criteria set label_th = 'เนื้อหาและโครงสร้าง' where criterion_key = 'content_structure';
@@ -101,6 +104,7 @@ update public.ppg_rub_descriptors set descriptor_th = 'ครบถ้วน: �
 
 -- public.ppg_badge_types — label_th, award_rule_th
 update public.ppg_badge_types set label_th = 'พร้อมภารกิจ', award_rule_th = 'ผ่าน Self-Check ครั้งแรก — ภารกิจความรู้แรกจะปลดล็อกต่อไป (+100 XP ครั้งเดียว)' where badge_key = 'mission_ready';
+update public.ppg_badge_types set label_th = 'ก้าวแรก', award_rule_th = 'ก้าวแรกแห่งทุกทักษะ — ผ่าน Self-Check ครั้งแรก (+50 XP ครั้งเดียว)' where badge_key = 'first_steps';
 update public.ppg_badge_types set label_th = 'ภารกิจโมดูล 1', award_rule_th = 'ผ่านภารกิจความรู้ครั้งแรกที่ 70% — ป้ายโมดูล 1 (เหตุการณ์จริง, +100 XP ครั้งเดียว)' where badge_key = 'module_01_mission';
 update public.ppg_badge_types set label_th = 'ภารกิจโมดูล 2', award_rule_th = 'ผ่านภารกิจความรู้ครั้งแรกที่ 70% — ป้ายโมดูล 2 (เหตุการณ์จริง, +100 XP ครั้งเดียว)' where badge_key = 'module_02_mission';
 update public.ppg_badge_types set label_th = 'ภารกิจโมดูล 3', award_rule_th = 'ผ่านภารกิจความรู้ครั้งแรกที่ 70% — ป้ายโมดูล 3 (เหตุการณ์จริง, +100 XP ครั้งเดียว)' where badge_key = 'module_03_mission';
