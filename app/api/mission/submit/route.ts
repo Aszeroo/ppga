@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rejectCrossOrigin } from '../../../../lib/authGuard'
 
 import { submitMissionViaRpc } from '../../../../lib/sup/missions'
 
@@ -23,6 +24,10 @@ import { submitMissionViaRpc } from '../../../../lib/sup/missions'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
+  // Ticket #63: reject a foreign Origin on every mutating handler.
+  const crossOrigin = rejectCrossOrigin(req)
+  if (crossOrigin) return crossOrigin
+
   const ct = req.headers.get('content-type') ?? ''
   let body: { module_key?: string | null; answers?: Record<string, string> | null }
   // The console's retry form posts form-encoded (the native submit; the

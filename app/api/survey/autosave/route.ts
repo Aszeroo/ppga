@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rejectCrossOrigin } from '../../../../lib/authGuard'
 
 import {
   surveyFormSchema,
@@ -18,6 +19,10 @@ import {
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
+  // Ticket #63: reject a foreign Origin on every mutating handler.
+  const crossOrigin = rejectCrossOrigin(req)
+  if (crossOrigin) return crossOrigin
+
   const ct = req.headers.get('content-type') ?? ''
   let body: { autosave?: Record<string, unknown> | null; language?: string | null }
   if (ct.includes('application/json')) {

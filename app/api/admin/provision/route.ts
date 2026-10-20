@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rejectCrossOrigin } from '../../../../lib/authGuard'
 
 import {
   existingHandles,
@@ -33,6 +34,10 @@ export const dynamic = 'force-dynamic'
 
 // fallow-ignore-next-line complexity
 export async function POST(req: NextRequest) {
+  // Ticket #63: reject a foreign Origin on every mutating handler.
+  const crossOrigin = rejectCrossOrigin(req)
+  if (crossOrigin) return crossOrigin
+
   const ct = req.headers.get('content-type') ?? ''
   let body: { roster?: string; student_id?: string; full_name?: string }
   if (ct.includes('application/json')) {

@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import {
+  auditAuthEvent,
+  firstLimited,
+  getAuthLimiters,
+  getClientIp,
+  rejectCrossOrigin,
+  shouldAuditThrottle,
+  throttledResponse,
+} from '../../../../lib/authGuard'
+import {
   changePasswordViaSupaHttp,
   changePasswordFormSchema,
   createSupaSessionClientForRoute,
@@ -18,7 +27,12 @@ import {
  */
 export const dynamic = 'force-dynamic'
 
+// fallow-ignore-next-line complexity
 export async function POST(req: NextRequest) {
+  // Ticket #63: the consistent Origin gate every mutating route carries.
+  const crossOrigin = rejectCrossOrigin(req)
+  if (crossOrigin) return crossOrigin
+
   const parsed = changePasswordFormSchema.safeParse(
     await req
       .json()
@@ -30,6 +44,24 @@ export async function POST(req: NextRequest) {
       ok: false,
       detail: parsed.error.issues.map((i) => `${String(i.path[0] ?? 'input')}: ${i.message}`).join('; '),
     })
+  }
+
+  // Ticket #63: per-IP AND per-account fixed windows. The account key is read
+  // from the caller's own session below (a handle-equivalent that never
+  // reveals whether the password matched). The IP window is checked before
+  // the session read so a throttled caller costs no Auth traffic.
+  const limits = getAuthLimiters('change-password')
+  const ipKey = `ip:${getClientIp(req)}`
+  const blockedIp = limits.ip.check(ipKey)
+  if (blockedIp.limited) {
+    const auditKey = `change-password:ip:${ipKey}`
+    if (shouldAuditThrottle(auditKey, limits.ip.windowSeconds)) {
+      await auditAuthEvent('change_password_throttled', req, {
+        reason: 'ip',
+        retryAfterSeconds: blockedIp.retryAfterSeconds,
+      })
+    }
+    return throttledResponse(blockedIp.retryAfterSeconds)
   }
 
   // PPGA #49: the factory's freshness guard MAY rotate a stale bundle before
@@ -47,11 +79,53 @@ export async function POST(req: NextRequest) {
     return res
   }
 
+  const userKey = `user:${session.session.user.id}`
+  const blockedUser = limits.handle.check(userKey)
+  if (blockedUser.limited) {
+    const auditKey = `change-password:account:${userKey}`
+    if (shouldAuditThrottle(auditKey, limits.handle.windowSeconds)) {
+      await auditAuthEvent('change_password_throttled', req, {
+        reason: 'account',
+        retryAfterSeconds: blockedUser.retryAfterSeconds,
+      })
+    }
+    const throttled = throttledResponse(blockedUser.retryAfterSeconds)
+    cookieJar.mergeInto(throttled)
+    return throttled
+  }
+
   const viaHttp = await changePasswordViaSupaHttp(
     session.session.access_token,
     parsed.data.newPassword,
     parsed.data.currentPassword,
   )
+
+  if (!viaHttp.ok) {
+    // Ticket #63: count the failed swap and emit the audit signal.
+    const userState = limits.handle.recordFailure(userKey)
+    const ipState = limits.ip.recordFailure(ipKey)
+    await auditAuthEvent('change_password_failed', req, { reason: 'invalid_credentials' })
+    const crossed = firstLimited([
+      { scope: 'account', state: userState },
+      { scope: 'ip', state: ipState },
+    ])
+    if (crossed) {
+      const auditKey = `change-password:${crossed.scope}:${crossed.scope === 'ip' ? ipKey : userKey}`
+      if (shouldAuditThrottle(auditKey, limits.handle.windowSeconds)) {
+        await auditAuthEvent('change_password_throttled', req, {
+          reason: crossed.scope,
+          retryAfterSeconds: crossed.state.retryAfterSeconds,
+        })
+      }
+      const throttled = throttledResponse(crossed.state.retryAfterSeconds)
+      cookieJar.mergeInto(throttled)
+      return throttled
+    }
+  } else {
+    // Ticket #63: a successful swap clears the account + IP windows.
+    limits.handle.reset(userKey)
+    limits.ip.reset(ipKey)
+  }
 
   // Ticket #7 first-login force-change completion: the Auth service's PUT
   // landed the new password (the temp password is now spent — one-time by

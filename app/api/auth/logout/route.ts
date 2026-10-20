@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rejectCrossOrigin } from '../../../../lib/authGuard'
 
 import {
   createSupaSessionClientForRoute,
@@ -21,6 +22,10 @@ export const dynamic = 'force-dynamic'
 
 // fallow-ignore-next-line complexity
 export async function POST(req: NextRequest) {
+  // Ticket #63: reject a foreign Origin on every mutating handler.
+  const crossOrigin = rejectCrossOrigin(req)
+  if (crossOrigin) return crossOrigin
+
   const body = await req
     .json()
     .catch(() => ({}) as never)
