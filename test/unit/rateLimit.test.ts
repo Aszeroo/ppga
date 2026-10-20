@@ -69,6 +69,25 @@ describe('createRateLimiter', () => {
     expect(limiter.recordFailure('handle:admin').remaining).toBe(2)
   })
 
+  test('enumeration: an existing and a non-existing handle exhaust the same counter', () => {
+    // Ticket #63 AC #2: the limiter keys solely on the submitted handle — it
+    // has no notion of whether that handle exists, so both answers are the
+    // same N failures -> the same lock. The route records a failure for every
+    // Auth rejection regardless of the service's reason.
+    const clock = fakeClock()
+    const limiter = createRateLimiter({ maxAttempts: 2, windowSeconds: 60, now: clock.now })
+
+    expect(limiter.recordFailure('handle:64110001').limited).toBe(false)
+    expect(limiter.recordFailure('handle:99999999').limited).toBe(false)
+    expect(limiter.recordFailure('handle:64110001').limited).toBe(true)
+    expect(limiter.recordFailure('handle:99999999').limited).toBe(true)
+
+    const existing = limiter.check('handle:64110001')
+    const nonexistent = limiter.check('handle:99999999')
+    expect(nonexistent).toEqual(existing)
+    expect(nonexistent.retryAfterSeconds).toBe(60)
+  })
+
   test('keys are independent (handle vs IP do not share a window)', () => {
     const clock = fakeClock()
     const limiter = createRateLimiter({ maxAttempts: 1, windowSeconds: 60, now: clock.now })
