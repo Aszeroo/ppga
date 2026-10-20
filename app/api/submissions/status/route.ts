@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rejectCrossOrigin } from '../../../../lib/authGuard'
 
 import { submitForReviewViaRpc } from '../../../../lib/sup/submissions'
 
@@ -27,6 +28,10 @@ async function readFields(req: NextRequest): Promise<{ moduleKey: string; seq: u
 }
 
 export async function POST(req: NextRequest) {
+  // Ticket #63: reject a foreign Origin on every mutating handler.
+  const crossOrigin = rejectCrossOrigin(req)
+  if (crossOrigin) return crossOrigin
+
   const { moduleKey, seq } = await readFields(req)
   const result = await submitForReviewViaRpc(moduleKey, Number(seq))
   return NextResponse.json(result)

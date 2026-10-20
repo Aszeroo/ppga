@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rejectCrossOrigin } from '../../../lib/authGuard'
 
 import { createSubmissionViaRpc } from '../../../lib/sup/submissions'
 
@@ -17,6 +18,10 @@ import { createSubmissionViaRpc } from '../../../lib/sup/submissions'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
+  // Ticket #63: reject a foreign Origin on every mutating handler.
+  const crossOrigin = rejectCrossOrigin(req)
+  if (crossOrigin) return crossOrigin
+
   const form = await req.formData().catch(() => new FormData() as never)
   const file = form.get('file')
   const reflection = form.get('reflection')

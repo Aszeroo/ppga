@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rejectCrossOrigin } from '../../../../lib/authGuard'
 
 import {
   uuidSchema,
@@ -26,6 +27,10 @@ const overrideFormSchema = z
   .strict()
 
 export async function POST(req: NextRequest) {
+  // Ticket #63: reject a foreign Origin on every mutating handler.
+  const crossOrigin = rejectCrossOrigin(req)
+  if (crossOrigin) return crossOrigin
+
   const ct = req.headers.get('content-type') ?? ''
   let body: { target_id?: string | null }
   // The console's override form posts form-encoded (the native submit); the

@@ -1,6 +1,7 @@
 import { ZodIssue } from 'zod'
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { rejectCrossOrigin } from '../../../lib/authGuard'
 
 import { createSupaSessionClientForRoute, newSessionCookieJar } from '../../../lib/sup/auth'
 import { updateOwnLocale } from '../../../lib/sup/profile'
@@ -21,6 +22,10 @@ import { localeSchema } from '../../../lib/i18n/localeSchema'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
+  // Ticket #63: reject a foreign Origin on every mutating handler.
+  const crossOrigin = rejectCrossOrigin(req)
+  if (crossOrigin) return crossOrigin
+
   const body = await req
     .json()
     .catch(() => ({}) as never)

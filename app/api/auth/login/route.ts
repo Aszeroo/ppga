@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import {
+  auditAuthEvent,
+  firstLimited,
+  getAuthLimiters,
+  getClientIp,
+  normalizeHandle,
+  rejectCrossOrigin,
+  shouldAuditThrottle,
+  throttledResponse,
+} from '../../../../lib/authGuard'
+import {
   createSupaSessionClientForRoute,
   loginFormSchema,
   newSessionCookieJar,
@@ -22,6 +32,10 @@ export const dynamic = 'force-dynamic'
 
 // fallow-ignore-next-line complexity
 export async function POST(req: NextRequest) {
+  // Ticket #63: the consistent Origin gate every mutating route carries.
+  const crossOrigin = rejectCrossOrigin(req)
+  if (crossOrigin) return crossOrigin
+
   const body = await req
     .json()
     .catch(() => ({}) as never)
@@ -33,6 +47,30 @@ export async function POST(req: NextRequest) {
       ok: false,
       detail: parsed.error.issues.map((i) => `${String(i.path[0] ?? 'input')}: ${i.message}`).join('; '),
     })
+  }
+
+  // Ticket #63: per-handle AND per-IP fixed windows, checked BEFORE the Auth
+  // service is touched — an enumeration probe and a real handle burn the same
+  // counter, and a blocked request never reveals which kind it was. The
+  // counters live in-process (`.env.example` documents the limitation).
+  const identifier = normalizeHandle(parsed.data.identifier)
+  const limits = getAuthLimiters('login')
+  const handleKey = `handle:${identifier}`
+  const ipKey = `ip:${getClientIp(req)}`
+  const blocked = firstLimited([
+    { scope: 'handle', state: limits.handle.check(handleKey) },
+    { scope: 'ip', state: limits.ip.check(ipKey) },
+  ])
+  if (blocked) {
+    const auditKey = `login:${blocked.scope}:${blocked.scope === 'ip' ? ipKey : handleKey}`
+    if (shouldAuditThrottle(auditKey, limits.handle.windowSeconds)) {
+      await auditAuthEvent('login_throttled', req, {
+        identifier,
+        reason: blocked.scope,
+        retryAfterSeconds: blocked.state.retryAfterSeconds,
+      })
+    }
+    return throttledResponse(blocked.state.retryAfterSeconds)
   }
 
   // PPGA #49: the factory may TRADE a stale stored bundle before building the
@@ -51,6 +89,30 @@ export async function POST(req: NextRequest) {
   })
 
   if (error || !data) {
+    // Ticket #63: count the failure and emit the audit signal. The response
+    // shape is identical whether or not the handle exists: the Auth service's
+    // own message plus a generic throttle once the window is crossed.
+    const handleState = limits.handle.recordFailure(handleKey)
+    const ipState = limits.ip.recordFailure(ipKey)
+    await auditAuthEvent('login_failed', req, { identifier, reason: 'invalid_credentials' })
+    const crossed = firstLimited([
+      { scope: 'handle', state: handleState },
+      { scope: 'ip', state: ipState },
+    ])
+    if (crossed) {
+      const auditKey = `login:${crossed.scope}:${crossed.scope === 'ip' ? ipKey : handleKey}`
+      if (shouldAuditThrottle(auditKey, limits.handle.windowSeconds)) {
+        await auditAuthEvent('login_throttled', req, {
+          identifier,
+          reason: crossed.scope,
+          retryAfterSeconds: crossed.state.retryAfterSeconds,
+        })
+      }
+      const throttled = throttledResponse(crossed.state.retryAfterSeconds)
+      // A guard-rotated old session still rides back with the refusal.
+      cookieJar.mergeInto(throttled)
+      return throttled
+    }
     const res = NextResponse.json({
       ok: false,
       detail: error?.message ?? 'empty session',
@@ -60,6 +122,10 @@ export async function POST(req: NextRequest) {
     cookieJar.mergeInto(res)
     return res
   }
+
+  // Ticket #63: a successful sign-in clears the handle + IP windows.
+  limits.handle.reset(handleKey)
+  limits.ip.reset(ipKey)
 
   // Ticket #7 first-login force-change gate: the account's `must_change_
   // password` flag lives in the DATABASE (the profiles column) and the read

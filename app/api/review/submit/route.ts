@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rejectCrossOrigin } from '../../../../lib/authGuard'
 
 import { submitReviewViaRpc } from '../../../../lib/sup/reviews'
 
@@ -18,6 +19,10 @@ import { submitReviewViaRpc } from '../../../../lib/sup/reviews'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
+  // Ticket #63: reject a foreign Origin on every mutating handler.
+  const crossOrigin = rejectCrossOrigin(req)
+  if (crossOrigin) return crossOrigin
+
   // the teacher's review form posts form-encoded (the native submit; the
   // `score_<criterion_key>` radios + the moduleKey/submissionSeq hidden
   // fields); the JSON UIs may post JSON; both ride the same RPC gate.

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rejectCrossOrigin } from '../../../../lib/authGuard'
 
 import { checkSelfCheckViaRpc } from '../../../../lib/sup/xp'
 
@@ -20,6 +21,10 @@ import { checkSelfCheckViaRpc } from '../../../../lib/sup/xp'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
+  // Ticket #63: reject a foreign Origin on every mutating handler.
+  const crossOrigin = rejectCrossOrigin(req)
+  if (crossOrigin) return crossOrigin
+
   const ct = req.headers.get('content-type') ?? ''
   let body: { lesson_key?: string | null; answers?: Record<string, string> | null }
   // The console's retry form posts form-encoded (the native submit; the

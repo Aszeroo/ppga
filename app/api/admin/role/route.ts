@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { rejectCrossOrigin } from '../../../../lib/authGuard'
 
 import {
   changeRoleViaRpc,
@@ -17,6 +18,10 @@ import {
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
+  // Ticket #63: reject a foreign Origin on every mutating handler.
+  const crossOrigin = rejectCrossOrigin(req)
+  if (crossOrigin) return crossOrigin
+
   const ct = req.headers.get('content-type') ?? ''
   let body: { target_id?: string | null; new_role?: string | null }
   // The console's role-change form posts form-encoded (the native submit); the
