@@ -273,9 +273,15 @@ export async function readItemsViaTable(): Promise<{
   const { data: session } = await sup.auth.getSession()
   if (!session || !session.session) return { status: 'unauthorized', detail: 'no session' }
 
+  // PPGA #83: the table now holds the legacy #61 sample and the authored
+  // research instrument. `ppg_prettest_start` records the highest version, so
+  // the screen must show that same row — an unordered `limit(1)` could serve
+  // the one-item sample. Order by version descending (the version string is
+  // the instrument's identity; ADR-0002).
   const { data, error } = await sup
     .from('ppg_pretest_instruments')
     .select('items')
+    .order('version', { ascending: false })
     .limit(1)
 
   if (error) {
