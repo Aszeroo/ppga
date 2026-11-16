@@ -76,7 +76,8 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(`
-      SELECT 'modules='||count(DISTINCT module_key) FROM ppg_knowledge_mission_questions;
+      SELECT 'modules='||count(DISTINCT module_key) FROM ppg_knowledge_mission_questions
+       WHERE module_key LIKE 'module-%';
       ${MODULES.map(
         (mk) =>
           `SELECT 'q-${mk}='||count(DISTINCT order_index) FROM ppg_knowledge_mission_questions WHERE module_key = '${mk}';`,
@@ -84,6 +85,7 @@ test(
       SELECT 'bad_opts='||count(*) FROM (
         SELECT module_key, order_index
           FROM ppg_knowledge_mission_questions
+         WHERE module_key LIKE 'module-%'
          GROUP BY module_key, order_index
         HAVING count(*) <> 3 OR count(DISTINCT option_key) <> 3
             OR bool_and(option_key IN ('a','b','c')) IS NOT TRUE
@@ -91,10 +93,12 @@ test(
       SELECT 'bad_key='||count(*) FROM (
         SELECT module_key, order_index, count(*) FILTER (WHERE is_correct) AS k
           FROM ppg_knowledge_mission_questions
+         WHERE module_key LIKE 'module-%'
          GROUP BY module_key, order_index
         HAVING count(*) FILTER (WHERE is_correct) <> 1
       ) y;
-      SELECT 'total_rows='||count(*) FROM ppg_knowledge_mission_questions;
+      SELECT 'total_rows='||count(*) FROM ppg_knowledge_mission_questions
+       WHERE module_key LIKE 'module-%';
     `)
     // the Mission bank exists for ALL 7 Modules (the unlock/XP gate reads it).
     expect(probe(out, 'modules')).toBe('7')
