@@ -4,6 +4,8 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../../lib/i18n/routing'
 
 import { readLessonsViaRpc } from '../../../../lib/sup/curriculum'
+import { readChapterTestStateViaRpc } from '../../../../lib/sup/chapterTest'
+import { isChapterKey } from '../../../../lib/chapterTest'
 import { readChallengeReads } from '../../../../lib/sup/challenge'
 import { buildChallengeContext, buildUnlockBand, challengeCopyFrom, challengeTrackSteps, rewardChipProps } from '../../../../lib/challengeStages'
 import { Card } from '../../../../components/Card'
@@ -118,9 +120,65 @@ async function LessonsList({ moduleKey }: { moduleKey: string }) {
   )
 }
 
+async function ChapterOverview({ chapterKey }: { chapterKey: string }) {
+  const t = await getTranslations('chapterTest')
+  const locale = await getLocale()
+  const state = await readChapterTestStateViaRpc(chapterKey)
+  const pickText = (th: string | undefined, en: string | undefined) =>
+    locale === 'th' ? (th ?? en ?? '') : (en ?? th ?? '')
+  return (
+    <section aria-label={t('label')} className="ppg-page-wrap">
+      <h1 className="ppg-heading ppg-heading-text">
+        {state.status === 'ok' ? pickText(state.title_th, state.title_en) : t('overviewTitle')}
+      </h1>
+      <p className="ppg-card-text">{t('overviewIntro')}</p>
+      {state.status === 'ok' ? (
+        <div className="ppg-hub-grid">
+          <Card
+            heading={t('preTitle')}
+            body={`${t('attempts')}: ${state.pre?.attempts ?? 0} · ${t('bestScore')}: ${state.pre?.best_score ?? 0} / ${state.pre?.total ?? 0}`}
+            status="available"
+          />
+          <Card
+            heading={t('postTitle')}
+            body={`${t('attempts')}: ${state.post?.attempts ?? 0} · ${t('firstScore')}: ${state.post?.first_score ?? 0} / ${state.post?.total ?? 0}`}
+            status="available"
+          />
+        </div>
+      ) : null}
+      <p>
+        <Link
+          className="ppg-cta"
+          href={{ pathname: '/course/[moduleKey]/chapter-test/[phase]' as const, params: { moduleKey: chapterKey, phase: 'pre' } }}
+        >
+          {t('openPre')}
+        </Link>
+      </p>
+      <p>
+        <Link
+          className="ppg-cta"
+          href={{ pathname: '/course/[moduleKey]/chapter-test/[phase]' as const, params: { moduleKey: chapterKey, phase: 'post' } }}
+        >
+          {t('openPost')}
+        </Link>
+      </p>
+      <p>
+        <Link className="ppg-link" href="/course">{t('linkMap')}</Link>
+      </p>
+    </section>
+  )
+}
+
 export default async function ModulePage({ params }: { params: Promise<{ moduleKey: string }> }) {
   const t = await getTranslations('lesson')
   const { moduleKey } = await params
+  if (isChapterKey(moduleKey)) {
+    return (
+      <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
+        <ChapterOverview chapterKey={moduleKey} />
+      </Suspense>
+    )
+  }
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <LessonsList moduleKey={moduleKey} />

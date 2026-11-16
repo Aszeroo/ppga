@@ -58,8 +58,14 @@ const asRole = (role: string, sub: string) =>
   `SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"${role}","sub":"${sub}"}';`
 
 // the gate OPENED inside the caller's open transaction (owner rights — the
-// consent flag + a submitted response; rolled back with the tx).
+// consent flag + a submitted response; rolled back with the tx). #74 archived
+// the legacy `powerpoint-creation` spine for the learner journey, so this
+// engine-level seam re-publishes its module in-tx (the mission RPCs still
+// gate on `publication_state = 'published'`; the archive is production data,
+// not a change to the engine under test).
 const gateOpen = (learnerId: string) => `
+  UPDATE ppg_modules SET publication_state = 'published'
+   WHERE module_key = 'module-01';
   DELETE FROM ppg_pretest_responses WHERE learner_id = '${learnerId}';
   UPDATE ppg_profiles SET consent = true, prettest_unlocked_override = false
    WHERE id = '${learnerId}';
