@@ -133,18 +133,20 @@ test(
 )
 
 test(
-  'Lock: the OPEN module detail read shows its lessons (module-01 after the gate)',
+  'Lock: the OPEN chapter detail read shows its lessons (chapter-01 after the gate)',
   { skip: !hasLocalStack },
   () => {
+    // #88: the legacy module-01 belongs to the archived spine, so the live
+    // OPEN detail read is exercised on the active chapter instead.
     const out = sql(
       `BEGIN;
         ${gateOpen(seededIds.learner64110001)}
         ${asRole('learner', seededIds.learner64110001)}
-        SELECT ppg_module_lessons('module-01');
+        SELECT ppg_module_lessons('chapter-01');
       ROLLBACK;`,
     )
-    expect(out.includes('module-01-lesson-01')).toBe(true)
-    expect(out.includes('module-01-lesson-02')).toBe(true)
+    expect(out.includes('chapter-01-lesson-01')).toBe(true)
+    expect(out.includes('chapter-01-lesson-02')).toBe(true)
   },
 )
 
@@ -176,20 +178,22 @@ test(
   'Archived: an admin archives a lesson; the gated learner READS it INVISIBLY server-side',
   { skip: !hasLocalStack },
   () => {
+    // #88: the same denied lesson is exercised on the active chapter; the
+    // legacy module-01 path is now covered by the archived-parent tests.
     const out = sql(
       `BEGIN;
         ${publicationReset}
         ${gateOpen(seededIds.learner64110001)}
         ${asRole('admin', seededIds.admin)}
-        SELECT ppg_set_publication('module-01-lesson-02', 'archived');
+        SELECT ppg_set_publication('chapter-01-lesson-02', 'archived');
         ${asRole('learner', seededIds.learner64110001)}
-        SELECT ppg_module_lessons('module-01');
+        SELECT ppg_module_lessons('chapter-01');
       ROLLBACK;`,
     )
     // the archived lesson never rides the learner's detail; the sibling
     // lesson still does.
-    expect(out.includes('module-01-lesson-02')).toBe(false)
-    expect(out.includes('module-01-lesson-01')).toBe(true)
+    expect(out.includes('chapter-01-lesson-02')).toBe(false)
+    expect(out.includes('chapter-01-lesson-01')).toBe(true)
   },
 )
 

@@ -59,6 +59,10 @@ const asRole = (role: string, sub: string) =>
 // the gate OPENED inside the caller's open transaction (owner rights — the
 // consent flag + a submitted response; rolled back with the tx).
 const gateOpen = (learnerId: string) => `
+  -- #88: the legacy spine is archived; re-publish it in-tx so this engine
+  -- seam still exercises the Self-Check (production archive stays).
+  UPDATE ppg_modules SET publication_state = 'published'
+   WHERE module_key LIKE 'module-%';
   DELETE FROM ppg_pretest_responses WHERE learner_id = '${learnerId}';
   UPDATE ppg_profiles SET consent = true, prettest_unlocked_override = false
    WHERE id = '${learnerId}';

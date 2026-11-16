@@ -57,6 +57,16 @@ const impersonate = (role: string, sub: string) =>
 const ownPath = (learnerId: string, seq: number) =>
   `submissions/${learnerId}/module-08/${seq}`
 
+// #88: the practical spine is archived; every write seam re-publishes the
+// module inside its own transaction so the lifecycle engine stays under test.
+const publishMission = `UPDATE ppg_modules SET publication_state = 'published'
+   WHERE module_key = 'module-08';`
+
+// the same re-publish, placed AFTER `BEGIN` (an owner UPDATE before the
+// transaction would leak outside the rollback).
+const impersonateWithMission = (role: string, sub: string) =>
+  `BEGIN; ${publishMission} SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"${role}","sub":"${sub}"}';`
+
 test(
   'RLS: a stranger INSERT of another learner submission row NEVER lands (the check policy denies the foreign row)',
   { skip: !hasLocalStack },
@@ -89,6 +99,7 @@ test(
     // is seeded through the learner's OWN definer insert RPC.
     const out = sql(
       `BEGIN;
+        ${publishMission}
         DELETE FROM ppg_submissions WHERE learner_id = '${seededIds.learnerA}' AND mission_id = 'module-08' AND submission_seq = 901;
         SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"learner","sub":"${seededIds.learnerA}"}';
         SELECT * FROM ppg_insert_submission('${seededIds.learnerA}'::uuid, 'module-08', 901,
@@ -115,6 +126,7 @@ test(
     // last line of defense. The row rides the learner's OWN definer insert RPC.
     const out = sql(
       `BEGIN;
+        ${publishMission}
         DELETE FROM ppg_submissions WHERE learner_id = '${seededIds.learnerA}' AND mission_id = 'module-08' AND submission_seq = 902;
         SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"learner","sub":"${seededIds.learnerA}"}';
         SELECT * FROM ppg_insert_submission('${seededIds.learnerA}'::uuid, 'module-08', 902,
@@ -135,7 +147,7 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('learner', seededIds.learnerA)}
+      `${impersonateWithMission('learner', seededIds.learnerA)}
         SELECT * FROM ppg_insert_submission
           ('${seededIds.learnerA}'::uuid, 'module-08', 1,
           '${ownPath(seededIds.learnerA, 1)}', 'pptx', 1000, 'a short reflection');
@@ -154,7 +166,7 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('learner', seededIds.learnerA)}
+      `${impersonateWithMission('learner', seededIds.learnerA)}
         SELECT * FROM ppg_insert_submission
           ('${seededIds.learnerA}'::uuid, 'module-08', 1,
           '${ownPath(seededIds.learnerA, 1)}', 'pptx', 1000, 'a short reflection');
@@ -211,7 +223,7 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('learner', seededIds.learnerA)}
+      `${impersonateWithMission('learner', seededIds.learnerA)}
         SELECT * FROM ppg_insert_submission
           ('${seededIds.learnerA}'::uuid, 'module-08', 1,
           '${ownPath(seededIds.learnerA, 1)}', 'pptx', 1000, 'a short reflection');
@@ -229,7 +241,7 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('learner', seededIds.learnerA)}
+      `${impersonateWithMission('learner', seededIds.learnerA)}
         SELECT * FROM ppg_insert_submission
           ('${seededIds.learnerA}'::uuid, 'module-08', 1,
           '${ownPath(seededIds.learnerA, 1)}', 'pptx', 1000, 'a short reflection');
