@@ -73,6 +73,7 @@ const CONTENT_COLUMNS: Array<[string, string[]]> = [
   ['ppg_knowledge_missions', ['instructions_th']],
   ['ppg_knowledge_mission_questions', ['prompt_th', 'option_th', 'explanation_th', 'review_th']],
   ['ppg_self_check_questions', ['prompt_th', 'option_th']],
+  ['ppg_chapter_test_questions', ['prompt_th', 'option_th']],
 ]
 
 // The seed-marker shapes (identical to knowledge-content.test.ts / the

@@ -95,7 +95,7 @@ test(
 )
 
 test(
-  'Map: a gated learner sees ONLY module-01 OPEN (module 1 opens on the gate alone; the rest stay locked)',
+  'Map: a gated learner sees the ACTIVE course only — chapter-01 OPEN, the archived legacy modules absent',
   { skip: !hasLocalStack },
   () => {
     const out = sql(
@@ -105,13 +105,12 @@ test(
         SELECT ppg_course_map();
       ROLLBACK;`,
     )
-    // every SEE-ABLE module rides the map (locked ones as locked — never
-    // invisible): module-01 OPEN on the gate alone, module-02 LOCKED (the
-    // linear rule reads the mission `complete` rows — none exist). The
-    // jsonb prints insertion-ordered keys (`"lock_state": .., "module_key": ..`).
-    expect(out.includes('"lock_state": "open", "module_key": "module-01"')).toBe(true)
-    expect(out.includes('"lock_state": "locked", "module_key": "module-02"')).toBe(true)
-    expect(out.includes('"lock_state": "open", "module_key": "module-02"')).toBe(false)
+    // #74: the active presentation-program course resolves; chapter-01 opens
+    // on the gate alone (order 1). The legacy powerpoint-creation modules are
+    // soft-archived and the map's active-course filter keeps them out.
+    expect(out.includes('"lock_state": "open", "module_key": "chapter-01"')).toBe(true)
+    expect(out.includes('"module_key": "module-01"')).toBe(false)
+    expect(out.includes('"module_key": "module-11"')).toBe(false)
   },
 )
 
@@ -234,7 +233,7 @@ test(
       `SELECT 'state=' || publication_state FROM ppg_modules
         WHERE module_key = 'module-02';`,
     )
-    expect(state.includes('state=published')).toBe(true)
+    expect(state.includes('state=archived')).toBe(true)
   },
 )
 
