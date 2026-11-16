@@ -223,6 +223,7 @@
     "gateLabel": "ขั้ทกัาน์",
     "itemsLabel": "ขั้ทกัาน์",
     "answerLabel": "ขั้ทกัาน์",
+    "answerForQuestion": "คำตอบสำหรับข้อ {n}",
     "autosaveLabel": "ขั้ทกัาน์",
     "submitLabel": "ขั้ทกัาน์",
     "linkContent": "ขั้ทกัาน์",

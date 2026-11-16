@@ -5,23 +5,24 @@ import { Link } from '../../../lib/i18n/routing'
 
 import { readGateViaTable, readItemsViaTable } from '../../../lib/sup/prettest'
 import { Badge } from '../../../components/Badge'
+import { PreTestItems } from '../../../components/PreTestItems'
 import { StatusPill } from '../../../components/StatusPill'
 
 /**
- * Ticket #8 Pre-Test, #54 V3 dressing (presentation only — the reads, the
+ * Ticket #8 Pre-Test, #54 V3 dressing, #83 per-item answers (the reads, the
  * gate machine, the SHIPPED form fields/patterns/`data-ppg-*` attrs and the
  * submit route are UNCHANGED): the instrument wearing the gallery's card/tag
  * idiom — the heading block (the 📝 title + the explicit no-XP subline), the
  * research/no-XP chips, each item a question card with the real
  * Question {n}/{total} progress chips + the seeded choice tiles (the tiles
- * PRESENT the choices; the answer still rides the shipped text input — no
- * new control), and the submitted receipt (the ✓ receipt heading, the
- * immutable-once-submitted note + the success pill; a second submit still
- * reaches `already_submitted`, never a silently-overwritten row). The
- * instrument's items are the bilingual seeded material the Learner sees; the
- * answer key never reaches the browser (the instrument's key-column policy
- * denies a client SELECT; the score is the submit function's server-side
- * sum — never client-decided).
+ * PRESENT the choices; each item's answer rides its own compact text input,
+ * `item_<n>`, inside the ONE submitted form — #83), and the submitted
+ * receipt (the ✓ receipt heading, the immutable-once-submitted note + the
+ * success pill; a second submit still reaches `already_submitted`, never a
+ * silently-overwritten row). The instrument's items are the bilingual seeded
+ * material the Learner sees; the answer key never reaches the browser (the
+ * instrument's key-column policy denies a client SELECT; the score is the
+ * submit function's server-side sum — never client-decided).
  *
  * `force-dynamic` because the page reads the gate + the items through
  * the session JWT — `next build` must never pre-render someone else's
@@ -96,49 +97,12 @@ async function GateStatus() {
 }
 
 // fallow-ignore-next-line complexity
-async function Items({ locale }: { locale: string }) {
+async function PreTestForm({ locale }: { locale: string }) {
   const t = await getTranslations('pretest')
   const state = await readItemsViaTable()
   const items = state.status === 'ok' ? state.items ?? [] : []
-  const total = items.length
   return (
     <section aria-label={t('itemsLabel')} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ppg-space-3)' }}>
-      {state.status === 'ok'
-        ? items.map((item: { id: string; th: { prompt: string; choices: Record<string, string> }; en: { prompt: string; choices: Record<string, string> } }, i: number) => {
-          const choiceSet = locale === 'th' ? item.th.choices : item.en.choices
-          return (
-            <div key={item.id} className="ppg-instr-item">
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--ppg-space-2)', flexWrap: 'wrap' }}>
-                <Badge text={`${t('questionTag')} ${i + 1}`} tone="neutral" />
-                <Badge text={t('itemProgress', { n: String(i + 1), total: String(total) })} tone="neutral" />
-              </div>
-              <p className="ppg-sc-question">{item.th.prompt}</p>
-              <p className="ppg-card-text">{item.en.prompt}</p>
-              <div className="ppg-sc-options">
-                {Object.entries(choiceSet ?? {}).map(([letter, text]) => (
-                  <div key={letter} className="ppg-instr-opt">
-                    <span className="ppg-sc-opt-letter" aria-hidden="true">{letter}</span>
-                    <span className="ppg-sc-opt-text">{text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        })
-        : null}
-      {state.status === 'empty' ? <p className="ppg-state-line">{t('states.itemsEmpty')} {state.detail}</p> : null}
-      {state.status === 'error' ? <p className="ppg-state-line">{t('states.itemsError')} {state.detail}</p> : null}
-      {state.status === 'denied' ? <p className="ppg-state-line">{t('states.denied')} {state.detail}</p> : null}
-      {state.status === 'unauthorized' ? <p className="ppg-state-line">{t('states.unauthorized')} {state.detail}</p> : null}
-      {state.status === 'not-configured' ? <p className="ppg-state-line">{t('states.notConfigured')} {state.detail}</p> : null}
-    </section>
-  )
-}
-
-async function PreTestForm({ locale }: { locale: string }) {
-  const t = await getTranslations('pretest')
-  return (
-    <section>
       {/* The single submit rides the form's native elements so the keyboard
         reaches the control (login page's pattern). The submit posts the
         `ppg_prettest_submit` RPC once (the `data-ppg-pretest-submit` attr
@@ -148,8 +112,10 @@ async function PreTestForm({ locale }: { locale: string }) {
         rides first inside the submit route, so the response row the submit
         function UPDATEs exists. The hidden language field records the taken
         language with the row (ADR-0002) — the DATABASE re-validates th|en.
-        #54: ONLY classes were added — fields, names, patterns and the
-        `data-ppg-*` attrs are byte-identical to the shipped form. */}
+        #83: the form now WRAPS the item list so every `item_<n>` control is
+        submitted; the route's `item_` filter and the server-side answer key
+        already speak the same names. #54's `data-ppg-*` attrs and the
+        `^[A-D]$` contract are unchanged. */}
       <div className="ppg-sc-panel">
         <form
           data-ppg-pretest-form="prettest"
@@ -158,13 +124,18 @@ async function PreTestForm({ locale }: { locale: string }) {
           method="POST"
           action="/api/prettest/submit"
         >
-          <label className="ppg-field-label" htmlFor="prettest_answer_item_1">{t('answerLabel')}</label>
-          {/* PPGA #18 (finding #6): the shipped pattern `^[ABCD]\{...}?$` matched a
-            LITERAL brace — a plain letter (the answer shape the server accepts,
-            the same `^[A-D]$` the Post-Test carries) failed browser validation and
-            the native submit silently never fired. The letters + server key remain
-            the authority; this only lets the learner's click reach the route. */}
-          <input className="ppg-input" id="prettest_answer_item_1" name="item_1" required pattern="^[A-D]$" />
+          <PreTestItems
+            items={items}
+            locale={locale}
+            questionTag={(n) => `${t('questionTag')} ${n}`}
+            itemProgress={(n, total) => t('itemProgress', { n: String(n), total: String(total) })}
+            answerForQuestion={(n) => t('answerForQuestion', { n: String(n) })}
+          />
+          {state.status === 'empty' ? <p className="ppg-state-line">{t('states.itemsEmpty')} {state.detail}</p> : null}
+          {state.status === 'error' ? <p className="ppg-state-line">{t('states.itemsError')} {state.detail}</p> : null}
+          {state.status === 'denied' ? <p className="ppg-state-line">{t('states.denied')} {state.detail}</p> : null}
+          {state.status === 'unauthorized' ? <p className="ppg-state-line">{t('states.unauthorized')} {state.detail}</p> : null}
+          {state.status === 'not-configured' ? <p className="ppg-state-line">{t('states.notConfigured')} {state.detail}</p> : null}
           <input name="language" defaultValue={locale === 'th' ? 'th' : 'en'} hidden={true} />
           <div className="ppg-sc-cta-row">
             <button className="ppg-button" type="submit">{t('submitLabel')}</button>
@@ -188,7 +159,6 @@ export default async function PreTestPage() {
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <div className="ppg-page-wrap">
         <GateStatus />
-        <Items locale={locale} />
         <PreTestForm locale={locale} />
       </div>
     </Suspense>

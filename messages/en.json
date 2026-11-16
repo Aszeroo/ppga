@@ -238,6 +238,7 @@
     "gateLabel": "Pre-Test gate",
     "itemsLabel": "Pre-Test items",
     "answerLabel": "Answer",
+    "answerForQuestion": "Answer for question {n}",
     "autosaveLabel": "Autosave",
     "submitLabel": "Submit once",
     "linkContent": "Course content",
