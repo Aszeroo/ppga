@@ -1,6 +1,6 @@
-# PPGA — Gamified PowerPoint Learning Platform
+# PPGA — Gamified CAI Course for 21910-2006 Presentation Program
 
-A bilingual (Thai/English) gamified web platform for ปวช.2 vocational learners to build real Microsoft PowerPoint presentation-creation skills.
+A bilingual (Thai/English) gamified computer-assisted instruction (CAI) platform for vocational learners in the subject 21910-2006 Presentation Program (B.E. 2567 curriculum), delivered as nine chapters with PowerPoint as the primary software example.
 
 ## Stack
 
@@ -10,6 +10,7 @@ Next.js (App Router, TypeScript) + Supabase (Auth, Postgres, Storage), GitHub �
 
 - **Runbook** — env vars, Supabase link/migrations, the `ppg-submissions` bucket, deploys, rollback, known failure modes, post-deploy health checks: [`docs/operations/runbook.md`](docs/operations/runbook.md).
 - **Production probe** — `scripts/verify-production.sh` checks the public health endpoint, the served build generation, and the Supabase host's DNS. Read-only, takes no credentials, prints no secrets. Run it after every deploy (and pass the project ref for the DNS check).
+- **Course & assessment model** — PPGA delivers the CAI course for 21910-2006 Presentation Program as 9 chapters. Each chapter runs a pre-test, lessons with inline mini-checks, one Knowledge Mission, and a post-test at 70% or higher to unlock the next chapter. A global 50-item Research Pre-Test and a 50-item Final Test form the research pair. The vocabulary is in [`CONTEXT.md`](CONTEXT.md); the decisions and item blueprint are in [`docs/adr/0005-adopt-cai-chapter-assessment-model.md`](docs/adr/0005-adopt-cai-chapter-assessment-model.md). Practical Missions and rubric scoring are legacy and soft-archived.
 - **UI design** — the app is being redesigned to the user-authored V3 design; the decision is recorded in `docs/adr/0004-adopt-user-authored-v3-design.md`, which lands with the V3 reskin PR #57 (issues #50–#56). Until that PR merges, `main` (and production) serve the previous design.
 - **Middleware** — the app runs `middleware.ts` on Next 16 (the installed version). Next 16 deprecates the `middleware` convention in favour of `proxy.ts` (same functionality; `npx @next/codemod@canary middleware-to-proxy` migrates it — see `node_modules/next/dist/docs/01-app/02-guides/upgrading/version-16.md`). The rename is tracked as future work; `middleware.ts` remains the file in use.
 
