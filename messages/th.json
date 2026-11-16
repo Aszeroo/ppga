@@ -745,5 +745,26 @@
       "preSubmitted": "ส่งแบบทดสอบก่อนเรียนแล้ว",
       "alreadySubmitted": "การส่งครั้งนี้ถูกส่งแล้ว"
     }
+  },
+  "lessonPlayer": {
+    "progressLabel": "ความคืบหน้าบทเรียน",
+    "stepOf": "ขั้น {current} / {total}",
+    "kind": {
+      "objective": "จุดประสงค์",
+      "explanation": "คำอธิบาย",
+      "example": "ตัวอย่าง",
+      "check": "ตรวจสั้น ๆ",
+      "summary": "สรุป"
+    },
+    "back": "กลับ",
+    "next": "ถัดไป",
+    "check": "ตรวจคำตอบ",
+    "checking": "กำลังตรวจ",
+    "correct": "ถูกต้อง",
+    "incorrect": "ยังไม่ถูก",
+    "explanation": "เพราะ: {text}",
+    "error": "ตรวจคำตอบไม่ได้",
+    "readAll": "อ่านทั้งหมด",
+    "stepsHeading": "ขั้นของบทเรียน"
   }
 }

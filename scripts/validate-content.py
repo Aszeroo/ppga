@@ -71,6 +71,14 @@ CONTENT_TABLES = {
         ["chapter_key", "phase", "form", "order_index", "option_key"],
         ["prompt_th", "option_th"],
     ),
+    "ppg_lesson_steps": (
+        ["lesson_key", "order_index"],
+        ["body_th", "check_prompt_th", "check_explanation_th"],
+    ),
+    "ppg_lesson_step_options": (
+        ["lesson_key", "step_order_index", "option_key"],
+        ["option_th"],
+    ),
 }
 
 # Instrument tables: the Thai copy rides inside the `items` jsonb.

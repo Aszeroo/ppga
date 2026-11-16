@@ -74,6 +74,8 @@ const CONTENT_COLUMNS: Array<[string, string[]]> = [
   ['ppg_knowledge_mission_questions', ['prompt_th', 'option_th', 'explanation_th', 'review_th']],
   ['ppg_self_check_questions', ['prompt_th', 'option_th']],
   ['ppg_chapter_test_questions', ['prompt_th', 'option_th']],
+  ['ppg_lesson_steps', ['body_th', 'check_prompt_th', 'check_explanation_th']],
+  ['ppg_lesson_step_options', ['option_th']],
 ]
 
 // The seed-marker shapes (identical to knowledge-content.test.ts / the
@@ -89,8 +91,12 @@ test(
   () => {
     const out = sql(`
       SELECT 'published='||count(*) FROM ppg_lessons WHERE publication_state = 'published';
+      -- #75: the CAI pilot Lessons carry mini-checks on their step rows, not
+      -- the legacy Self-Check bank (content ticket #78 defines their full
+      -- coverage). The legacy curriculum rule still applies everywhere else.
       SELECT 'bad_coverage='||count(*) FROM ppg_lessons l
        WHERE l.publication_state = 'published'
+         AND l.module_key NOT LIKE 'chapter-%'
          AND (SELECT count(DISTINCT q.order_index)
                 FROM ppg_self_check_questions q
                WHERE q.lesson_key = l.lesson_key) < 2;

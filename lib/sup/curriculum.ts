@@ -21,7 +21,7 @@ import { z } from 'zod'
  */
 export const contentKeySchema = z
   .string()
-  .regex(/^(module-\d{2}|chapter-\d{2}|module-\d{2}-lesson-\d{2})$/i)
+  .regex(/^(module-\d{2}|chapter-\d{2}|(?:module|chapter)-\d{2}-lesson-\d{2})$/i)
 
 export const publicationStateSchema = z.enum(['draft', 'published', 'archived'])
 
@@ -227,7 +227,7 @@ export async function togglePublicationViaRpc(
   if (!session || !session.session) return { ok: false, detail: 'no session' }
 
   if (!contentKeySchema.safeParse(targetKey).success)
-    return { ok: false, detail: 'target key not in the seeded shape (module-NN | chapter-NN | module-NN-lesson-NN)' }
+    return { ok: false, detail: 'target key not in the seeded shape (module-NN | chapter-NN | module/chapter-NN-lesson-NN)' }
 
   const { error } = await sup.rpc(
     'ppg_set_publication',
