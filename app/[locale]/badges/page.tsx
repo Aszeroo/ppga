@@ -47,6 +47,10 @@ const ICON_BY_KEY: Record<string, string> = {
   final_boss: '🏆',
   level_5: '👑',
   course_complete: '🎨',
+  first_chapter_cleared: '📘',
+  perfect_chapter_posttest: '💯',
+  all_chapters_cleared: '🎓',
+  final_test_complete: '🏁',
 }
 
 async function GalleryList() {

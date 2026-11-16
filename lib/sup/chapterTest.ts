@@ -80,6 +80,10 @@ export interface ChapterTestSubmitResult {
   passed?: boolean
   nextChapterKey?: string
   nextUnlocked?: boolean
+  /** Fixed XP granted by this submit (0 on a retry; never score-derived). */
+  xpGranted?: number
+  /** The chapter badges awarded by this submit (empty on a retry). */
+  badgesGranted?: string[]
   feedback?: ChapterTestFeedback[]
 }
 
@@ -110,6 +114,7 @@ function mapError(message: string): { status: 'denied' | 'error'; detail: string
     m.includes('gate_closed') ||
     m.includes('chapter_denied') ||
     m.includes('chapter_missing') ||
+    m.includes('chapter_locked') ||
     m.includes('permission_denied')
   )
     return { status: 'denied', detail: message }
@@ -191,6 +196,7 @@ export async function submitChapterTestViaRpc(
       'pre_already_submitted',
       'chapter_missing',
       'chapter_denied',
+      'chapter_locked',
       'phase_denied',
       'language_denied',
       'answers_denied',
@@ -215,6 +221,10 @@ export async function submitChapterTestViaRpc(
     passed: row.passed === true,
     nextChapterKey: row.next_chapter_key as string,
     nextUnlocked: row.next_unlocked === true,
+    xpGranted: typeof row.xp_granted === 'number' ? row.xp_granted : 0,
+    badgesGranted: Array.isArray(row.badges_granted)
+      ? (row.badges_granted as string[])
+      : [],
     feedback: Array.isArray(row.feedback) ? (row.feedback as ChapterTestFeedback[]) : [],
   }
 }
