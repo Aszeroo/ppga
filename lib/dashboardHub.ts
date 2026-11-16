@@ -416,17 +416,27 @@ export function normalizeHubReads(r: HubReads): NormalizedHub {
 
 /** The five summary rows (the row builders): each rides its own read's own
  * ok-flag — a not-ok read yields null → the row renders nothing (the
- * zero-fabricated-data rule in one place). */
+ * zero-fabricated-data rule in one place).
+ *
+ * #88: the completion and submission reads are own-rows, not curriculum
+ * reads, so a learner who finished legacy content before the #74 archive
+ * still has those rows. The Course map is the authority on what a learner
+ * may SEE, so both lists are filtered to modules the map returned — an
+ * archived module never inflates the progress count or surfaces a submission
+ * round / feedback card on the dashboard. */
 export function deriveHubSummary(
   n: NormalizedHub,
 ): Pick<HubViewModel, 'xp' | 'badges' | 'progress' | 'mission' | 'submission' | 'feedback'> {
+  const visibleKeys = new Set(n.modules.map((m) => m.moduleKey))
+  const completedKeys = n.completedKeys.filter((key) => visibleKeys.has(key))
+  const submissions = n.submissions.filter((s) => visibleKeys.has(s.missionId))
   return {
     xp: n.xpOk ? n.xp : null,
     badges: n.xpOk && n.badges.length > 0 ? n.badges : null,
-    progress: n.rowsOk ? deriveCourseProgress(n.completedKeys, n.totalModules) : null,
-    mission: n.rowsOk ? deriveCurrentMission(n.modules, n.completedKeys, n.practicalKeys) : null,
-    submission: n.rowsOk ? latestSubmission(n.submissions) : null,
-    feedback: n.rowsOk ? deriveFeedback(n.submissions) : null,
+    progress: n.rowsOk ? deriveCourseProgress(completedKeys, n.totalModules) : null,
+    mission: n.rowsOk ? deriveCurrentMission(n.modules, completedKeys, n.practicalKeys) : null,
+    submission: n.rowsOk ? latestSubmission(submissions) : null,
+    feedback: n.rowsOk ? deriveFeedback(submissions) : null,
   }
 }
 

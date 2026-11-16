@@ -49,8 +49,13 @@ const sql = (statement: string) =>
     { input: statement, encoding: 'utf8' },
   )
 
-const impersonate = (role: string, sub: string) =>
-  `BEGIN; SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"${role}","sub":"${sub}"}';`
+// #88: the practical spine is archived; re-publish it INSIDE the tx so the
+// learner insert/status seam still reaches the engine under test.
+const publishMission = `UPDATE ppg_modules SET publication_state = 'published'
+ WHERE module_key IN ('module-08', 'module-11');`
+
+const impersonateWithMission = (role: string, sub: string) =>
+  `BEGIN; ${publishMission} SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"${role}","sub":"${sub}"}';`
 
 // the full 7-criterion score jsonb (1-5 each) the RPC expects
 const scores = (c1: number, c2: number, c3: number, c4: number, c5: number, c6: number, c7: number) =>
@@ -63,7 +68,7 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('learner', seededIds.learnerA)}
+      `${impersonateWithMission('learner', seededIds.learnerA)}
         SELECT public.ppg_submit_review('module-08', 901, ${ALL_THREES},
           'approved', 'ดี', 'good');
       ROLLBACK;`,
@@ -81,7 +86,7 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('learner', seededIds.learnerA)}
+      `${impersonateWithMission('learner', seededIds.learnerA)}
         SELECT public.ppg_insert_submission('${seededIds.learnerA}', 'module-08', 903,
           'submissions/${seededIds.learnerA}/module-08/903', 'pptx', 1000, 'x');
         SELECT public.ppg_set_submission_status('${seededIds.learnerA}', 'module-08', 903, 'submitted');
@@ -101,7 +106,7 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('learner', seededIds.learnerA)}
+      `${impersonateWithMission('learner', seededIds.learnerA)}
         SELECT public.ppg_insert_submission('${seededIds.learnerA}', 'module-08', 904,
           'submissions/${seededIds.learnerA}/module-08/904', 'pptx', 1000, 'x');
         SELECT public.ppg_set_submission_status('${seededIds.learnerA}', 'module-08', 904, 'submitted');
@@ -126,7 +131,7 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('learner', seededIds.learnerA)}
+      `${impersonateWithMission('learner', seededIds.learnerA)}
         SELECT public.ppg_insert_submission('${seededIds.learnerA}', 'module-08', 905,
           'submissions/${seededIds.learnerA}/module-08/905', 'pptx', 1000, 'x');
         SELECT public.ppg_set_submission_status('${seededIds.learnerA}', 'module-08', 905, 'submitted');
@@ -154,7 +159,7 @@ test(
     // keeps exactly ONE practical_approval row for the mission inside the
     // transaction.
     const out = sql(
-      `${impersonate('learner', seededIds.learnerA)}
+      `${impersonateWithMission('learner', seededIds.learnerA)}
         SELECT public.ppg_insert_submission('${seededIds.learnerA}', 'module-08', 906,
           'submissions/${seededIds.learnerA}/module-08/906', 'pptx', 1000, 'x');
         SELECT public.ppg_set_submission_status('${seededIds.learnerA}', 'module-08', 906, 'submitted');
@@ -178,7 +183,7 @@ test(
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('learner', seededIds.learnerA)}
+      `${impersonateWithMission('learner', seededIds.learnerA)}
         SELECT public.ppg_insert_submission('${seededIds.learnerA}', 'module-08', 907,
           'submissions/${seededIds.learnerA}/module-08/907', 'pptx', 1000, 'x');
         SELECT public.ppg_set_submission_status('${seededIds.learnerA}', 'module-08', 907, 'submitted');
@@ -200,6 +205,7 @@ test(
     // then the 0-score smuggle
     const out = sql(
       `BEGIN;
+        ${publishMission}
         SET LOCAL role authenticated;
         SET LOCAL "request.jwt.claims" = '{"role":"learner","sub":"${seededIds.learnerA}"}';
         SELECT public.ppg_insert_submission('${seededIds.learnerA}', 'module-08', 902,

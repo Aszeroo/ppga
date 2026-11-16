@@ -78,6 +78,10 @@ const xpBaseline = `
 // consent flag + a submitted response) — the #10 Self-Check the ranking
 // test earns its +50 through; rolled back with the tx.
 const gateOpen = (learnerId: string) => `
+  -- #88: re-publish the archived legacy lesson in-tx so the Self-Check
+  -- engine (and its +50 the ranking reads) still runs in this seam.
+  UPDATE ppg_modules SET publication_state = 'published'
+   WHERE module_key = 'module-01';
   DELETE FROM ppg_pretest_responses WHERE learner_id = '${learnerId}';
   UPDATE ppg_profiles SET consent = true, prettest_unlocked_override = false
    WHERE id = '${learnerId}';

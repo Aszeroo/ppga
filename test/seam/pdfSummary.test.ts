@@ -121,6 +121,10 @@ test(
          WHERE learner_id IN ('${seededIds.learnerA}','${seededIds.learnerB}');
         DELETE FROM public.ppg_submissions
          WHERE learner_id IN ('${seededIds.learnerA}','${seededIds.learnerB}');
+        -- #88: the practical spine is archived; re-publish it in-tx so the
+        -- learner insert/status seam still seeds the summary fixture.
+        UPDATE public.ppg_modules SET publication_state = 'published'
+         WHERE module_key IN ('module-08', 'module-11');
         -- Known shape: A = pretest 1 / posttest 10 / survey {item_1:A, item_2:B};
         --               B = pretest 3 / no posttest / survey {item_1:C}.
         INSERT INTO public.ppg_pretest_responses

@@ -54,7 +54,12 @@ const sql = (statement: string) =>
   )
 
 const impersonate = (role: string, sub: string) =>
-  `BEGIN; SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"${role}","sub":"${sub}"}';`
+  `BEGIN;
+   -- #88: the Final Project spine is archived; re-publish it in-tx (owner
+   -- rights, before the JWT role) so the upload/review engine stays tested.
+   UPDATE ppg_modules SET publication_state = 'published' WHERE module_key = 'module-11';
+   SET LOCAL role authenticated;
+   SET LOCAL "request.jwt.claims" = '{"role":"${role}","sub":"${sub}"}';`
 
 // the owner-level cleanup that rides the SAME transaction (rolled back): the
 // close-chain residue (instruments' rows, the ledger, the awards, the review

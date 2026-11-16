@@ -157,6 +157,10 @@ test(
          WHERE learner_id IN ('${seededIds.learnerA}','${seededIds.learnerB}');
         DELETE FROM public.ppg_badge_awards
          WHERE learner_id IN ('${seededIds.learnerA}','${seededIds.learnerB}');
+        -- #88: the practical spine is archived; re-publish it in-tx so the
+        -- learner insert/status seam still seeds the export fixture.
+        UPDATE public.ppg_modules SET publication_state = 'published'
+         WHERE module_key IN ('module-08', 'module-11');
         ${impersonate('learner', seededIds.learnerA).replace('BEGIN;', '')}
         INSERT INTO public.ppg_pretest_responses
           (learner_id, instrument_version, language, answers, score, submitted_at)

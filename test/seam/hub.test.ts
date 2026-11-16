@@ -78,6 +78,9 @@ test(
   () => {
     const out = sql(
       `BEGIN;
+        -- #88: the practical spine is archived; re-publish it in-tx so the
+        -- learner's own-row SELECT policy still reads the probe.
+        UPDATE ppg_modules SET publication_state = 'published' WHERE module_key = 'module-08';
         -- owner-side: one reviewed round owned by Learner One, pinned by a
         -- UNIQUE reflection marker (the append-only deny trigger forbids even
         -- an owner DELETE — the marker keeps the read exact). Rolled back.
