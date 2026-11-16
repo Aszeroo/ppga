@@ -133,6 +133,35 @@ test(
 )
 
 test(
+  'Form contract: the form names item_1..item_50 are the scoring keys; all-correct scores 50',
+  { skip: !hasLocalStack },
+  () => {
+    // The UI renders one `<input name="item_<n>">` per item and the submit
+    // route forwards every `item_*` field to the RPC. Prove the name shape
+    // the screen posts is exactly the shape the server-side key scores.
+    const key = JSON.parse(answerKey()) as Record<string, string>
+    const expected = Array.from({ length: 50 }, (_, i) => `item_${i + 1}`)
+    expect(Object.keys(key).sort()).toEqual([...expected].sort())
+
+    const payload = JSON.stringify(
+      Object.fromEntries(expected.map((name) => [name, key[name]])),
+    )
+    const out = sql(`
+      BEGIN;
+      ${openLearner(seededIds.learner)}
+      SELECT ppg_prettest_start('th');
+      SELECT ppg_prettest_submit('${payload.replace(/'/g, "''")}'::jsonb);
+      RESET ROLE;
+      SELECT 'row='||instrument_version||'|'||language||'|'||score::text
+        FROM ppg_pretest_responses
+       WHERE learner_id = '${seededIds.learner}'::uuid;
+      ROLLBACK;`,
+    )
+    expect(out).toContain(`row=${VERSION}|th|50`)
+  },
+)
+
+test(
   'Second attempt: the single response row cannot be submitted twice',
   { skip: !hasLocalStack },
   () => {
