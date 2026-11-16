@@ -745,5 +745,26 @@
       "preSubmitted": "The pre-test has already been submitted.",
       "alreadySubmitted": "This attempt was already submitted."
     }
+  },
+  "lessonPlayer": {
+    "progressLabel": "Lesson progress",
+    "stepOf": "Step {current} of {total}",
+    "kind": {
+      "objective": "Objective",
+      "explanation": "Explanation",
+      "example": "Example",
+      "check": "Mini-check",
+      "summary": "Summary"
+    },
+    "back": "Back",
+    "next": "Next",
+    "check": "Check answer",
+    "checking": "Checking...",
+    "correct": "Correct - well done.",
+    "incorrect": "Not quite - read the explanation, then continue whenever you are ready.",
+    "explanation": "Why: {text}",
+    "error": "The answer could not be checked. You can still continue.",
+    "readAll": "Read all steps",
+    "stepsHeading": "Lesson steps"
   }
 }

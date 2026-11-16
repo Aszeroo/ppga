@@ -62,7 +62,7 @@ test('Bank constraints: phase/form/option checks + the deferred bank guard', () 
 test('Curriculum key schema accepts chapter-NN and remains anchored', () => {
   const lib = read('lib/sup/curriculum.ts')
   expect(lib.includes('chapter-\\d{2}')).toBe(true)
-  expect(lib.includes('/^(module-\\d{2}|chapter-\\d{2}|module-\\d{2}-lesson-\\d{2})$/i')).toBe(true)
+  expect(lib.includes('/^(module-\\d{2}|chapter-\\d{2}|(?:module|chapter)-\\d{2}-lesson-\\d{2})$/i')).toBe(true)
 })
 
 test('Page + route: the chapter test screen reads via the server-only module and posts to the submit route', () => {

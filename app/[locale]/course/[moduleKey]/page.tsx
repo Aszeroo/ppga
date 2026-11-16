@@ -122,8 +122,13 @@ async function LessonsList({ moduleKey }: { moduleKey: string }) {
 
 async function ChapterOverview({ chapterKey }: { chapterKey: string }) {
   const t = await getTranslations('chapterTest')
+  const tL = await getTranslations('lesson')
   const locale = await getLocale()
   const state = await readChapterTestStateViaRpc(chapterKey)
+  // #75: the Chapter's CAI lessons are reachable from the overview. The same
+  // server-side visibility rule decides the rows (a locked chapter returns
+  // `[]`, never a hidden link).
+  const lessons = await readLessonsViaRpc(chapterKey)
   const pickText = (th: string | undefined, en: string | undefined) =>
     locale === 'th' ? (th ?? en ?? '') : (en ?? th ?? '')
   return (
@@ -132,6 +137,33 @@ async function ChapterOverview({ chapterKey }: { chapterKey: string }) {
         {state.status === 'ok' ? pickText(state.title_th, state.title_en) : t('overviewTitle')}
       </h1>
       <p className="ppg-card-text">{t('overviewIntro')}</p>
+      {lessons.status === 'ok' && lessons.lessons && lessons.lessons.length > 0
+        ? (
+          <div>
+            <h2 className="ppg-list-title">{tL('list')}</h2>
+            <ul>
+              {lessons.lessons
+                .slice()
+                .sort((a, b) => a.order_index - b.order_index)
+                .map((lesson) => (
+                  <li key={lesson.lesson_key}>
+                    <Link
+                      className="ppg-link"
+                      href={{
+                        pathname: '/course/[moduleKey]/[lessonKey]',
+                        params: { moduleKey: chapterKey, lessonKey: lesson.lesson_key },
+                      }}
+                    >
+                      {lesson.order_index}. {pickText(lesson.title_th, lesson.title_en)}
+                    </Link>
+                    {' — '}
+                    {pickText(lesson.what_learn_th, lesson.what_learn_en)}
+                  </li>
+                ))}
+            </ul>
+          </div>
+        )
+        : null}
       {state.status === 'ok' ? (
         <div className="ppg-hub-grid">
           <Card

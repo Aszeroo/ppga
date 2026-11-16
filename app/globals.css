@@ -1516,6 +1516,68 @@ a.ppg-cta {
   margin: 0;
 }
 
+/* ── CAI lesson player (#75) ────────────────────────────────────────────── */
+
+.ppg-lesson-player {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-3);
+}
+
+/* The mini-check reveal: only the learner's SELECTED option is painted, and
+ * only after the server's grade lands (the answer key never reaches the
+ * browser). Scoped under `.ppg-lesson-player` so it outranks the shared
+ * `:has(input:checked)` selected state. The result is also carried as text
+ * in the feedback region + the `data-ppg-mini-result` marker. */
+.ppg-lesson-player .ppg-sc-opt[data-ppg-mini-state='correct'] {
+  background-color: var(--ppg-mint-tint);
+  border-color: var(--ppg-status-success);
+}
+
+.ppg-lesson-player .ppg-sc-opt[data-ppg-mini-state='incorrect'] {
+  background-color: var(--ppg-pink-100);
+  border-color: var(--ppg-status-error);
+}
+
+.ppg-mini-feedback {
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-3);
+  font-family: var(--font-ppg-body);
+  color: var(--ppg-fg-heading);
+}
+
+.ppg-mini-feedback[data-ppg-mini-result='correct'] {
+  background-color: var(--ppg-mint-tint);
+  border-color: var(--ppg-status-success);
+}
+
+.ppg-mini-feedback[data-ppg-mini-result='incorrect'] {
+  background-color: var(--ppg-pink-100);
+  border-color: var(--ppg-pink-300);
+}
+
+.ppg-mini-feedback-title {
+  margin: 0 0 var(--ppg-space-1);
+  font-weight: 700;
+}
+
+.ppg-mini-feedback-explain {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* The static "read all steps" fallback: collapsed by default, always in the
+ * server-rendered HTML, no answer keys. */
+.ppg-step-readall summary {
+  cursor: pointer;
+}
+
+.ppg-step-readall-entry + .ppg-step-readall-entry {
+  margin-top: var(--ppg-space-3);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ppg-sc-opt {
     transition-duration: 0s;
