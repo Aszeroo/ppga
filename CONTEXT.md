@@ -63,11 +63,11 @@ The single auto-scored, server-side question set (5–7 items, 3 options each) a
 _Avoid_: worksheet, project
 
 **Chapter Post-Test**:
-The 10-item auto-scored assessment at the end of each Chapter, drawn from a bank parallel to the Chapter Pre-Test with the same objective coverage. A score of 70% or higher unlocks the next Chapter.
+The 10-item auto-scored assessment at the end of each Chapter, drawn from a bank parallel to the Chapter Pre-Test with the same objective coverage. Retries are allowed; the best score decides the 70% unlock of the next Chapter, and the first score can be kept for formative export.
 _Avoid_: final quiz
 
 **Attempt**:
-A single Learner run of a Knowledge Mission or an assessment, with persisted state. Multiple attempts are allowed unless the instrument's design says otherwise; research instruments are single-attempt (ADR-0002).
+A single Learner run of a Knowledge Mission or an assessment, with persisted state. Multiple attempts are allowed unless the instrument's design says otherwise. The Research Pre-Test is single-attempt; the Final Test allows retries, but its first submitted attempt is preserved as the research measure and every submitted attempt is immutable (ADR-0002).
 _Avoid_: try, session
 
 ### Legacy practice vocabulary
@@ -91,7 +91,7 @@ The global 50-item auto-scored instrument administered before the Course, record
 _Avoid_: course pre-test, baseline exam
 
 **Final Test**:
-The 50-item auto-scored post-test covering all Chapters, interleaved rather than grouped by Chapter, and administered after the Course. It completes the study's pretest–posttest pair and is single-attempt. Code and tables may still call it the Post-Test.
+The 50-item auto-scored post-test covering all Chapters, interleaved rather than grouped by Chapter, and administered after the Course. It completes the study's pretest–posttest pair. Retries are allowed; the first submitted attempt is preserved as the research measure, and every submitted attempt is immutable. Code and tables may still call it the Post-Test.
 _Avoid_: final exam; post-test (use Final Test in new copy)
 
 **Knowledge Score**:
@@ -119,7 +119,7 @@ _Avoid_: report (unqualified), download
 ### Gamification
 
 **XP**:
-The single gamification currency, granted by trusted server-side logic for valid learning events; drives Level, unlocks, and Badges. It is never derived from an assessment score, and no Chapter test or research instrument grants it. v1 has no other currency (no Points).
+The single gamification currency, granted by trusted server-side logic for valid learning events; drives Level, unlocks, and Badges. It is awarded once per Chapter Post-Test pass (a score of 70% or higher), once per Knowledge Mission completion, and once for Final Test completion. Mini-Checks, Chapter Pre-Tests, and the Research Pre-Test never award it. XP and Level are never proportional to an assessment score: the score decides pass or fail, not the reward amount, and XP is never shown as an assessment score. v1 has no other currency (no Points).
 _Avoid_: points, coins, credits
 
 **Leaderboard**:
@@ -131,7 +131,7 @@ A deterministic function of total XP. Never edited, decorated, or granted direct
 _Avoid_: rank, tier
 
 **Badge**:
-A persisted achievement awarded when explicit criteria are met by real learning events. It is never granted in exchange for an assessment score, and the research instruments award none.
+A persisted achievement awarded when explicit criteria are met by real learning events. Assessment milestones may trigger one — first Chapter cleared, perfect Chapter Post-Test, all nine Chapters cleared, Final Test completed — but a Badge is never granted in exchange for a score value, and the Research Pre-Test awards none.
 _Avoid_: achievement (in UI copy), trophy
 
 **Unlock**:

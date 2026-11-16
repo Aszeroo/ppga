@@ -29,19 +29,20 @@ Each Chapter has two 10-item banks, one for the Pre-Test and one for the Post-Te
 
 ### The Final Test
 
-The Final Test is a single 50-item auto-scored post-test covering all Chapters, with items interleaved rather than grouped by Chapter. It replaces the Post-Test endpoint of the old journey and is single-attempt and immutable once submitted (ADR-0002). Roughly 5–6 items come from each Chapter; the exact allocation is fixed in the content migration.
+The Final Test is a 50-item auto-scored post-test covering all Chapters, with items interleaved rather than grouped by Chapter. It replaces the Post-Test endpoint of the old journey. Retries are allowed, but the first submitted attempt is preserved as the research measure and later retries never overwrite it; every submitted attempt is immutable (ADR-0002). Roughly 5–6 items come from each Chapter; the exact allocation is fixed in the content migration.
 
 ### The research design
 
-A global 50-item Research Pre-Test is administered before the Course and paired with the 50-item Final Test for the one-group pretest–posttest study. Neither instrument awards XP or Badges (ADR-0001). Chapter Pre-Tests and Chapter Post-Tests are formative and are not research instruments.
+A global 50-item Research Pre-Test is administered before the Course and paired with the 50-item Final Test for the one-group pretest–posttest study. The Research Pre-Test is single-attempt and awards no XP and no Badges (ADR-0001). The Final Test awards XP once for completion, and a Badge may mark its completion, but its score never affects the reward. Chapter Pre-Tests and Chapter Post-Tests are formative and are not research instruments.
 
 ### XP and badge rules
 
 Gamification stays, and it rewards learning events rather than assessment results:
 
-- XP is granted once per valid event, through idempotent server-side ledger writes. Mini-Check passes and Knowledge Mission passes are the active XP events; the exact amounts live in the server migrations.
-- Chapter Pre-Tests, Chapter Post-Tests, the Research Pre-Test, and the Final Test grant no XP and no Badges.
-- Badges stay event-driven, for example the first Lesson pass or a Knowledge Mission pass. No Badge is granted in exchange for an assessment score.
+- XP is granted once per valid event, through idempotent server-side ledger writes: once per Chapter Post-Test pass (a score of 70% or higher), once per Knowledge Mission completion, and once for Final Test completion; the exact amounts live in the server migrations.
+- Mini-Checks never award XP. Chapter Pre-Tests, the Research Pre-Test, and the Satisfaction Survey award no XP and no Badges.
+- XP and Level are never proportional to an assessment score: the score decides pass or fail, never the reward amount, and XP is never shown as an assessment score (ADR-0001).
+- Badges stay event-driven and may mark assessment milestones: the first Chapter cleared, a perfect Chapter Post-Test, all nine Chapters cleared, and Final Test completion, alongside ordinary events such as the first Lesson pass or a Knowledge Mission completion. A Badge is never granted in exchange for a score value.
 - Level and Leaderboard remain deterministic functions of total XP and never show assessment scores (ADR-0001).
 
 ### Item blueprint
@@ -65,4 +66,4 @@ Old curriculum content (Modules, Self-Checks, Practical Missions, Submissions, R
 - A Chapter must ship with all four loop stages before learners see it; a Chapter without a Post-Test bank cannot unlock the next one.
 - Research exports keep working because legacy tables are archived, not dropped.
 - The Practical Mission UI is not extended. Any future worksheet feature must reopen this ADR.
-- ADR-0002's Final Project gate is superseded. Its single-attempt and immutability rules still govern the Research Pre-Test and the Final Test.
+- ADR-0002's Final Project gate is superseded. Its single-attempt rule still governs the Research Pre-Test; its immutability rule governs every submitted Final Test attempt, while retries are allowed and the first submitted attempt stays the research measure.
