@@ -101,8 +101,8 @@ export async function readChapterProgressData(
     missionsQuery = missionsQuery.eq('learner_id', opts.learnerId)
   }
 
-  const attempts = await attemptsQuery
-  const missions = await missionsQuery
+  // Independent reads: one round-trip wave, not two.
+  const [attempts, missions] = await Promise.all([attemptsQuery, missionsQuery])
 
   if (attempts.error || missions.error) {
     return {

@@ -57,7 +57,9 @@ jobs:
       - run: npm ci
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned: `latest` asks the GitHub API for the newest release and
+          # fails the whole e2e job on a rate limit (seen 2026-11-17).
+          version: 2.117.0
       # The local stack with the repo's own migrations + seeds; the keys are
       # the deterministic dev keys `supabase start` prints (never secrets).
       - name: Supabase local stack
