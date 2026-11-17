@@ -45,8 +45,6 @@ const flags = (over: Partial<HubCtaFlags> = {}): HubCtaFlags => ({
   postSubmitted: false,
   surveyUnlocked: false,
   surveySubmitted: false,
-  awaitingReview: false,
-  awaitingReviewModuleKey: null,
   ...over,
 })
 
@@ -61,12 +59,11 @@ test('CTA chain: fresh sees the explanation, the consenting see the Pre-Test, th
   expect(pickPrimaryCta(flags({ override: true }))).toEqual({ href: '/course', labelKey: 'linkCourse' })
 })
 
-test('CTA chain: awaiting review, then the Post-Test, then the Survey, then NOTHING', () => {
+test('CTA chain: the Post-Test, then the Survey, then NOTHING (no review CTA — #85)', () => {
   const gateOpen = { consent: true, pretestSubmitted: true }
-  expect(
-    pickPrimaryCta(flags({ ...gateOpen, awaitingReview: true, awaitingReviewModuleKey: 'module-11' })),
-  ).toEqual({ href: { reviewModuleKey: 'module-11' }, labelKey: 'linkReviewStatus' })
-  // the close chain outranks the review check (a done round is not awaiting).
+  // PPGA #85: a retired Final-Project review round is never a learner CTA;
+  // the learner continues on the Course.
+  expect(pickPrimaryCta(flags(gateOpen))).toEqual({ href: '/course', labelKey: 'linkCourse' })
   expect(pickPrimaryCta(flags({ ...gateOpen, postUnlocked: true }))).toEqual({
     href: '/post-test',
     labelKey: 'linkPostTest',
@@ -309,7 +306,9 @@ test('buildHubView turns the six real reads into the rendered model (null = no r
     },
     xp: { status: 'ok', level: 3, totalXp: 250, xpToNext: 50, progressPct: 50, badges: [{ badge_key: 'first_steps', label_th: 'ขั้แรก', label_en: 'First Steps' }] },
   })
-  expect(awaiting.cta).toEqual({ href: { reviewModuleKey: 'module-11' }, labelKey: 'linkReviewStatus' })
+  // PPGA #85: a legacy submission row still normalizes, but no review CTA is
+  // produced — the journey is retired.
+  expect(awaiting.cta).toEqual({ href: '/course', labelKey: 'linkCourse' })
   expect(awaiting.badges?.[0]?.badge_key).toBe('first_steps')
   expect(awaiting.submission?.missionId).toBe('module-11')
   expect(awaiting.feedback).toBeNull()
@@ -332,12 +331,12 @@ test('the hub V3 framing (PPGA #52): the ONE CTA rides the .ppg-cta face and the
   // the single primary action carries the V3 CTA face (the gallery's btn-p).
   expect(src).toContain('className="ppg-cta" data-ppg-cta="primary"')
   // the real-status slots are the gallery's cards: the gold XP panel + the
-  // white strip-cards (course progress / badges / mission / submission /
-  // feedback) — every row keeps its null-guard (a missing datum renders NO
-  // card: zero fabricated data).
+  // white strip-cards (course progress / badges / mission). PPGA #85 removed
+  // the submission and feedback cards; every remaining row keeps its
+  // null-guard (a missing datum renders NO card: zero fabricated data).
   expect(src).toContain('ppg-xp-panel')
-  expect(src.match(/ppg-status-card/g)?.length).toBeGreaterThanOrEqual(5)
-  expect(src.match(/if \(!\w+\) return null/g)?.length).toBeGreaterThanOrEqual(6)
+  expect(src.match(/ppg-status-card/g)?.length).toBeGreaterThanOrEqual(3)
+  expect(src.match(/if \(!\w+\) return null/g)?.length).toBeGreaterThanOrEqual(4)
   // the earned badge's observable stays inside the status region (the
   // #51 chip-only HUD moved the award row here — the `data-ppg-badge` seam).
   expect(src).toContain('data-ppg-badge={b.badge_key}')

@@ -16,8 +16,9 @@ import { MenuWrap } from './MenuWrap'
  * - Learner: Dashboard (`/`, `nav.home`), Course (`/course`, `nav.course`),
  *   Badges (`/badges`, `nav.badges`), Leaderboard (`/leaderboard`,
  *   `nav.leaderboard`), Profile (`/profile`, `nav.profile`).
- * - Teacher: Dashboard, Review Queue (`/teacher/review`,
- *   `nav.reviewQueue`), Profile.
+ * - Teacher: Dashboard, Profile. The retired Review Queue (#85) no longer
+ *   rides the active navigation; its route keeps an unavailable state for an
+ *   old bookmark.
  * - Admin: Dashboard, Course / Publication (`/admin/publication`,
  *   `nav.coursePublication`), User list (`/admin/users`, `nav.adminUsers`),
  *   Audit stream (`/admin/audit`, `nav.adminAudit`), Provision roster
@@ -64,7 +65,6 @@ const NAV_ITEMS = {
   ] as NavItem[],
   teacher: [
     { href: '/', key: 'home' },
-    { href: '/teacher/review', key: 'reviewQueue' },
     { href: '/profile', key: 'profile' },
   ] as NavItem[],
   admin: [

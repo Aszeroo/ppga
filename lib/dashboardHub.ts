@@ -37,16 +37,14 @@ export interface HubSubmission {
 export type CompletedKeys = readonly string[]
 
 /** The primary CTA: one destination, one copy key (`home.*`), server-derived.
- * A bare string is a typed top-level route; the object form names the FINAL
- * module whose review screen is the destination (the page builds the typed
- * dynamic route from the key — this module never speaks the router). */
+ * PPGA #85 retired the worksheet/review journey, so every destination is a
+ * typed top-level route; no review screen is ever a learner CTA. */
 export type HubCtaHref =
   | '/'
   | '/pre-test'
   | '/post-test'
   | '/survey'
   | '/course'
-  | { reviewModuleKey: string }
 
 export interface HubCta {
   href: HubCtaHref
@@ -56,7 +54,6 @@ export interface HubCta {
     | 'linkCourse'
     | 'linkPostTest'
     | 'linkSurvey'
-    | 'linkReviewStatus'
 }
 
 /** The flags the state machine reads — every one is a server read's own
@@ -74,18 +71,14 @@ export interface HubCtaFlags {
   postSubmitted: boolean
   surveyUnlocked: boolean
   surveySubmitted: boolean
-  /** The FINAL module's own latest submission round is with the Teacher. */
-  awaitingReview: boolean
-  awaitingReviewModuleKey: string | null
 }
 
 /**
  * The ONE primary CTA per state, same chain as before (consent → Pre-Test →
- * Course; Post-Test → Survey off the gate) with the ticket's awaiting-review
- * state between Course and the close chain's lock: the research close is
- * exactly what the Final Project review gates, so while that round is with
- * the Teacher, checking the review status IS the next action. After the
- * Survey, nothing is left: NO CTA (the closeDone copy speaks).
+ * Course; Post-Test → Survey off the gate). PPGA #85 removed the retired
+ * Final-Project review CTA: a learner is never sent to a worksheet/review
+ * screen. After the Survey, nothing is left: NO CTA (the closeDone copy
+ * speaks).
  */
 export function pickPrimaryCta(f: HubCtaFlags): HubCta | null {
   if (!f.gateOk) return null
@@ -93,7 +86,6 @@ export function pickPrimaryCta(f: HubCtaFlags): HubCta | null {
   if (!f.pretestSubmitted && !f.override) return { href: '/pre-test', labelKey: 'linkPreTest' }
   if (f.closeReady && f.postUnlocked && !f.postSubmitted) return { href: '/post-test', labelKey: 'linkPostTest' }
   if (f.closeReady && f.surveyUnlocked && !f.surveySubmitted) return { href: '/survey', labelKey: 'linkSurvey' }
-  if (f.awaitingReview && f.awaitingReviewModuleKey) return { href: { reviewModuleKey: f.awaitingReviewModuleKey }, labelKey: 'linkReviewStatus' }
   if (f.surveySubmitted) return null
   return { href: '/course', labelKey: 'linkCourse' }
 }
@@ -447,7 +439,6 @@ export function deriveHubSummary(
  */
 export function buildHubView(r: HubReads): HubViewModel {
   const n = normalizeHubReads(r)
-  const awaiting = n.rowsOk ? deriveAwaitingReview(n.modules, n.submissions) : null
   return {
     lines: deriveNextActionLines({
       gateStatus: n.gateStatus,
@@ -472,8 +463,6 @@ export function buildHubView(r: HubReads): HubViewModel {
       postSubmitted: n.postSubmitted,
       surveyUnlocked: n.surveyUnlocked,
       surveySubmitted: n.surveySubmitted,
-      awaitingReview: awaiting !== null,
-      awaitingReviewModuleKey: awaiting?.moduleKey ?? null,
     }),
     ...deriveHubSummary(n),
   }

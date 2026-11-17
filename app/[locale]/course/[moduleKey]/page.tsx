@@ -24,7 +24,8 @@ import { XpRewardChip } from '../../../../components/XpRewardChip'
  * availability read, cleared by the OWN `complete` row), the unlock band
  * ONLY when the learner's own completion actually opened the next module,
  * the REAL reward chip once its ledger row exists, and the Mission link that
- * rides the module's OWN kind (the catalog table speaks upload vs knowledge).
+ * always points at the Knowledge Mission (PPGA #85 retired the practical
+ * worksheet/upload destination).
  * `force-dynamic` because the page reads the detail through the session JWT.
  * Every state (`lesson.list`, `lesson.states.*`, `lesson.linkMap`,
  * `lesson.fallbackSuspense`, `challenge.*`) has its own copy in `messages`.
@@ -104,9 +105,7 @@ async function LessonsList({ moduleKey }: { moduleKey: string }) {
           <p>
             <Link
               className="ppg-link"
-              href={ctx.kind === 'practical'
-                ? { pathname: '/course/[moduleKey]/practical', params: { moduleKey } }
-                : { pathname: '/course/[moduleKey]/mission', params: { moduleKey } }}
+              href={{ pathname: '/course/[moduleKey]/mission', params: { moduleKey } }}
             >
               {t('linkMission')}
             </Link>

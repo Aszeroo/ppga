@@ -1,10 +1,9 @@
-import { Suspense } from 'react'
-
 import { getTranslations } from 'next-intl/server'
 import { Link } from '../../../../../lib/i18n/routing'
 
 import { readRubricCriteriaViaRpc } from '../../../../../lib/sup/reviews'
 import { RubricRunningTotal } from '../../../../../components/RubricRunningTotal'
+import { UnavailableSurface } from '../../../../../components/UnavailableSurface'
 
 /**
  * Ticket #14 teacher review form (one submission round), #55 V3 utilitarian
@@ -36,7 +35,8 @@ interface RubricDescriptor {
   descriptor_en: string
 }
 
-async function ReviewForm({
+// fallow-ignore-next-line unused-export, complexity
+export async function ReviewForm({
   submissionId,
   learnerId,
 }: {
@@ -153,23 +153,20 @@ async function ReviewForm({
   )
 }
 
-export default async function TeacherReviewSubmissionPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ submissionId: string }>
-  searchParams: Promise<{ learner?: string | string[] }>
-}) {
+/**
+ * PPGA #85: the rubric review form is retired from the active journey. A
+ * direct visit to any submission id shows the unavailable state; the form
+ * above stays exported for historical reuse and is never rendered. The
+ * submission rows and rubric history remain readable through the admin/export
+ * and review-history APIs.
+ */
+export default async function TeacherReviewSubmissionPage() {
   const t = await getTranslations('review')
-  const { submissionId } = await params
-  // PPGA #18 finding #5: the queue's link carries the row's owner — the
-  // review must name the learner (the (mission, round) pair alone is not a
-  // submission identity across learners).
-  const learnerParam = (await searchParams).learner
-  const learnerId = typeof learnerParam === 'string' ? learnerParam : undefined
   return (
-    <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <ReviewForm submissionId={submissionId} learnerId={learnerId} />
-    </Suspense>
+    <UnavailableSurface
+      title={t('unavailableTitle')}
+      body={t('unavailableBody')}
+      linkLabel={t('unavailableLink')}
+    />
   )
 }

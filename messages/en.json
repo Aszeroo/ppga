@@ -580,7 +580,10 @@
       "historyEmpty": "no submission rows yet (you never submits this Mission)",
       "typeWrong": "wrong type: the file signature NEVER is .pptx/.ppt — pick a .pptx or .ppt file",
       "oversize": "too large: 25 MB max — trim your deck before you upload"
-    }
+    },
+    "unavailableTitle": "Practical Missions are no longer available",
+    "unavailableBody": "This course now uses chapter lessons, mini-checks and Knowledge Missions. Previous submission records are kept for administrators.",
+    "unavailableLink": "Back to the course map"
   },
   "badge": {
     "title": "Badge gallery",
@@ -675,7 +678,10 @@
     "rubricTitle": "📋 Rubric review",
     "feedbackPlaceholder": "Write encouraging feedback — what worked well, and what to improve next…",
     "approvePass": "✓ Approve & pass",
-    "requestRevision": "🔁 Send back for revision"
+    "requestRevision": "🔁 Send back for revision",
+    "unavailableTitle": "The review queue is closed",
+    "unavailableBody": "This course no longer uses worksheets or file submissions. Past review records remain readable to administrators.",
+    "unavailableLink": "Back to the course map"
   },
   "language": {
     "th": "Thai",

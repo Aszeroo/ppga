@@ -1,5 +1,3 @@
-import { Suspense } from 'react'
-
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../../../lib/i18n/routing'
 
@@ -10,6 +8,7 @@ import { buildChallengeContext, challengeTrackSteps, rewardChipProps } from '../
 import { Card } from '../../../../../components/Card'
 import { StatusPill } from '../../../../../components/StatusPill'
 import { ChallengeTrack } from '../../../../../components/ChallengeTrack'
+import { UnavailableSurface } from '../../../../../components/UnavailableSurface'
 import { XpRewardChip } from '../../../../../components/XpRewardChip'
 
 /**
@@ -31,7 +30,8 @@ import { XpRewardChip } from '../../../../../components/XpRewardChip'
  */
 export const dynamic = 'force-dynamic'
 
-async function LearnerReviewResult({ moduleKey }: { moduleKey: string }) {
+// fallow-ignore-next-line unused-export, complexity
+export async function LearnerReviewResult({ moduleKey }: { moduleKey: string }) {
   const t = await getTranslations('review')
   const tC = await getTranslations('challenge')
   const locale = await getLocale()
@@ -143,12 +143,18 @@ async function LearnerReviewResult({ moduleKey }: { moduleKey: string }) {
   )
 }
 
-export default async function ReviewPage({ params }: { params: Promise<{ moduleKey: string }> }) {
+/**
+ * PPGA #85: the worksheet review-result screen left the learner journey. A
+ * direct visit shows the unavailable state; the legacy result component
+ * above stays exported for historical reuse and is never rendered.
+ */
+export default async function ReviewPage() {
   const t = await getTranslations('review')
-  const { moduleKey } = await params
   return (
-    <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <LearnerReviewResult moduleKey={moduleKey} />
-    </Suspense>
+    <UnavailableSurface
+      title={t('unavailableTitle')}
+      body={t('unavailableBody')}
+      linkLabel={t('unavailableLink')}
+    />
   )
 }
