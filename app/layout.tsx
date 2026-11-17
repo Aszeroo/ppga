@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
-import { getLocale } from 'next-intl/server'
+import { getLocale, getMessages } from 'next-intl/server'
 import { NextIntlClientProvider } from 'next-intl'
 
 import { Noto_Sans_Thai, Press_Start_2P } from 'next/font/google'
@@ -46,6 +46,25 @@ const ppgBody = Noto_Sans_Thai({
   variable: '--font-ppg-body',
 })
 
+/**
+ * Only these namespaces are read by Client Components (`useTranslations`).
+ * Everything else stays server-rendered, so the full message corpus is not
+ * serialized into every page's HTML/hydration payload.
+ */
+const CLIENT_MESSAGE_NAMESPACES = [
+  'gallery',
+  'selector',
+  'review',
+  'login',
+  'logout',
+  'changePassword',
+  'admin',
+  'nav',
+  'shell',
+  'course',
+  'challenge',
+] as const
+
 export const metadata: Metadata = {
   title: 'PPGA — Gamified Presentation Program',
   description:
@@ -54,6 +73,12 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   const locale = await getLocale()
+  const allMessages = await getMessages()
+  const clientMessages = Object.fromEntries(
+    CLIENT_MESSAGE_NAMESPACES.flatMap((namespace) =>
+      allMessages[namespace] ? [[namespace, allMessages[namespace]]] : [],
+    ),
+  )
 
   return (
     <html
@@ -61,7 +86,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       className={ppgDisplay.variable}
     >
       <body className={ppgBody.variable}>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider locale={locale} messages={clientMessages}>{children}</NextIntlClientProvider>
       </body>
     </html>
   )
