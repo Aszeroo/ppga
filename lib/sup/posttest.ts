@@ -1,8 +1,7 @@
 import 'server-only'
 
-import { cookies } from 'next/headers'
+import { createSupaSessionClient } from './sessionClient'
 
-import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 
 /**
@@ -75,24 +74,6 @@ export interface PosttestSubmitResult {
  * authority; we do NOT use the service-role key (it bypasses RLS). Missing
  * env yields `null` so the caller shows "not-configured" instead of crashing.
  */
-async function createSupaSessionClient() {
-  const url = process.env.NEXT_PUBLIC_SUP_URL
-  const anonKey = process.env.NEXT_PUBLIC_SUP_ANON_KEY
-  if (!url || !anonKey) return null
-
-  const jar = await cookies()
-  return createClient(url, anonKey, {
-    auth: {
-      storageKey: 'ppga_session',
-      storage: {
-        isServer: true as const,
-        getItem: (key: string) => jar.get(key)?.value ?? null,
-        setItem: () => undefined,
-        removeItem: () => undefined,
-      },
-    },
-  })
-}
 
 /**
  * The close-chain state: the unlock rides the DATABASE's own authority —

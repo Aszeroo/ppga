@@ -1,10 +1,9 @@
 import 'server-only'
 
+import { createSupaSessionClient } from './sessionClient'
+
 import { cache } from 'react'
 
-import { cookies } from 'next/headers'
-
-import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 
 /**
@@ -91,24 +90,6 @@ export interface XpSummaryState {
  * caller shows "not-configured" instead of crashing. The jar is resolved
  * before the (sync) storage callback is built (`next/headers` is async).
  */
-async function createSupaSessionClient() {
-  const url = process.env.NEXT_PUBLIC_SUP_URL
-  const anonKey = process.env.NEXT_PUBLIC_SUP_ANON_KEY
-  if (!url || !anonKey) return null
-
-  const jar = await cookies()
-  return createClient(url, anonKey, {
-    auth: {
-      storageKey: 'ppga_session',
-      storage: {
-        isServer: true as const,
-        getItem: (key: string) => jar.get(key)?.value ?? null,
-        setItem: () => undefined,
-        removeItem: () => undefined,
-      },
-    },
-  })
-}
 
 /**
  * The Self-Check questions a SEE-ABLE Lesson shows: the RPC's jsonb NEVER
