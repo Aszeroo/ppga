@@ -50,3 +50,26 @@ HTML weight dropped as well:
 - `/api/health` is a live Postgres probe and sits just above its 0.6 s target (0.67 s median, with cold-start outliers). It is not user-facing in the learning loop.
 - Full fresh-CAI-loop coverage is provided by the CI Playwright journey; this production pass verified the deployed pages, instruments, security and persisted research state. Admin mutation surfaces were not all re-exercised (consent was verified earlier); local seam tests cover them.
 - Native-speaker Thai sign-off and the `#61` instrument approval remain owner decisions.
+
+## Late defect fixes (deployed 2026-11-17, `main@ca0876d`)
+
+Two production defects surfaced after this pass and were fixed, merged and re-verified on the final deploy.
+
+### Locale switch kept the previous language
+
+Switching from `/th/login` to English changed the URL to `/en/login` but the page kept rendering Thai until a reload. Direct loads of `/en/login` were correct. `NextIntlClientProvider` sat in the root layout, outside the `[locale]` segment, and Next.js keeps a layout mounted across a navigation, so the provider kept its original locale while the server components below it updated. The provider, the filtered client message payload and `LocaleLangSync` now live in `app/[locale]/layout.tsx` (#114).
+
+On the deployed build, Playwright reported `selector=en` and English copy after switching from `/th/login` without a reload.
+
+### Change password accepted the wrong current password
+
+`POST /api/auth/change-password` returned success when the current password was wrong. Hosted Supabase ignores the `current_password` field of `PUT /auth/v1/user` unless the project setting is enabled, so the server never saw a failed check. The route now verifies the current password with a server-side password grant before calling `PUT /auth/v1/user`, and fails closed when the session has no email (#113).
+
+Six checks passed against production: the wrong current password returned `current_password_invalid`, the password stayed unchanged, the correct current password changed it, and the test account was restored to its original password.
+
+### Re-verification on the final deploy
+
+- Production checklist: 72/72 passed.
+- Browser locale test: 10/10 passed, including the switch without reload.
+- Change-password checks: 6/6 passed.
+- Typecheck, Tests and Critical journey E2E green on `main@ca0876d`.
