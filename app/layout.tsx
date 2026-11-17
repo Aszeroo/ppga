@@ -65,6 +65,7 @@ const CLIENT_MESSAGE_NAMESPACES = [
   'shell',
   'course',
   'challenge',
+  'lessonPlayer',
 ] as const
 
 export const metadata: Metadata = {
