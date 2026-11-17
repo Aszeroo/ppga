@@ -49,25 +49,17 @@ export async function readHubRowsViaTables(): Promise<HubRowsState> {
   // learner to learner_id = auth.uid() — no explicit filter is possible here
   // (the RLS IS the filter), and the seed's placeholder rows carry
   // 'incomplete', so only a real completion counts.
-  const missions = await sup
-    .from('ppg_module_missions')
-    .select('module_key')
-    .eq('status', 'complete')
+  // The two OWN reads run together; the practical catalogue is retired
+  // (ADR-0005), so the dashboard no longer pays a third round-trip.
+  const [missions, submissions] = await Promise.all([
+    sup.from('ppg_module_missions').select('module_key').eq('status', 'complete'),
+    sup
+      .from('ppg_submissions')
+      .select('mission_id, submission_seq, status, review_verdict, review_notes_th, review_notes_en, created_at')
+      .order('created_at', { ascending: true }),
+  ])
 
-  // OWN submission rounds: the `ppg_submissions_select` policy is the filter.
-  // Oldest first — the caller reads the LAST row as the latest round.
-  const submissions = await sup
-    .from('ppg_submissions')
-    .select('mission_id, submission_seq, status, review_verdict, review_notes_th, review_notes_en, created_at')
-    .order('created_at', { ascending: true })
-
-  // The practical-mission set: the shipped SELECT grants every signed-in role
-  // the module_key list (the content catalog, not learner-private data).
-  const practical = await sup
-    .from('ppg_practical_missions')
-    .select('module_key')
-
-  for (const q of [missions, submissions, practical]) {
+  for (const q of [missions, submissions]) {
     if (q.error) return { status: 'error', detail: q.error.message }
   }
 
@@ -75,6 +67,6 @@ export async function readHubRowsViaTables(): Promise<HubRowsState> {
     status: 'ok',
     completedModuleKeys: (missions.data ?? []).map((r: { module_key: string }) => r.module_key),
     submissions: (submissions.data ?? []) as HubRowsState['submissions'],
-    practicalModuleKeys: (practical.data ?? []).map((r: { module_key: string }) => r.module_key),
+    practicalModuleKeys: [],
   }
 }

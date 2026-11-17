@@ -8,6 +8,10 @@ import { Noto_Sans_Thai, Press_Start_2P } from 'next/font/google'
 
 import './globals.css'
 
+/** Keep the function next to the Supabase project (ap-southeast-1) where the
+ * Vercel plan allows region selection. */
+export const preferredRegion = 'sin1'
+
 /**
  * ADR-0004 / ticket #50 fonts: the V3 design system's type pair, loaded via
  * `next/font/google`.
@@ -45,7 +49,7 @@ const ppgBody = Noto_Sans_Thai({
 export const metadata: Metadata = {
   title: 'PPGA — Gamified Presentation Program',
   description:
-    'A bilingual (Thai/English) gamified web platform for ปวช.2 vocational learners to build real Microsoft PowerPoint presentation-creation skills.',
+    'A bilingual (Thai/English) gamified CAI course for the vocational subject 21910-2006 Presentation Program, delivered as nine chapters with PowerPoint as the primary software example.',
 }
 
 export default async function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

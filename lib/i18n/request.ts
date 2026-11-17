@@ -7,7 +7,6 @@ import { getRequestConfig } from 'next-intl/server'
 import { type IntlError } from 'use-intl/core'
 
 import { locales, type Locale } from './routing'
-import { mergeMessages } from './messages-merge'
 import { humanReadableFallback } from './fallbackText'
 
 /**
@@ -43,10 +42,13 @@ export default getRequestConfig(
     const store = await cookies()
     const locale = serverLocale(requested, store.get('ppga-locale')?.value)
 
-    const messages = mergeMessages(locale, {
-      th: (await import('../../messages/th.json')).default,
-      en: (await import('../../messages/en.json')).default,
-    })
+    // One language per request: `th` and `en` carry the same 714 keys, so a
+    // missing key falls to the human-readable fallback — never to the other
+    // language (the cross-locale merge mixed languages on screen).
+    const messages =
+      locale === 'th'
+        ? (await import('../../messages/th.json')).default
+        : (await import('../../messages/en.json')).default
 
     return {
       locale,

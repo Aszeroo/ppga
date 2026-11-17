@@ -34,11 +34,14 @@ export function LanguageSelectorSelect({ labels }: Props) {
     (event: { target: { value: string } }) => {
       const next = event.target.value
       if (locales.includes(next as Locale) && next !== locale) {
+        // `keepalive` lets the profile update finish after the locale
+        // navigation starts; a failed update must never block the switch.
         void fetch('/api/locale', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ locale: next }),
-        })
+          keepalive: true,
+        }).catch(() => undefined)
         router.replace(pathname as Parameters<typeof router.replace>[0], { locale: next })
       }
     },

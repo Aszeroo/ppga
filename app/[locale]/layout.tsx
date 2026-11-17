@@ -7,6 +7,7 @@ import { cookies, headers } from 'next/headers'
 import { type ReactNode } from 'react'
 
 import { readOwnProfile } from '../../lib/sup/profile'
+import { readXpSummaryViaRpc } from '../../lib/sup/xp'
 
 import { hasCourseContext, isStandaloneScreen, localePathSuffix } from '../../lib/shellFrame'
 
@@ -76,7 +77,12 @@ export default async function LocaleLayout({ children }: Readonly<{ children: Re
   const tCourse = await getTranslations('course')
   const contextTitle = hasCourseContext(suffix) ? tCourse('title') : null
 
-  const profile = await readOwnProfile()
+  // The Shell reads profile + XP; running them together removes one serial
+  // Supabase round-trip from every framed page.
+  const [profile, xpSummary] = await Promise.all([
+    readOwnProfile(),
+    readXpSummaryViaRpc(),
+  ])
   const role = profile.status === 'ok' ? profile.row?.role : undefined
 
   /** PPGA #49 (idle auto-logout): the 30-minute idle countdown mounts ONCE,
@@ -89,7 +95,7 @@ export default async function LocaleLayout({ children }: Readonly<{ children: Re
 
   return (
     <>
-      <Shell role={role} contextTitle={contextTitle} standalone={standalone} activeSection={suffix}>{children}</Shell>
+      <Shell role={role} contextTitle={contextTitle} standalone={standalone} activeSection={suffix} xpSummary={xpSummary}>{children}</Shell>
       {!standalone && sessioned ? <IdleLogout locale={locale} /> : null}
     </>
   )

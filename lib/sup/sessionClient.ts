@@ -1,5 +1,7 @@
 import 'server-only'
 
+import { cache } from 'react'
+
 import { cookies } from 'next/headers'
 
 import { createClient } from '@supabase/supabase-js'
@@ -17,7 +19,7 @@ import { createClient } from '@supabase/supabase-js'
  * copies (`curriculum.ts`, `xp.ts`, …) predate this ticket and stay as they
  * are; NEW code shares.)
  */
-export async function createSupaSessionClient() {
+async function createSupaSessionClientUncached() {
   const url = process.env.NEXT_PUBLIC_SUP_URL
   const anonKey = process.env.NEXT_PUBLIC_SUP_ANON_KEY
   if (!url || !anonKey) return null
@@ -43,3 +45,6 @@ export async function createSupaSessionClient() {
     },
   })
 }
+
+/** Per-request memo: every reader in one render shares one client/session. */
+export const createSupaSessionClient = cache(createSupaSessionClientUncached)

@@ -41,9 +41,8 @@ import { StatusPill } from '../../../components/StatusPill'
 export const dynamic = 'force-dynamic'
 
 // fallow-ignore-next-line complexity
-async function GateStatus() {
+async function GateStatus({ state }: { state: Awaited<ReturnType<typeof readGateViaTable>> }) {
   const t = await getTranslations('pretest')
-  const state = await readGateViaTable()
   return (
     <section aria-label={t('gateLabel')}>
       <div
@@ -97,9 +96,8 @@ async function GateStatus() {
 }
 
 // fallow-ignore-next-line complexity
-async function PreTestForm({ locale }: { locale: string }) {
+async function PreTestForm({ locale, state }: { locale: string; state: Awaited<ReturnType<typeof readItemsViaTable>> }) {
   const t = await getTranslations('pretest')
-  const state = await readItemsViaTable()
   const items = state.status === 'ok' ? state.items ?? [] : []
   return (
     <section aria-label={t('itemsLabel')} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ppg-space-3)' }}>
@@ -155,11 +153,13 @@ async function PreTestForm({ locale }: { locale: string }) {
 export default async function PreTestPage() {
   const t = await getTranslations('pretest')
   const locale = await getLocale()
+  // Both reads are independent; one round-trip wave instead of two.
+  const [gate, items] = await Promise.all([readGateViaTable(), readItemsViaTable()])
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <div className="ppg-page-wrap">
-        <GateStatus />
-        <PreTestForm locale={locale} />
+        <GateStatus state={gate} />
+        <PreTestForm locale={locale} state={items} />
       </div>
     </Suspense>
   )

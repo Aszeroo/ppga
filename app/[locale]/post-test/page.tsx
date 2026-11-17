@@ -33,14 +33,11 @@ import { StatusPill } from '../../../components/StatusPill'
  */
 export const dynamic = 'force-dynamic'
 
-async function UnlockStatus() {
+async function UnlockStatus({ state, finalState }: {
+  state: Awaited<ReturnType<typeof readPosttestState>>
+  finalState: Awaited<ReturnType<typeof readFinalTestState>>
+}) {
   const t = await getTranslations('posttest')
-  // #84: the end-of-course state (best score, attempts, the one-time reward
-  // flags) is the database's aggregate; #86 consumes the same exported read.
-  const [state, finalState] = await Promise.all([
-    readPosttestState(),
-    readFinalTestState(),
-  ])
   return (
     <section aria-label={t('gateLabel')}>
       <div
@@ -101,9 +98,8 @@ async function UnlockStatus() {
 }
 
 // fallow-ignore-next-line complexity
-async function PosttestForm({ locale }: { locale: string }) {
+async function PosttestForm({ locale, itemsState }: { locale: string; itemsState: Awaited<ReturnType<typeof readPosttestItemsViaTable>> }) {
   const t = await getTranslations('posttest')
-  const itemsState = await readPosttestItemsViaTable()
   const items = itemsState.status === 'ok' ? itemsState.items ?? [] : []
   return (
     <section aria-label={t('itemsLabel')}>
@@ -158,11 +154,17 @@ async function PosttestForm({ locale }: { locale: string }) {
 export default async function PostTestPage() {
   const t = await getTranslations('posttest')
   const locale = await getLocale()
+  // The unlock state, the aggregate and the 50 items are independent reads.
+  const [state, finalState, itemsState] = await Promise.all([
+    readPosttestState(),
+    readFinalTestState(),
+    readPosttestItemsViaTable(),
+  ])
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <div className="ppg-page-wrap">
-        <UnlockStatus />
-        <PosttestForm locale={locale} />
+        <UnlockStatus state={state} finalState={finalState} />
+        <PosttestForm locale={locale} itemsState={itemsState} />
       </div>
     </Suspense>
   )

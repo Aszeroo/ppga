@@ -1,4 +1,4 @@
-import { readXpSummaryViaRpc } from '../lib/sup/xp'
+import { readXpSummaryViaRpc, type XpSummaryState } from '../lib/sup/xp'
 
 import { getTranslations } from 'next-intl/server'
 
@@ -23,9 +23,9 @@ import { getTranslations } from 'next-intl/server'
  * (tokens only — zeroed under `prefers-reduced-motion`); state is never
  * colour-alone: every chip carries its text + the ARIA label.
  */
-export async function XPHud() {
+export async function XPHud({ summary: provided }: { summary?: XpSummaryState } = {}) {
   const t = await getTranslations('header')
-  const summary = await readXpSummaryViaRpc()
+  const summary = provided ?? (await readXpSummaryViaRpc())
   const xp = summary.totalXp ?? 0
   const level = summary.level ?? 1
   return (
