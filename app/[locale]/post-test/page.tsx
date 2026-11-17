@@ -4,45 +4,43 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../lib/i18n/routing'
 
 import {
-  readPosttestState,
   readPosttestItemsViaTable,
+  readFinalTestState,
+  readPosttestState,
 } from '../../../lib/sup/posttest'
 import { Badge } from '../../../components/Badge'
+import { InstrumentItems } from '../../../components/PreTestItems'
 import { StatusPill } from '../../../components/StatusPill'
 
 /**
- * Ticket #15 Post-Test, #54 V3 dressing (presentation only — the reads, the
- * unlock machine, the SHIPPED form fields/patterns/`data-ppg-*` attrs and the
- * submit route are UNCHANGED): the instrument wearing the gallery's card/tag
- * idiom — the heading block (the ✅ title + the unlocked subline once the
- * Final Project is accepted), the research/no-XP chips, each item a question
- * card with the real Question {n}/{total} progress chips + the seeded choice
- * tiles (the tiles PRESENT the choices; the answer still rides the shipped
- * text input — no new control), and the submitted receipt (the ✓ receipt
- * heading, the immutable-once-submitted note + the success pill; a second
- * submit still reaches `already_submitted_or_missing`, never a silent
- * overwrite). Reachable as a screen ONLY after the Final Project's ACCEPTANCE
- * (the DATABASE's `ppg_posttest_unlocked` — module-11 `complete`, written by
- * the Teacher's approval alone — is the authority; the items read rides the
- * instrument's policy and an early learner reaches `denied`, never a hidden
- * UI; the submit function re-gates as `final_project_not_accepted`, never a
- * silently-early instrument; ADR-0002). The instrument's items are the
- * bilingual seeded material the Learner sees; the answer key never reaches
- * the browser (the score is the submit function's server-side sum — never
- * client-decided); the instrument grants NO XP, NO badge — a research
- * instrument never rewards (ADR-0001). `force-dynamic` because the page
- * reads the unlock + the items through the session JWT — `next build` must
- * never pre-render someone else's state. Every state (`posttest.states.*`)
- * has its own copy in `messages`; the V3 dressing's NEW copy
- * (`posttest.researchTag/noXpTag/instrumentHeading/unlockedSub/questionTag/
- * itemProgress/receiptHeading/immutableNote/immutableTag`) rides the same
- * file in BOTH locales.
+ * The Final Test screen (#84, the Close of the CAI course): the #15 engine
+ * with a comprehensive 50-item instrument and retry-aware attempts. The
+ * reads, the unlock machine, the SHIPPED form field names (`item_<n>`), the
+ * `^[A-D]$` contract and the `data-ppg-*` attrs are unchanged; the item list
+ * now renders INSIDE the one submitted form (one required control per item,
+ * `#posttest_answer_item_<n>`) so every answer reaches the submit route.
+ *
+ * Retries: the first submitted attempt is the research measure and never
+ * changes; later submits append attempts and only the best score is shown.
+ * The reward (400 XP + final_test_complete) is granted by the submit definer
+ * exactly once, idempotent across retries. The answer key never reaches the
+ * browser: the submit function scores it server-side and the key column has
+ * no client SELECT grant.
+ *
+ * `force-dynamic` because the page reads the unlock, the items and the state
+ * through the session JWT — `next build` must never pre-render someone else's
+ * state.
  */
 export const dynamic = 'force-dynamic'
 
 async function UnlockStatus() {
   const t = await getTranslations('posttest')
-  const state = await readPosttestState()
+  // #84: the end-of-course state (best score, attempts, the one-time reward
+  // flags) is the database's aggregate; #86 consumes the same exported read.
+  const [state, finalState] = await Promise.all([
+    readPosttestState(),
+    readFinalTestState(),
+  ])
   return (
     <section aria-label={t('gateLabel')}>
       <div
@@ -82,7 +80,13 @@ async function UnlockStatus() {
       {state.status === 'ok' && state.unlocked && state.submitted ? (
         <div className="ppg-instr-receipt">
           <h2 className="ppg-sc-result-title">{'✓ '}<span>{t('receiptHeading')}</span></h2>
-          <p>{t('states.submittedOnce')} {state.detail} ({state.instrumentVersion} / {state.language} / {state.score})</p>
+          <p>
+            {t('states.submittedOnce')} ({t('firstScoreLabel')}: {state.score})
+          </p>
+          <p>
+            {t('bestScoreLabel')}: {finalState?.best_score ?? state.score} · {t('attemptsLabel')}: {finalState?.attempts ?? 1}
+          </p>
+          <p>{t('retryNote')}</p>
           <p>{t('immutableNote')}</p>
           <StatusPill tone="success" label={t('immutableTag')} />
         </div>
@@ -96,57 +100,21 @@ async function UnlockStatus() {
   )
 }
 
-async function Items({ locale }: { locale: string }) {
-  const t = await getTranslations('posttest')
-  const state = await readPosttestItemsViaTable()
-  const items = state.status === 'ok' ? state.items ?? [] : []
-  const total = items.length
-  return (
-    <section aria-label={t('itemsLabel')} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ppg-space-3)' }}>
-      {state.status === 'ok'
-        ? items.map((item: { id: string; th: { prompt: string; choices: Record<string, string> }; en: { prompt: string; choices: Record<string, string> } }, i: number) => {
-          const pick = locale === 'th' ? item.th : item.en
-          return (
-            <div key={item.id} className="ppg-instr-item">
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--ppg-space-2)', flexWrap: 'wrap' }}>
-                <Badge text={`${t('questionTag')} ${i + 1}`} tone="neutral" />
-                <Badge text={t('itemProgress', { n: String(i + 1), total: String(total) })} tone="neutral" />
-              </div>
-              <p className="ppg-sc-question">{pick.prompt}</p>
-              <div className="ppg-sc-options">
-                {Object.entries(pick.choices ?? {}).map(([letter, text]) => (
-                  <div key={letter} className="ppg-instr-opt">
-                    <span className="ppg-sc-opt-letter" aria-hidden="true">{letter}</span>
-                    <span className="ppg-sc-opt-text">{text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        })
-        : null}
-      {state.status === 'empty' ? <p className="ppg-state-line">{t('states.itemsEmpty')} {state.detail}</p> : null}
-      {state.status === 'error' ? <p className="ppg-state-line">{t('states.itemsError')} {state.detail}</p> : null}
-      {state.status === 'denied' ? <p className="ppg-state-line">{t('states.denied')} {state.detail}</p> : null}
-      {state.status === 'unauthorized' ? <p className="ppg-state-line">{t('states.unauthorized')} {state.detail}</p> : null}
-      {state.status === 'not-configured' ? <p className="ppg-state-line">{t('states.notConfigured')} {state.detail}</p> : null}
-    </section>
-  )
-}
-
+// fallow-ignore-next-line complexity
 async function PosttestForm({ locale }: { locale: string }) {
   const t = await getTranslations('posttest')
+  const itemsState = await readPosttestItemsViaTable()
+  const items = itemsState.status === 'ok' ? itemsState.items ?? [] : []
   return (
-    <section>
-      {/* The single submit posts the `ppg_posttest_submit` RPC once (the
-        submit function re-gates the unlock + scores server-side + stamps
-        `submitted_at`; a second submit reaches `already_submitted_or_missing`,
-        never a silent overwrite). The hidden language field records the taken
-        language with the row (ADR-0002) — the DATABASE re-validates th|en.
-        The row start rides the submit route's gated, idempotent
-        `ppg_posttest_start` call. #54: ONLY classes were added — fields,
-        names, patterns and the `data-ppg-*` attrs are byte-identical to the
-        shipped form. */}
+    <section aria-label={t('itemsLabel')}>
+      {/* The single submit rides the native form. #84 moves the item list
+        INSIDE it: one required `item_<n>` control per item, named exactly
+        like the server-side key, so the route's `item_` filter forwards a
+        complete payload. The seeded choice tiles stay presentational; the
+        answer key never reaches the browser. The submit function scores
+        server-side, stamps the attempt immutably, and calls the one-time
+        reward helper. #54's `data-ppg-*` attrs and the `#posttest_answer_
+        item_1` selector are preserved. */}
       <div className="ppg-sc-panel">
         <form
           data-ppg-posttest-form="posttest"
@@ -155,14 +123,25 @@ async function PosttestForm({ locale }: { locale: string }) {
           method="POST"
           action="/api/posttest/submit"
         >
+          <InstrumentItems
+            items={items}
+            locale={locale}
+            answerIdPrefix="posttest"
+            questionTag={(n) => `${t('questionTag')} ${n}`}
+            itemProgress={(n, total) => t('itemProgress', { n: String(n), total: String(total) })}
+            answerForQuestion={(n) => `${t('answerLabel')} ${n}`}
+          />
           <input name="language" defaultValue={locale === 'th' ? 'th' : 'en'} hidden={true} />
-          <label className="ppg-field-label" htmlFor="posttest_answer_item_1">{t('answerLabel')}</label>
-          <input className="ppg-input" id="posttest_answer_item_1" name="item_1" required pattern="^[A-D]$" />
           <div className="ppg-sc-cta-row">
             <button className="ppg-button" type="submit">{t('submitLabel')}</button>
           </div>
         </form>
       </div>
+      {itemsState.status === 'empty' ? <p className="ppg-state-line">{t('states.itemsEmpty')} {itemsState.detail}</p> : null}
+      {itemsState.status === 'error' ? <p className="ppg-state-line">{t('states.itemsError')} {itemsState.detail}</p> : null}
+      {itemsState.status === 'denied' ? <p className="ppg-state-line">{t('states.denied')} {itemsState.detail}</p> : null}
+      {itemsState.status === 'unauthorized' ? <p className="ppg-state-line">{t('states.unauthorized')} {itemsState.detail}</p> : null}
+      {itemsState.status === 'not-configured' ? <p className="ppg-state-line">{t('states.notConfigured')} {itemsState.detail}</p> : null}
       <p>
         <Link className="ppg-link" href="/survey">{t('linkSurvey')}</Link>
       </p>
@@ -183,7 +162,6 @@ export default async function PostTestPage() {
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <div className="ppg-page-wrap">
         <UnlockStatus />
-        <Items locale={locale} />
         <PosttestForm locale={locale} />
       </div>
     </Suspense>
