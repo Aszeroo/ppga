@@ -308,7 +308,11 @@
     "itemProgress": "Question {n}/{total}",
     "receiptHeading": "Instrument submitted",
     "immutableNote": "Your answers are stored permanently and encrypted for the research — they cannot be edited after the submit. Thank you for helping improve the course",
-    "immutableTag": "Status: submitted (immutable)"
+    "immutableTag": "Status: submitted (immutable)",
+    "firstScoreLabel": "First score",
+    "bestScoreLabel": "Best score",
+    "attemptsLabel": "Attempts",
+    "retryNote": "Retries are allowed. Your first attempt is kept for research; the best score is shown."
   },
   "survey": {
     "gateLabel": "Survey unlock",

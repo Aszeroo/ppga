@@ -45,6 +45,19 @@ export interface PosttestState {
   score?: number
 }
 
+/** #84: the end-of-course state shape exposed to #86. */
+export interface FinalTestState {
+  completed: boolean
+  first_score: number | null
+  best_score: number | null
+  attempts: number
+  instrument_version: string | null
+  first_submitted_at: string | null
+  reward_granted: boolean
+  reward_xp: number
+  badge_granted: boolean
+}
+
 export interface PosttestUpsertResult {
   ok: boolean
   detail?: string
@@ -118,6 +131,28 @@ export async function readPosttestState(): Promise<PosttestState> {
     language: resRow?.language,
     score: resRow?.score != null ? (Number(resRow.score) as number) : undefined,
   }
+}
+
+/**
+ * #84: the end-of-course state for the dashboard/course map (#86 renders it).
+ * Reads the database's ppg_final_test_state aggregate through the caller's
+ * JWT: first_score is the research measure, best_score is what the Learner
+ * sees, completed is the course-completion signal.
+ */
+// fallow-ignore-next-line complexity
+export async function readFinalTestState(): Promise<FinalTestState | null> {
+  const sup = await createSupaSessionClient()
+  if (!sup) return null
+
+  const { data: session } = await sup.auth.getSession()
+  if (!session || !session.session) return null
+
+  const { data, error } = await sup.rpc(
+    'ppg_final_test_state',
+    { p_learner: session.session.user.id } as never,
+  )
+  if (error || !data) return null
+  return data as unknown as FinalTestState
 }
 
 /** The gate error vocabulary the #15 RPCs raise (`final_project_not_accepted`
@@ -237,6 +272,7 @@ export async function readPosttestItemsViaTable(): Promise<{
   const { data, error } = await sup
     .from('ppg_posttest_instruments')
     .select('items')
+    .order('version', { ascending: false })
     .limit(1)
 
   if (error) {

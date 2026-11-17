@@ -67,6 +67,7 @@ const impersonate = (role: string, sub: string) =>
 // the seeded baseline inside its own tx whatever the container holds.
 const ownerReset = (learnerId: string) => `
   DELETE FROM ppg_survey_responses WHERE learner_id = '${learnerId}';
+  DELETE FROM ppg_posttest_retry_attempts WHERE learner_id = '${learnerId}';
   DELETE FROM ppg_posttest_responses WHERE learner_id = '${learnerId}';
   DELETE FROM ppg_badge_awards WHERE learner_id = '${learnerId}';
   DELETE FROM ppg_xp_ledger WHERE learner_id = '${learnerId}';
@@ -182,7 +183,7 @@ test(
     )
     // The Post-Test scored 1 server-side with version + language recorded; the
     // Survey submitted once (en recorded — the taken language rides the row).
-    expect(chain).toContain('posttest=2026.09.1|th|1')
+    expect(chain).toContain('posttest=2026.11.1|th|1')
     expect(chain).toContain('survey=2026.09.1|en')
 
     // The Survey's single-attempt replay: its OWN fresh transaction. The
@@ -204,24 +205,33 @@ test(
 )
 
 test(
-  'Single-attempt + immutable: a second Post-Test submit raises; a hand UPDATE after the stamp raises; a DELETE silently denies',
+  'Retries + immutable: the first attempt is preserved, a retry appends, a hand UPDATE after a stamp raises, a DELETE silently denies',
   { skip: !hasLocalStack },
   () => {
-    // The single-attempt replay: its OWN fresh transaction. The submit
-    // function's `UPDATE ... WHERE submitted_at IS NULL` cannot find an
-    // un-submitted row — the second call raises `already_submitted_or_missing`
-    // (the function's own word; NOT the trigger's `already_submitted` the
-    // hand UPDATE below raises separately).
+    // #84: retries are allowed. The first submitted attempt stays in
+    // ppg_posttest_responses (the research measure); the second submit opens
+    // a retry row and never touches the first score.
     const replay = sql(
       `${impersonate('learner', seededIds.learnerA)}
         ${ownerReset(seededIds.learnerA)}
         ${approveFinal(seededIds.learnerA, 903)}
         ${posttestStartSubmit(seededIds.learnerA)}
-        -- the replay: the same learner, the same row — already stamped.
+        -- the retry: start opens attempt 2, then submit stamps it.
+        SET LOCAL "request.jwt.claims" = '{"role":"learner","sub":"${seededIds.learnerA}"}';
+        SELECT public.ppg_posttest_start('th');
         SELECT public.ppg_posttest_submit('{"item_1":"B"}'::jsonb);
+        RESET ROLE;
+        SELECT 'first='||score::text FROM ppg_posttest_responses
+         WHERE learner_id = '${seededIds.learnerA}';
+        SELECT 'retries='||count(*) FROM ppg_posttest_retry_attempts
+         WHERE learner_id = '${seededIds.learnerA}';
+        SELECT 'retry_score='||coalesce(max(score)::text,'-') FROM ppg_posttest_retry_attempts
+         WHERE learner_id = '${seededIds.learnerA}';
       ROLLBACK;`,
     )
-    expect(replay).toContain('already_submitted_or_missing')
+    expect(replay).toContain('first=1')
+    expect(replay).toContain('retries=1')
+    expect(replay).toContain('retry_score=0')
 
     // The hand UPDATE after the stamp: its OWN fresh transaction — the row is
     // re-started + submitted in this transaction too, and the OWNER-level
@@ -326,7 +336,7 @@ test(
 )
 
 test(
-  'Research grants nothing: after the full close the ledger holds ONLY the +300 and the awards ONLY the three close badges',
+  'Close rewards: the Final Project grants +300 and the Final Test +400 once; the Survey adds nothing',
   { skip: !hasLocalStack },
   () => {
     const out = sql(
@@ -341,12 +351,23 @@ test(
          WHERE learner_id = '${seededIds.learnerA}';
         SELECT 'awards='||count(*) FROM ppg_badge_awards
          WHERE learner_id = '${seededIds.learnerA}';
+        SELECT 'final_project='||coalesce(sum(amount),0)||'|'||count(*)
+          FROM ppg_xp_ledger
+         WHERE learner_id = '${seededIds.learnerA}' AND event_type = 'final_project';
+        SELECT 'final_test='||coalesce(sum(amount),0)||'|'||count(*)
+          FROM ppg_xp_ledger
+         WHERE learner_id = '${seededIds.learnerA}' AND event_type = 'final_test_pass';
+        SELECT 'final_badge='||count(*) FROM ppg_badge_awards
+         WHERE learner_id = '${seededIds.learnerA}' AND badge_key = 'final_test_complete';
       ROLLBACK;`,
     )
-    // the Post-Test + Survey submits added NOTHING to the ledger or the award
-    // table (ADR-0001: a research instrument never rewards).
-    expect(out).toContain('xp=300')
-    expect(out).toContain('awards=2')
+    // #84: the Final Test completion grants its fixed 400 + badge once; the
+    // Satisfaction Survey adds NOTHING (a survey never rewards, ADR-0001).
+    expect(out).toContain('xp=700')
+    expect(out).toContain('awards=3')
+    expect(out).toContain('final_project=300|1')
+    expect(out).toContain('final_test=400|1')
+    expect(out).toContain('final_badge=1')
   },
 )
 
