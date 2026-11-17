@@ -10,6 +10,8 @@
  * unit-testable like `lib/shellFrame.ts` / `lib/dashboardHub.ts`.
  */
 
+import type { ChapterProgress } from './chapterProgress'
+
 /** One stage state the map speaks: cleared (own Mission complete), open
  * (the linear rule unlocked it), locked (the rule keeps it shut). */
 export type StageState = 'cleared' | 'open' | 'locked'
@@ -50,6 +52,8 @@ export interface Stage {
   summary_th: string
   summary_en: string
   state: StageState
+  /** PPGA #86: the CAI chapter state when the caller supplied it. */
+  progress?: ChapterProgress
 }
 
 /** The whole map view the page renders. */
@@ -81,23 +85,36 @@ export function ownCompletedModuleKeys(
 
 /** Merge the rows + the own completions into the ordered stage list. A
  * completion for a module the caller cannot SEE is ignored (never renders a
- * phantom stage). */
+ * phantom stage). When the caller passes chapter progress, each stage also
+ * carries its real pre/post/Mission state (#86). */
 export function deriveStages(
   rows: readonly StageMapRow[],
   completedKeys: readonly string[],
+  progress?: readonly ChapterProgress[],
 ): Stage[] {
   const done = new Set(completedKeys)
+  const byKey = new Map((progress ?? []).map((p) => [p.chapter_key, p]))
   return [...rows]
     .sort((a, b) => a.order_index - b.order_index)
-    .map((r) => ({
-      module_key: r.module_key,
-      order_index: r.order_index,
-      title_th: r.title_th,
-      title_en: r.title_en,
-      summary_th: r.summary_th,
-      summary_en: r.summary_en,
-      state: (done.has(r.module_key) ? 'cleared' : r.lock_state) as StageState,
-    }))
+    .map((r) => {
+      const chapterProgress = byKey.get(r.module_key)
+      // On the CAI spine the post-test is the chapter gate: a passed chapter
+      // is cleared even before its optional Mission is recorded. Legacy
+      // module rows (no progress) still ride their own completion row.
+      const cleared = chapterProgress
+        ? chapterProgress.post.passed
+        : done.has(r.module_key)
+      return {
+        module_key: r.module_key,
+        order_index: r.order_index,
+        title_th: r.title_th,
+        title_en: r.title_en,
+        summary_th: r.summary_th,
+        summary_en: r.summary_en,
+        state: (cleared ? 'cleared' : r.lock_state) as StageState,
+        ...(chapterProgress ? { progress: chapterProgress } : {}),
+      }
+    })
 }
 
 /** The next-stage direction: the FIRST stage still open (the frontier the
@@ -109,13 +126,21 @@ export function deriveNextStage(stages: readonly Stage[]): Stage | null {
 /** Normalize the two reads into the map view: a non-ok map read speaks its
  * own state (no stages, no invented direction); a failed completions read
  * degrades to NOTHING CLEARED (open/locked still ride the map read). */
-export function buildStageMapView(map: StageMapRead, completed: CompletedRead): StageMapView {
+export function buildStageMapView(
+  map: StageMapRead,
+  completed: CompletedRead,
+  progress?: readonly ChapterProgress[],
+): StageMapView {
   if (map.status !== 'ok') {
     return { status: map.status, detail: map.detail, stages: [], next: null, cleared: 0, total: 0 }
   }
   const completedUsable = completed.status === 'ok' ? (completed.rows ?? []) : []
   const uid = completed.uid ?? ''
-  const stages = deriveStages(map.modules ?? [], ownCompletedModuleKeys(completedUsable, uid))
+  const stages = deriveStages(
+    map.modules ?? [],
+    ownCompletedModuleKeys(completedUsable, uid),
+    progress,
+  )
   return {
     status: 'ok',
     stages,

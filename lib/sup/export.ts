@@ -53,6 +53,9 @@ export interface ExportPreviewState {
     pretest_submitted: number
     posttest_submitted: number
     survey_submitted: number
+    chapter_pretest_submitted?: number
+    chapter_posttest_submitted?: number
+    mission_attempt_count?: number
     rubric_review_count: number
     submission_count: number
   }

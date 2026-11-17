@@ -65,10 +65,12 @@ const NAV_ITEMS = {
   ] as NavItem[],
   teacher: [
     { href: '/', key: 'home' },
+    { href: '/teacher/progress', key: 'progress' },
     { href: '/profile', key: 'profile' },
   ] as NavItem[],
   admin: [
     { href: '/', key: 'home' },
+    { href: '/teacher/progress', key: 'progress' },
     { href: '/admin/publication', key: 'coursePublication' },
     { href: '/admin/users', key: 'adminUsers' },
     { href: '/admin/audit', key: 'adminAudit' },

@@ -44,9 +44,13 @@ async function ExportControls() {
             <p className="ppg-board-item">{t('export.pretestSubmitted')}: {counts.pretest_submitted}</p>
             <p className="ppg-board-item">{t('export.posttestSubmitted')}: {counts.posttest_submitted}</p>
             <p className="ppg-board-item">{t('export.surveySubmitted')}: {counts.survey_submitted}</p>
-            <p className="ppg-board-item">{t('export.rubricReviews')}: {counts.rubric_review_count}</p>
-            <p className="ppg-board-item">{t('export.submissions')}: {counts.submission_count}</p>
+            <p className="ppg-board-item">{t('export.chapterPretestSubmitted')}: {counts.chapter_pretest_submitted ?? 0}</p>
+            <p className="ppg-board-item">{t('export.chapterPosttestSubmitted')}: {counts.chapter_posttest_submitted ?? 0}</p>
+            <p className="ppg-board-item">{t('export.missionAttempts')}: {counts.mission_attempt_count ?? 0}</p>
+            <p className="ppg-board-item">{t('export.legacyRubricReviews')}: {counts.rubric_review_count}</p>
+            <p className="ppg-board-item">{t('export.legacySubmissions')}: {counts.submission_count}</p>
           </div>
+          <p className="ppg-state-line">{t('export.legacyNote')}</p>
         </div>
       ) : null}
       {preview.status === 'empty' ? (

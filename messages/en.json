@@ -14,7 +14,8 @@
     "health": "Health",
     "adminUsers": "User list",
     "adminAudit": "Audit stream",
-    "adminProvisioning": "Provision roster"
+    "adminProvisioning": "Provision roster",
+    "progress": "Chapter progress"
   },
   "shell": {
     "identity": "PPGA — Gamified PowerPoint Learning Platform",
@@ -106,7 +107,7 @@
     "export": {
       "heading": "Research export",
       "downloadTitle": "📦 Data export",
-      "intro": "CSV, XLSX and SQL extracts of the research tables — one row per participant (Pre-Test, Post-Test, rubric totals, satisfaction) with the real student identity. Teacher/Admin only — a learner is denied at the database, not just the page.",
+      "intro": "CSV, XLSX and SQL extracts of the CAI research tables — one row per participant with the global pre-test and Final Test, per-chapter pre/post scores and attempts, Knowledge Mission results, and the satisfaction survey. Practical/rubric fields are kept and marked legacy. Teacher/Admin only — a learner is denied at the database, not just the page.",
       "auditNote": "Every export run writes one audit event (who, what, when): the download itself is the audited call, never the page view.",
       "counts": "The cohort right now",
       "participantCount": "Participants (learners)",
@@ -121,7 +122,13 @@
       "downloadPdf": "Download PDF summary report",
       "emptyCohort": "Empty cohort: no learner rows yet — the downloads still work (header-only files) and every run is still audit-logged.",
       "linkUsers": "User list",
-      "linkExport": "Research export"
+      "linkExport": "Research export",
+      "chapterPretestSubmitted": "Chapter pre-tests submitted",
+      "chapterPosttestSubmitted": "Chapter post-tests submitted",
+      "missionAttempts": "Mission attempts",
+      "legacyRubricReviews": "Rubric reviews (legacy)",
+      "legacySubmissions": "Submissions (legacy)",
+      "legacyNote": "Worksheet submissions and rubric scoring are legacy (retired by ADR-0005). They are exported for cohort history only."
     },
     "states": {
       "ok": "ok",
@@ -203,7 +210,7 @@
     "linkPreTest": "Take the Pre-Test",
     "linkContent": "Course content",
     "linkContentLocked": "Course content (locked until the Pre-Test)",
-    "linkCourse": "Course map (Powerpoint Presentation Creation)",
+    "linkCourse": "Course map (Presentation Program)",
     "linkLeaderboard": "XP Leaderboard",
     "closeLabel": "Course close (research)",
     "linkPostTest": "Take the Post-Test (unlocked by the Final Project)",
@@ -232,7 +239,40 @@
     "courseProgress": "Course progress",
     "missionCurrent": "Current mission",
     "submissionLabel": "Submission",
-    "feedbackLabel": "Teacher feedback"
+    "feedbackLabel": "Teacher feedback",
+    "loop": {
+      "consent": "Consent is the first step: read the explanation before the course.",
+      "consentCta": "Read the explanation",
+      "globalPretest": "The global research pre-test (50 items) comes before the chapters.",
+      "globalPretestCta": "Take the pre-test",
+      "chapterPretest": "Chapter {n} — {chapter}: start with the chapter pre-test.",
+      "chapterPretestCta": "Take the Chapter {n} pre-test",
+      "chapterLessons": "Chapter {n} — {chapter}: study the lessons and mini-checks, then complete the Knowledge Mission.",
+      "chapterLessonsCta": "Continue Chapter {n}",
+      "chapterPosttest": "Chapter {n} — {chapter}: take the post-test and reach 70% to open the next chapter.",
+      "chapterPosttestCta": "Take the Chapter {n} post-test",
+      "chapterLocked": "This chapter is still locked — pass the previous chapter post-test to open it.",
+      "finalTest": "All nine chapters are cleared — the 50-item Final Test is next.",
+      "finalTestCta": "Take the Final Test",
+      "survey": "Take the satisfaction survey to close the course.",
+      "surveyCta": "Take the survey",
+      "surveyLocked": "The survey opens after the Final Test is submitted.",
+      "done": "You have completed every step of the course loop.",
+      "doneCta": "Course complete",
+      "course": "Open the course map to see the chapter lessons.",
+      "courseCta": "Open the course map"
+    },
+    "chapterStatus": {
+      "pre": "Pre",
+      "post": "Post",
+      "mission": "Mission",
+      "missionDone": "done",
+      "missionPending": "not done",
+      "notStarted": "not started",
+      "passed": "passed",
+      "notPassed": "not passed"
+    },
+    "chapterCurrent": "Current chapter"
   },
   "pretest": {
     "gateLabel": "Pre-Test gate",
@@ -372,7 +412,7 @@
   },
   "course": {
     "mapLabel": "Course map",
-    "title": "PowerPoint Presentation Creation",
+    "title": "Presentation Program (21910-2006)",
     "linkDashboard": "Dashboard",
     "linkPreTest": "Take the Pre-Test",
     "linkBadges": "Badge gallery",
@@ -390,7 +430,28 @@
     },
     "currentStage": "next stage",
     "continueStage": "Continue",
-    "progressCleared": "Stages cleared"
+    "progressCleared": "Stages cleared",
+    "chapterStatus": {
+      "pre": "Pre-test",
+      "post": "Post-test",
+      "mission": "Mission",
+      "missionDone": "done",
+      "missionPending": "not done",
+      "notStarted": "not started",
+      "passed": "passed",
+      "notPassed": "not passed",
+      "unavailable": "Chapter progress could not be read:"
+    },
+    "finalTest": {
+      "title": "Final Test",
+      "completed": "Completed",
+      "notTaken": "Not taken yet",
+      "firstScore": "First score",
+      "bestScore": "Best score",
+      "attempts": "Attempts",
+      "instrumentVersion": "Instrument version",
+      "unavailable": "No Final Test state is available yet."
+    }
   },
   "lesson": {
     "list": "Lessons",
@@ -777,5 +838,33 @@
     "error": "The answer could not be checked. You can still continue.",
     "readAll": "Read all steps",
     "stepsHeading": "Lesson steps"
+  },
+  "teacherProgress": {
+    "title": "Learner chapter progress",
+    "sub": "Each learner’s chapter pre/post tests, Knowledge Mission completion and Final Test state — no worksheet review queue.",
+    "cleared": "Chapters cleared",
+    "current": "Current chapter",
+    "allCleared": "All chapters cleared",
+    "finalTest": "Final Test",
+    "attempts": "Attempts",
+    "notTaken": "Not taken yet",
+    "states": {
+      "denied": "This view is for teachers and admins only.",
+      "empty": "No learners are enrolled yet.",
+      "error": "Error:",
+      "unauthorized": "Please sign in first:",
+      "notConfigured": "Not configured:"
+    },
+    "chapterStatus": {
+      "pre": "Pre",
+      "post": "Post",
+      "mission": "Mission",
+      "missionDone": "done",
+      "missionPending": "not done",
+      "notStarted": "not started",
+      "passed": "passed",
+      "notPassed": "not passed",
+      "inProgress": "in progress"
+    }
   }
 }

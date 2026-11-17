@@ -142,11 +142,13 @@ test('i18n: the new namespaces exist in BOTH message files', () => {
   }
 })
 
-test('the Final Project rides the practical machinery: the shape widened + the teacher queue reaches module-11', () => {
+test('the Final Project rides the practical machinery: the shape widened + #86 replaced the queue with chapter progress', () => {
   const submissions = read('lib/sup/submissions.ts')
   expect(submissions.includes('module-(08|09|10|11)$')).toBe(true)
   const reviews = read('lib/sup/reviews.ts')
   expect(reviews.includes('practical shape (module-08|09|10|11)')).toBe(true)
-  const queue = read('app/[locale]/teacher/review/page.tsx')
-  expect(queue.includes("readReviewQueueViaRpc('module-11')")).toBe(true)
+  // PPGA #86: the Teacher/Admin view is chapter progress now, not a queue.
+  const progress = read('app/[locale]/teacher/review/page.tsx')
+  expect(progress.includes('TeacherChapterProgress')).toBe(true)
+  expect(progress.includes('readReviewQueueViaRpc')).toBe(false)
 })
