@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 
 import { useLocale } from 'next-intl'
 
-import { locales, usePathname, useRouter, type Locale } from '../lib/i18n/routing'
+import { locales, useRouter, type Locale } from '../lib/i18n/routing'
 
 /**
  * Ticket #4 interactive selector: a real `select` element so the keyboard
@@ -27,13 +27,18 @@ interface Props {
 
 export function LanguageSelectorSelect({ labels }: Props) {
   const locale = useLocale()
-  const pathname = usePathname()
   const router = useRouter()
 
   const handleChange = useCallback(
     (event: { target: { value: string } }) => {
       const next = event.target.value
       if (locales.includes(next as Locale) && next !== locale) {
+        // The current URL is the only source that keeps DYNAMIC params
+        // (`/course/chapter-01`); next-intl's usePathname returns the route
+        // template (`/course/[moduleKey]`) on parameterised pages.
+        const currentPath = window.location.pathname
+        const path = currentPath.replace(new RegExp(`^/${locale}(?=/|$)`), '') || '/'
+        document.documentElement.lang = next
         // `keepalive` lets the profile update finish after the locale
         // navigation starts; a failed update must never block the switch.
         void fetch('/api/locale', {
@@ -42,10 +47,10 @@ export function LanguageSelectorSelect({ labels }: Props) {
           body: JSON.stringify({ locale: next }),
           keepalive: true,
         }).catch(() => undefined)
-        router.replace(pathname as Parameters<typeof router.replace>[0], { locale: next })
+        router.replace(path as never, { locale: next })
       }
     },
-    [locale, pathname, router],
+    [locale, router],
   )
 
   return (
