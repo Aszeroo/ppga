@@ -1,8 +1,6 @@
 import 'server-only'
 
-import { cookies } from 'next/headers'
-
-import { createClient } from '@supabase/supabase-js'
+import { createSupaSessionClient } from './sessionClient'
 
 import { contentKeySchema } from './curriculum'
 import type { LessonStepRow } from '../lessonSteps'
@@ -41,24 +39,6 @@ export interface MiniCheckGradeState {
   explanation_en?: string
 }
 
-async function createSupaSessionClient() {
-  const url = process.env.NEXT_PUBLIC_SUP_URL
-  const anonKey = process.env.NEXT_PUBLIC_SUP_ANON_KEY
-  if (!url || !anonKey) return null
-
-  const jar = await cookies()
-  return createClient(url, anonKey, {
-    auth: {
-      storageKey: 'ppga_session',
-      storage: {
-        isServer: true as const,
-        getItem: (key: string) => jar.get(key)?.value ?? null,
-        setItem: () => undefined,
-        removeItem: () => undefined,
-      },
-    },
-  })
-}
 
 /**
  * The step read: the caller's JWT decides visibility in the definer RPC

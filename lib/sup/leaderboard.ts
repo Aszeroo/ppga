@@ -1,8 +1,6 @@
 import 'server-only'
 
-import { cookies } from 'next/headers'
-
-import { createClient } from '@supabase/supabase-js'
+import { createSupaSessionClient } from './sessionClient'
 
 /**
  * Ticket #12 XP leaderboard server module: the rank + full_name + Level +
@@ -58,24 +56,6 @@ export interface LeaderboardState {
  * caller shows "not-configured" instead of crashing. The jar is resolved
  * before the (sync) storage callback is built (`next/headers` is async).
  */
-async function createSupaSessionClient() {
-  const url = process.env.NEXT_PUBLIC_SUP_URL
-  const anonKey = process.env.NEXT_PUBLIC_SUP_ANON_KEY
-  if (!url || !anonKey) return null
-
-  const jar = await cookies()
-  return createClient(url, anonKey, {
-    auth: {
-      storageKey: 'ppga_session',
-      storage: {
-        isServer: true as const,
-        getItem: (key: string) => jar.get(key)?.value ?? null,
-        setItem: () => undefined,
-        removeItem: () => undefined,
-      },
-    },
-  })
-}
 
 /**
  * The XP leaderboard read: the rank + full_name + Level + XP of ALL

@@ -1,8 +1,6 @@
 import 'server-only'
 
-import { cookies } from 'next/headers'
-
-import { createClient } from '@supabase/supabase-js'
+import { createSupaSessionClient } from './sessionClient'
 
 import type {
   ChapterAttemptRow,
@@ -45,24 +43,6 @@ export interface ChapterProgressData {
   learners?: LearnerProfileRow[]
 }
 
-async function createSupaSessionClient() {
-  const url = process.env.NEXT_PUBLIC_SUP_URL
-  const anonKey = process.env.NEXT_PUBLIC_SUP_ANON_KEY
-  if (!url || !anonKey) return null
-
-  const jar = await cookies()
-  return createClient(url, anonKey, {
-    auth: {
-      storageKey: 'ppga_session',
-      storage: {
-        isServer: true as const,
-        getItem: (key: string) => jar.get(key)?.value ?? null,
-        setItem: () => undefined,
-        removeItem: () => undefined,
-      },
-    },
-  })
-}
 
 export interface ChapterProgressReadOptions {
   /** A teacher/admin view filters every read to one learner; the learner's
