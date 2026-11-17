@@ -90,9 +90,10 @@ npx supabase db push --dry-run          # what would be applied
 npx supabase db push                    # apply
 ```
 
-`migration list` must show the **19** repo migrations
-(`supabase/migrations/20260925000000_health_table.sql` … baseline through
-`20261002000100_review_target_learner.sql`) as applied, with no `≠`/missing
+`migration list` must show **all** repo migrations
+(`supabase/migrations/20260925000000_health_table.sql` through the current
+head — 36 as of 2026-11-17, ending `20261117000300_final_test_unlock_cai.sql`)
+as applied, with no `≠`/missing
 rows on either side. If the remote history table diverged (e.g. migrations
 applied before the CLI tracked them), `npx supabase db push --include-all`
 replays everything not in the remote history — review first with
@@ -225,7 +226,7 @@ External input required (owner credentials); ordered, with expected results:
    the dashboard's API settings (anon + service-role keys) per §1's secret rule;
    if the ref changed, **all four** values change.
 3. `npx supabase link --project-ref <ref>` then
-   `npx supabase migration list --linked` → 19 migrations applied (§3);
+   `npx supabase migration list --linked` → all repo migrations applied, no drift (§3);
    `npx supabase db push` if not.
 4. SQL editor: `select ok from ppg_health limit 1;` → one row. (If the project
    was recreated, also re-seed content — §6.1.)

@@ -40,10 +40,17 @@ case "$health" in
     fail "unexpected health payload: $(echo "$health" | head -c 200)" ;;
 esac
 
-hr; echo "2) $BASE/th — build generation + render sanity"
-page="$(fetch "$BASE/th")"
+hr; echo "2) $BASE/th — anonymous redirect + build generation"
+root_code="$(curl -sS -m 20 -o /dev/null -w '%{http_code}' "$BASE/th" 2>/dev/null)"
+root_loc="$(curl -sS -m 20 -D - -o /dev/null "$BASE/th" 2>/dev/null | grep -i '^location:' | tr -d '\r' | head -1)"
+case "$root_code" in
+  307|308) pass "anonymous /th redirects to the login screen (${root_loc:-no Location})" ;;
+  200)    warn "anonymous /th served 200 — expected a redirect to /th/login" ;;
+  *)      fail "/th HTTP ${root_code:-no response}" ;;
+esac
+page="$(fetch "$BASE/th/login")"
 if [ -z "$page" ]; then
-  fail "no response from $BASE/th"
+  fail "no response from $BASE/th/login"
 else
   if echo "$page" | grep -qE 'press_start_2p|noto_sans_thai|class="[^"]*\bppg-'; then
     pass "V3 build markers present (ppg- tokens / V3 font modules)"
@@ -60,8 +67,8 @@ else
 fi
 
 hr; echo "3) $BASE/en — locale reachability"
-en="$(curl -sS -m 20 -o /dev/null -w '%{http_code}' "$BASE/en" 2>/dev/null)"
-if [ "$en" = "200" ]; then pass "/en responds 200"; else fail "/en HTTP ${en:-no response}"; fi
+en="$(curl -sS -L -m 20 -o /dev/null -w '%{http_code}' "$BASE/en" 2>/dev/null)"
+if [ "$en" = "200" ]; then pass "/en reaches the login screen (200 after the anonymous redirect)"; else fail "/en HTTP ${en:-no response}"; fi
 
 hr; echo "4) Supabase project host DNS"
 if [ -z "$REF" ]; then
@@ -92,7 +99,7 @@ fi
 hr; echo "Automated checks: $([ "$fails" -eq 0 ] && echo 'all pass' || echo "$fails FAIL")"
 echo "Owner-only checks this script cannot do (runbook reference):"
 echo "  - vercel env ls production   → 4 names present (names only, never values) [§1]"
-echo "  - npx supabase migration list --linked → 19 migrations, no drift          [§3]"
+echo "  - npx supabase migration list --linked → all repo migrations, no drift      [§3]"
 echo "  - select id, public from storage.buckets where id='ppg-submissions';      [§4]"
-echo "  - real learner submits a .pptx on a Practical Mission, signed-URL read    [§4]"
+echo "  - real learner completes the global pre-test and chapter-01 pre/post      [§4]"
 [ "$fails" -eq 0 ] && exit 0 || exit 1
