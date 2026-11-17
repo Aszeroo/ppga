@@ -1,6 +1,7 @@
 import 'server-only'
 
-import { getLocale, getTranslations } from 'next-intl/server'
+import { getLocale, getMessages, getTranslations } from 'next-intl/server'
+import { NextIntlClientProvider } from 'next-intl'
 
 import { cookies, headers } from 'next/headers'
 
@@ -12,6 +13,7 @@ import { readXpSummaryViaRpc } from '../../lib/sup/xp'
 import { hasCourseContext, isStandaloneScreen, localePathSuffix } from '../../lib/shellFrame'
 
 import { Shell } from '../../components/Shell'
+import { LocaleLangSync } from '../../components/LocaleLangSync'
 import { IdleLogout } from '../../components/IdleLogout'
 
 /**
@@ -55,8 +57,30 @@ import { IdleLogout } from '../../components/IdleLogout'
  */
 export const dynamic = 'force-dynamic'
 
+/** The client components' namespaces; the rest stay server-rendered. */
+const CLIENT_MESSAGE_NAMESPACES = [
+  'gallery',
+  'selector',
+  'review',
+  'login',
+  'logout',
+  'changePassword',
+  'admin',
+  'nav',
+  'shell',
+  'course',
+  'challenge',
+  'lessonPlayer',
+] as const
+
 export default async function LocaleLayout({ children }: Readonly<{ children: ReactNode }>) {
   const locale = await getLocale()
+  const allMessages = await getMessages()
+  const clientMessages = Object.fromEntries(
+    CLIENT_MESSAGE_NAMESPACES.flatMap((namespace) =>
+      allMessages[namespace] ? [[namespace, allMessages[namespace]]] : [],
+    ),
+  )
   const jar = await headers()
   const pathname = jar.get('x-ppga-path') ?? ''
 
@@ -94,9 +118,10 @@ export default async function LocaleLayout({ children }: Readonly<{ children: Re
   const sessioned = Boolean(cookieJar.get('ppga_session')?.value)
 
   return (
-    <>
+    <NextIntlClientProvider locale={locale} messages={clientMessages}>
+      <LocaleLangSync />
       <Shell role={role} contextTitle={contextTitle} standalone={standalone} activeSection={suffix} xpSummary={xpSummary}>{children}</Shell>
       {!standalone && sessioned ? <IdleLogout locale={locale} /> : null}
-    </>
+    </NextIntlClientProvider>
   )
 }
