@@ -71,12 +71,16 @@ export default function ChangePasswordPage() {
           if (result.ok && result.redirect) {
             window.location.href = result.redirect
           } else {
-            setMessage(result.detail ?? `HTTP ${res.status}`)
+            setMessage(
+              result.detail === 'current_password_invalid'
+                ? t('currentPasswordInvalid')
+                : (result.detail ?? `HTTP ${res.status}`),
+            )
           }
         })
         .catch(() => setMessage('network error'))
     },
-    [],
+    [t],
   )
 
   return (

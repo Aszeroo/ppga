@@ -61,10 +61,26 @@ export async function changePasswordViaSupaHttp(
   accessToken: string,
   newPassword: string,
   currentPassword: string,
+  email?: string,
 ): Promise<AuthResult> {
   const url = process.env.NEXT_PUBLIC_SUP_URL
   const anonKey = process.env.NEXT_PUBLIC_SUP_ANON_KEY
-  if (!url) return { ok: false, detail: 'NEXT_PUBLIC_SUP_URL missing' }
+  if (!url || !anonKey) return { ok: false, detail: 'not-configured' }
+  if (!email) return { ok: false, detail: 'no-session-email' }
+
+  // Hosted Supabase only enforces `current_password` when the project's
+  // Security.UpdatePasswordRequireCurrentPassword setting is enabled. Verify
+  // it explicitly here so a live session alone can never swap the password.
+  const verify = await fetch(`${url}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: anonKey },
+    body: JSON.stringify({ email, password: currentPassword }),
+  })
+  if (!verify.ok) {
+    if (verify.status === 400 || verify.status === 401)
+      return { ok: false, detail: 'current_password_invalid' }
+    return { ok: false, detail: `auth_verify_${verify.status}` }
+  }
 
   const resp = await fetch(`${url}/auth/v1/user`, {
     method: 'PUT',
@@ -75,9 +91,7 @@ export async function changePasswordViaSupaHttp(
     },
     body: JSON.stringify({
       password: newPassword,
-      // Supabase's Security.UpdatePasswordRequireCurrentPassword gate: when
-      // the service demands the old password we send it as `current_password`
-      // (400 `current_password_invalid` maps to a UI copy below).
+      // Belt-and-braces for projects that DO enable the setting.
       current_password: currentPassword,
     }),
   })

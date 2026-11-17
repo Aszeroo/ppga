@@ -168,7 +168,8 @@
     "submit": "Change password",
     "busy": "Updating…",
     "afterSuccess": "the change lands here on success.",
-    "fallbackSuspense": "Preparing the password form…"
+    "fallbackSuspense": "Preparing the password form…",
+    "currentPasswordInvalid": "The current password is incorrect."
   },
   "profile": {
     "heading": "/profile",
