@@ -98,6 +98,7 @@ export async function POST(req: NextRequest) {
     session.session.access_token,
     parsed.data.newPassword,
     parsed.data.currentPassword,
+    session.session.user.email ?? undefined,
   )
 
   if (!viaHttp.ok) {
