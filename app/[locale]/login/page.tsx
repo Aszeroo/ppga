@@ -7,7 +7,6 @@ import { useCallback, useState } from 'react'
 import { z } from 'zod'
 
 import { useTranslations } from 'next-intl'
-import { Link } from '../../../lib/i18n/routing'
 
 import { LanguageSelectorPill } from '../../../components/LanguageSelectorPill'
 
@@ -158,7 +157,7 @@ export default function LoginPage() {
          * the locale navigation). */}
         <LanguageSelectorPill />
         <p className="ppg-title-sub ppg-title-after">
-          <Link href="/">{t('intro')}</Link> — {t('afterSuccess')}
+          {t('intro')} — {t('afterSuccess')}
         </p>
       </section>
     </Suspense>
