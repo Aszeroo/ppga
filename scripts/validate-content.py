@@ -452,6 +452,69 @@ def pk_tuple(table, row):
     return tuple(row.get(column) for column in pk[0])
 
 
+
+def find_top_level_keyword(text: str, keyword: str):
+    """Index of `keyword` outside single/double/dollar quotes, or None."""
+    i = 0
+    length = len(text)
+    target = keyword.lower()
+    while i < length:
+        ch = text[i]
+        if ch == "'":
+            i += 1
+            while i < length:
+                if text[i] == "'":
+                    if i + 1 < length and text[i + 1] == "'":
+                        i += 2
+                        continue
+                    i += 1
+                    break
+                i += 1
+        elif ch == '"':
+            i += 1
+            while i < length and text[i] != '"':
+                i += 1
+            i += 1
+        elif ch == "$":
+            match = DOLLAR.match(text, i)
+            if match:
+                tag = match.group(0)
+                end = text.find(tag, match.end())
+                i = (end + len(tag)) if end != -1 else length
+            else:
+                i += 1
+        else:
+            if text[i : i + len(target)].lower() == target:
+                before = text[i - 1] if i > 0 else " "
+                after = text[i + len(target)] if i + len(target) < length else " "
+                if not (before.isalnum() or before == "_") and not (
+                    after.isalnum() or after == "_"
+                ):
+                    return i
+            i += 1
+    return None
+
+
+def evaluate_expression(expression: str, row):
+    """Evaluate the literal/column/replace() expressions the seeds use."""
+    expression = expression.strip()
+    replace = re.match(r"replace\s*\((.*)\)\s*$", expression, re.I | re.S)
+    if replace:
+        args = split_top_level_commas(replace.group(1))
+        if len(args) == 3:
+            base_expr = re.sub(
+                r"::\s*[A-Za-z_][A-Za-z0-9_.]*(\[\])?\s*$", "", args[0]
+            ).strip()
+            base = evaluate_expression(base_expr, row)
+            old = parse_scalar(args[1])
+            new = parse_scalar(args[2])
+            if isinstance(base, str) and isinstance(old, str) and isinstance(new, str):
+                return base.replace(old, new)
+    column = re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", expression)
+    if column and expression in row:
+        return row[expression]
+    return parse_scalar(expression)
+
 def apply_statement(state, statement, source):
     insert = re.match(
         r"insert\s+into\s+(?:public\.)?([A-Za-z_][A-Za-z0-9_]*)\s*\(([^)]*)\)\s*"
@@ -510,22 +573,28 @@ def apply_statement(state, statement, source):
         return
 
     update = re.match(
-        r"update\s+(?:public\.)?([A-Za-z_][A-Za-z0-9_]*)\s+set\s+(.*?)\s+where\s+(.*)$",
+        r"update\s+(?:public\.)?([A-Za-z_][A-Za-z0-9_]*)\s+set\s+",
         statement,
         re.I | re.S,
     )
     if update:
-        table, assignments_text, where_text = update.groups()
+        table = update.group(1)
         if table not in CONTENT_TABLES and table not in INSTRUMENT_TABLES:
             return
+        rest = statement[update.end() :]
+        where_at = find_top_level_keyword(rest, "where")
+        if where_at is None:
+            return
+        assignments_text = rest[:where_at]
+        where_text = rest[where_at + len("where") :]
         assignments = []
         for assignment in split_top_level_commas(assignments_text):
             left, right = assignment.split("=", 1)
-            assignments.append((left.strip(), parse_scalar(right)))
+            assignments.append((left.strip(), right.strip()))
         for row in state.get(table, {}).values():
             if where_matches(row, where_text):
-                for column, value in assignments:
-                    row[column] = value
+                for column, expression in assignments:
+                    row[column] = evaluate_expression(expression, row)
         return
 
     delete = re.match(
