@@ -43,8 +43,11 @@ test('A direct visit renders the unavailable state, never the legacy form', () =
   expect(learnerReview).toContain('export async function LearnerReviewResult')
 
   const teacherQueue = read('app/[locale]/teacher/review/page.tsx')
-  expect(teacherQueue).toContain('UnavailableSurface')
-  expect(teacherQueue).toContain('export async function TeacherQueue')
+  // PPGA #86: the retired review route now renders chapter progress, never
+  // the worksheet queue or its review forms.
+  expect(teacherQueue).toContain('TeacherChapterProgress')
+  expect(teacherQueue).not.toContain('UnavailableSurface')
+  expect(teacherQueue).not.toContain('readReviewQueueViaRpc')
 
   const teacherForm = read('app/[locale]/teacher/review/[submissionId]/page.tsx')
   expect(teacherForm).toContain('UnavailableSurface')

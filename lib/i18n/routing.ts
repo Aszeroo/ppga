@@ -43,6 +43,7 @@ export const routing = defineRouting({
     '/course/[moduleKey]/review': '/course/[moduleKey]/review',
     '/teacher/review': '/teacher/review',
     '/teacher/review/[submissionId]': '/teacher/review/[submissionId]',
+    '/teacher/progress': '/teacher/progress',
     '/badges': '/badges',
     '/leaderboard': '/leaderboard',
     '/admin/publication': '/admin/publication',

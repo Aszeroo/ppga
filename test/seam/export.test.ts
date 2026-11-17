@@ -153,10 +153,33 @@ test(
          WHERE learner_id IN ('${seededIds.learnerA}','${seededIds.learnerB}');
         DELETE FROM public.ppg_submissions
          WHERE learner_id IN ('${seededIds.learnerA}','${seededIds.learnerB}');
+        DELETE FROM public.ppg_chapter_test_attempts
+         WHERE learner_id IN ('${seededIds.learnerA}','${seededIds.learnerB}');
+        DELETE FROM public.ppg_mission_attempts
+         WHERE learner_id IN ('${seededIds.learnerA}','${seededIds.learnerB}');
+        DELETE FROM public.ppg_posttest_retry_attempts
+         WHERE learner_id IN ('${seededIds.learnerA}','${seededIds.learnerB}');
         DELETE FROM public.ppg_xp_ledger
          WHERE learner_id IN ('${seededIds.learnerA}','${seededIds.learnerB}');
         DELETE FROM public.ppg_badge_awards
          WHERE learner_id IN ('${seededIds.learnerA}','${seededIds.learnerB}');
+        -- #86: the CAI instruments' rows (owner-side, rolled back).
+        INSERT INTO public.ppg_chapter_test_attempts
+          (learner_id, chapter_key, phase, attempt_seq, language, answers, score, item_count, submitted_at)
+        VALUES
+          ('${seededIds.learnerA}', 'chapter-01', 'pre', 1, 'th', '{}', 7, 10, '2026-10-01T01:00:00Z'),
+          ('${seededIds.learnerA}', 'chapter-01', 'post', 1, 'th', '{}', 8, 10, '2026-10-01T02:00:00Z'),
+          ('${seededIds.learnerA}', 'chapter-01', 'post', 2, 'th', '{}', 9, 10, '2026-10-01T03:00:00Z');
+        INSERT INTO public.ppg_mission_attempts
+          (learner_id, module_key, attempt_seq, outcome, score_pct, created_at)
+        VALUES
+          ('${seededIds.learnerA}', 'chapter-01', 1, 'pass', 80, '2026-10-01T01:30:00Z');
+        -- The Final Test research row rides owner-side: its RLS policy needs
+        -- the legacy final-project unlock, which this probe deliberately skips.
+        INSERT INTO public.ppg_posttest_responses
+          (learner_id, instrument_version, language, answers, score, submitted_at)
+        VALUES ('${seededIds.learnerA}', '2026.09.1', 'th', '{"item_1": "A"}', 1,
+                '2026-09-30T02:04:04Z');
         -- #88: the practical spine is archived; re-publish it in-tx so the
         -- learner insert/status seam still seeds the export fixture.
         UPDATE public.ppg_modules SET publication_state = 'published'
@@ -191,23 +214,47 @@ test(
         WITH r AS (
           SELECT jsonb_array_elements(
             (public.ppg_research_export('csv') -> 'rows')) AS row)
-        SELECT (row ->> 'rubric_latest_total') || '|'
-             || (row ->> 'rubric_latest_mission') || '|'
-             || (row ->> 'rubric_review_count') || '|'
-             || (row ->> 'rubric_latest_decision') FROM r
+        SELECT (row ->> 'legacy_rubric_latest_total') || '|'
+             || (row ->> 'legacy_rubric_latest_mission') || '|'
+             || (row ->> 'legacy_rubric_review_count') || '|'
+             || (row ->> 'legacy_rubric_latest_decision') FROM r
          WHERE row ->> 'student_id' = '64110001';
         WITH r AS (
           SELECT jsonb_array_elements(
             (public.ppg_research_export('csv') -> 'rows')) AS row)
         SELECT (row ->> 'pretest_score') IS NULL
-           AND (row ->> 'rubric_review_count') = '0' FROM r
+           AND (row ->> 'legacy_rubric_review_count') = '0' FROM r
+         WHERE row ->> 'student_id' = '64110002';
+        -- PPGA #86: the CAI tables + preserved instrument versions.
+        WITH r AS (
+          SELECT jsonb_array_elements(
+            (public.ppg_research_export('csv') -> 'rows')) AS row)
+        SELECT (row ->> 'pretest_instrument_version') || '|'
+             || (row ->> 'posttest_instrument_version') || '|'
+             || (row ->> 'posttest_best_score') || '|'
+             || (row ->> 'posttest_attempts') || '|'
+             || (SELECT e ->> 'chapter_key' FROM jsonb_array_elements(row -> 'chapter_test_results') e WHERE e ->> 'phase' = 'post') || '|'
+             || (SELECT e ->> 'attempts' FROM jsonb_array_elements(row -> 'chapter_test_results') e WHERE e ->> 'phase' = 'post') || '|'
+             || (SELECT e ->> 'best_score' FROM jsonb_array_elements(row -> 'chapter_test_results') e WHERE e ->> 'phase' = 'post') || '|'
+             || (row -> 'mission_results' -> 'attempts' -> 0 ->> 'score_pct') || '|'
+             || (row ->> 'legacy_practical_fields') FROM r
+         WHERE row ->> 'student_id' = '64110001';
+        WITH r AS (
+          SELECT jsonb_array_elements(
+            (public.ppg_research_export('csv') -> 'rows')) AS row)
+        SELECT row ? 'chapter_test_results'
+           AND row ? 'mission_results'
+           AND row ? 'legacy_practical_fields'
+           AND row ? 'legacy_rubric_latest_total' FROM r
          WHERE row ->> 'student_id' = '64110002';
       ROLLBACK;`,
     )
     expect(out).toContain('64110001,64110002') // both participants, real ids
     expect(out).toContain('Learner One') // real identity per the spec decision
     expect(out).toContain('t') // the score EQUALS the table's own value
-    expect(out).toContain('21|module-08|1|approved') // rubric totals ride the row
+    expect(out).toContain('21|module-08|1|approved') // legacy rubric totals ride the row
+    // The instrument versions survive, and the CAI aggregates are present.
+    expect(out).toContain('2026.09.1|2026.09.1|1|1|chapter-01|2|9|80|legacy:')
   },
 )
 

@@ -22,7 +22,7 @@ import { routing } from './lib/i18n/routing'
  *
  * `middleware.ts` is live by definition; Next never pre-renders it.
  */
-const protectedRoutes = ['/profile', '/change-password', '/logout', '/admin/users', '/admin/audit', '/admin/provisioning', '/pre-test', '/post-test', '/survey', '/course', '/admin/publication', '/admin/export', '/content']
+const protectedRoutes = ['/profile', '/change-password', '/logout', '/admin/users', '/admin/audit', '/admin/provisioning', '/pre-test', '/post-test', '/survey', '/course', '/admin/publication', '/admin/export', '/content', '/teacher/progress', '/teacher/review']
 const sessionCookie = 'ppga_session'
 const mustChangeCookie = 'ppga_must_change_password'
 const consentCookie = 'ppga_consent'

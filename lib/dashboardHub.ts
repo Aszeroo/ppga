@@ -12,7 +12,26 @@
  * ZERO fabricated data: a `null` return means the datum is NOT there (no
  * rows, gate closed, map unseen) — the page then renders NO row, never a
  * made-up 0/empty state.
+ *
+ * PPGA #86 adds the CAI loop on top: the per-chapter assessment progress
+ * (`lib/chapterProgress.ts` — pure), the Final Test aggregate, and the ONE
+ * next action for the real chapter loop. The old submission/review
+ * derivations stay exported for historical callers but no learner surface
+ * renders them any more.
  */
+
+import {
+  buildChapterProgress,
+  chapterCourseProgress,
+  currentChapter,
+  deriveLoopNextAction,
+  type ChapterProgress,
+  type ChapterAttemptRow,
+  type ChapterMeta,
+  type FinalTestProgress,
+  type LoopAction,
+  type MissionCompletionRow,
+} from './chapterProgress'
 
 /** One Course-map module as the `ppg_course_map` RPC speaks it. */
 export interface HubModule {
@@ -273,6 +292,22 @@ export interface HubXpRead {
   badges?: Array<{ badge_key: string; label_th: string; label_en: string }>
 }
 
+/** PPGA #86: the chapter attempt read (own rows for a learner; the caller's
+ * RLS decides). */
+export interface HubChapterAttemptsRead {
+  status: string
+  rows?: ChapterAttemptRow[]
+}
+
+/** PPGA #86: the Final Test aggregate read (`readFinalTestState`). */
+export interface HubFinalTestRead {
+  completed: boolean
+  first_score: number | null
+  best_score: number | null
+  attempts: number
+  instrument_version: string | null
+}
+
 export interface HubReads {
   gate: HubGateRead
   posttest: HubCloseRead
@@ -280,11 +315,22 @@ export interface HubReads {
   map: HubMapRead
   rows: HubRowsRead
   xp: HubXpRead
+  /** Optional for callers that predate the CAI loop (and the old unit
+   * tests); the page always passes them. */
+  chapterAttempts?: HubChapterAttemptsRead
+  finalTest?: HubFinalTestRead | null
 }
 
 export interface HubViewModel {
   lines: HubStateLine[]
   cta: HubCta | null
+  /** PPGA #86: the ONE CTA of the real CAI loop. */
+  nextAction: LoopAction | null
+  /** The nine chapters with real pre/post/Mission state. */
+  chapters: ChapterProgress[]
+  currentChapter: ChapterProgress | null
+  finalTest: FinalTestProgress | null
+  chapterProgress: { completed: number; total: number; progressPct: number } | null
   xp: { level: number; totalXp: number; xpToNext: number; progressPct: number } | null
   /** The earned awards (real rows); null hides the row entirely. */
   badges: NonNullable<HubXpRead['badges']> | null
@@ -321,6 +367,10 @@ export interface NormalizedHub {
   completedKeys: string[]
   practicalKeys: string[]
   totalModules: number
+  chapterAttempts: ChapterAttemptRow[]
+  chapterReadOk: boolean
+  chapters: ChapterProgress[]
+  finalTest: FinalTestProgress | null
   xp: { level: number; totalXp: number; xpToNext: number; progressPct: number }
   badges: NonNullable<HubXpRead['badges']>
 }
@@ -364,6 +414,23 @@ function normalizeMapRead(map: HubMapRead) {
   return { modules, totalModules: map.modules?.length ?? 0 }
 }
 
+/** The chapter attempt read (own rows for a learner). */
+function normalizeChapterAttempts(read?: HubChapterAttemptsRead): ChapterAttemptRow[] {
+  return read?.rows ?? []
+}
+
+/** The Final Test aggregate; a missing read stays null (no fabricated row). */
+function normalizeFinalTest(read?: HubFinalTestRead | null): FinalTestProgress | null {
+  if (!read) return null
+  return {
+    completed: read.completed,
+    first_score: read.first_score,
+    best_score: read.best_score,
+    attempts: read.attempts,
+    instrument_version: read.instrument_version,
+  }
+}
+
 /** The hub rows read: own completions + the practical set + camel rounds. */
 function normalizeRowsRead(rows: HubRowsRead) {
   return {
@@ -397,11 +464,46 @@ function normalizeXpRead(xp: HubXpRead) {
 }
 
 export function normalizeHubReads(r: HubReads): NormalizedHub {
+  const map = normalizeMapRead(r.map)
+  const rows = normalizeRowsRead(r.rows)
+  const chapterAttempts = normalizeChapterAttempts(r.chapterAttempts)
+  // A caller that supplied the read and got a non-ok status has NO chapter
+  // truth: the loop then points at the map instead of asserting a pre-test.
+  const chapterReadOk = r.chapterAttempts === undefined || r.chapterAttempts.status === 'ok'
+  // The attempt rows are the caller's own (RLS); use their learner id so the
+  // pure filter sees the same learner. Without attempts, the completion rows
+  // are already own rows, so a stable synthetic id is enough.
+  const selfId = chapterAttempts[0]?.learner_id ?? '__self__'
+  const missions: MissionCompletionRow[] = rows.completedKeys.map((module_key) => ({
+    learner_id: selfId,
+    module_key,
+    status: 'complete',
+  }))
+  const chapters = chapterReadOk
+    ? buildChapterProgress(
+        selfId,
+        map.modules.map(
+          (m): ChapterMeta => ({
+            chapter_key: m.moduleKey,
+            order_index: m.orderIndex,
+            title_th: m.titleTh,
+            title_en: m.titleEn,
+            open: m.open,
+          }),
+        ),
+        chapterAttempts,
+        missions,
+      )
+    : []
   return {
     ...normalizeGateReads(r.gate),
     ...normalizeCloseReads(r.posttest, r.survey),
-    ...normalizeMapRead(r.map),
-    ...normalizeRowsRead(r.rows),
+    ...map,
+    ...rows,
+    chapterAttempts,
+    chapterReadOk,
+    chapters,
+    finalTest: normalizeFinalTest(r.finalTest),
     ...normalizeXpRead(r.xp),
   }
 }
@@ -464,6 +566,20 @@ export function buildHubView(r: HubReads): HubViewModel {
       surveyUnlocked: n.surveyUnlocked,
       surveySubmitted: n.surveySubmitted,
     }),
+    nextAction: deriveLoopNextAction({
+      gateOk: n.gateOk,
+      consent: n.consent,
+      override: n.override,
+      globalPretestSubmitted: n.pretestSubmitted,
+      chapters: n.chapters,
+      finalTest: n.finalTest,
+      surveyUnlocked: n.surveyUnlocked,
+      surveySubmitted: n.surveySubmitted,
+    }),
+    chapters: n.chapters,
+    currentChapter: currentChapter(n.chapters),
+    finalTest: n.finalTest,
+    chapterProgress: chapterCourseProgress(n.chapters),
     ...deriveHubSummary(n),
   }
 }

@@ -197,8 +197,18 @@ function writeReport(doc: PDFKit.PDFDocument, stats: PdfSummaryStats): void {
   sectionHeading(doc, 'ผลการทดสอบหลังเรียน (Post-Test Results)')
   keyValues(doc, testRows(stats.posttest))
 
-  // ---- 3. Rubric distributions ----------------------------------------------
-  sectionHeading(doc, 'การกระจายคะแนนรูบริก (Rubric Score Distribution)')
+  // ---- 3. Rubric distributions (LEGACY: worksheets retired, ADR-0005) ------
+  sectionHeading(doc, 'การกระจายคะแนนรูบริก (Rubric Score Distribution) — LEGACY')
+  doc
+    .font('body')
+    .fontSize(8.5)
+    .fillColor('#333333')
+    .text(
+      'ใบงานและรูบริกเป็นข้อมูลเดิมที่เลิกใช้แล้ว (CAI model, ADR-0005) — เก็บไว้เพื่อประวัติของกลุ่มผู้เรียนเท่านั้น ' +
+        '(Practical worksheets and rubric scoring are legacy; kept for cohort history only.)',
+      { lineBreak: true },
+    )
+    .fillColor('#000000')
   doc
     .font('body')
     .fontSize(9.5)

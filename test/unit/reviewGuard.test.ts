@@ -57,9 +57,10 @@ test('Depth: the review page imports the project-root lib at 5 up (../../../../.
   // the page uses the same component depth as other pages:
   expect(page.includes("from '../../../../../components/Card'")).toBe(true)
   expect(page.includes("from '../../../../../components/StatusPill'")).toBe(true)
-  // the teacher's own queue page rides its own depth (4 up from teacher/review):
+  // PPGA #86: the teacher route renders the chapter-progress view (the
+  // review queue left the journey); the legacy form route keeps its depth.
   const teacher = read('app/[locale]/teacher/review/page.tsx')
-  expect(teacher.includes("from '../../../../lib/sup/reviews'")).toBe(true)
+  expect(teacher.includes("from '../../../../components/TeacherChapterProgress'")).toBe(true)
   const form = read('app/[locale]/teacher/review/[submissionId]/page.tsx')
   expect(form.includes("from '../../../../../lib/sup/reviews'")).toBe(true)
 })

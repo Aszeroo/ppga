@@ -4,18 +4,19 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../lib/i18n/routing'
 
 import { readGateViaTable } from '../../lib/sup/prettest'
-import { readPosttestState } from '../../lib/sup/posttest'
+import { readPosttestState, readFinalTestState } from '../../lib/sup/posttest'
 import { readSurveyState } from '../../lib/sup/survey'
 import { readXpSummaryViaRpc } from '../../lib/sup/xp'
 import { readCourseMapViaRpc } from '../../lib/sup/curriculum'
 import { readHubRowsViaTables } from '../../lib/sup/hub'
+import { readChapterProgressData } from '../../lib/sup/chapterProgress'
 import { readOwnProfile } from '../../lib/sup/profile'
 import {
   buildHubView,
-  type HubCtaHref,
   type HubStateLine,
   type HubViewModel,
 } from '../../lib/dashboardHub'
+import { chapterStatusText, type LoopAction } from '../../lib/chapterProgress'
 import { XPBar } from '../../components/XPBar'
 import { ProgressBar } from '../../components/ProgressBar'
 import { Badge } from '../../components/Badge'
@@ -60,10 +61,12 @@ export const dynamic = 'force-dynamic'
 interface NextActionViewProps {
   tCopy: (key: string) => string
   lines: HubStateLine[]
-  cta: { href: HubCtaHref; label: string } | null
+  action: LoopAction | null
+  actionLabel: string | null
+  explanation: string | null
 }
 
-function HubNextActionView({ tCopy, lines, cta }: NextActionViewProps) {
+function HubNextActionView({ tCopy, lines, action, actionLabel, explanation }: NextActionViewProps) {
   return (
     <section aria-label={tCopy('nextAction')} data-ppg-hub="next-action" className="ppg-hub-hero">
       <h1 className="ppg-heading ppg-heading-text ppg-hero-title">{tCopy('nextAction')}</h1>
@@ -72,24 +75,19 @@ function HubNextActionView({ tCopy, lines, cta }: NextActionViewProps) {
           {tCopy(line.key)} {line.detail}
         </p>
       ))}
-      {cta ? (
+      {explanation ? <p className="ppg-card-text ppg-state-line">{explanation}</p> : null}
+      {action && action.href && actionLabel ? (
         <p className="ppg-hero-cta-row">
-          {/** The ONE primary CTA — the login submit's `.ppg-cta` face as a
-           * link (the class carries the focus ring + reduced-motion rules). */}
-          <Link className="ppg-cta" data-ppg-cta="primary" href={cta.href}>
-            {cta.label}
+          {/** The ONE primary CTA of the CAI loop — the login submit's
+           * `.ppg-cta` face as a link (the class carries the focus ring +
+           * reduced-motion rules). */}
+          <Link className="ppg-cta" data-ppg-cta="primary" href={action.href as never}>
+            {actionLabel}
           </Link>
         </p>
       ) : null}
     </section>
   )}
-
-/** The current-Mission row's typed route (the CAI course's Missions are
- * Knowledge Missions; PPGA #85 removed the practical upload destination). */
-function missionRoute(mission: StatusViewProps['mission']) {
-  if (!mission) return { pathname: '/course' as const }
-  return { pathname: '/course/[moduleKey]/mission' as const, params: { moduleKey: mission.moduleKey } }
-}
 
 /** The copy closures every hub row needs (bilingual text + locale pick). */
 interface HubCopy {
@@ -114,8 +112,8 @@ interface StatusViewProps {
   copy: HubCopy
   xp: HubViewModel['xp']
   badges: HubViewModel['badges']
-  progress: HubViewModel['progress']
-  mission: HubViewModel['mission']
+  progress: HubViewModel['chapterProgress']
+  chapter: HubViewModel['currentChapter']
 }
 
 function XpRow({ copy, xp }: { copy: HubCopy; xp: StatusViewProps['xp'] }) {
@@ -177,25 +175,42 @@ function BadgesRow({ copy, badges }: { copy: HubCopy; badges: StatusViewProps['b
   )
 }
 
-function MissionRow({ copy, mission }: { copy: HubCopy; mission: StatusViewProps['mission'] }) {
-  if (!mission) return null
+function ChapterRow({ copy, chapter }: { copy: HubCopy; chapter: StatusViewProps['chapter'] }) {
+  if (!chapter) return null
+  const status = chapterStatusText(chapter, {
+    pre: copy.tCopy('chapterStatus.pre'),
+    post: copy.tCopy('chapterStatus.post'),
+    mission: copy.tCopy('chapterStatus.mission'),
+    missionDone: copy.tCopy('chapterStatus.missionDone'),
+    missionPending: copy.tCopy('chapterStatus.missionPending'),
+    notStarted: copy.tCopy('chapterStatus.notStarted'),
+    passed: copy.tCopy('chapterStatus.passed'),
+    notPassed: copy.tCopy('chapterStatus.notPassed'),
+  })
   return (
     <div className="ppg-status-card ppg-strip-top">
       <h3 className="ppg-status-card-title">
         <span aria-hidden="true">🎯 </span>
-        {copy.tCopy('missionCurrent')}
+        {copy.tCopy('chapterCurrent')}
       </h3>
       <p className="ppg-status-card-value">
-        {copy.pick(mission.titleTh, mission.titleEn)} —{' '}
-        <Link className="ppg-link" href={missionRoute(mission)}>
-          {copy.tCopy('linkContent')}
-        </Link>
+        {chapter.order_index}. {copy.pick(chapter.title_th, chapter.title_en)}
       </p>
+      <p className="ppg-card-text">{status}</p>
+      <Link
+        className="ppg-link"
+        href={{
+          pathname: '/course/[moduleKey]' as const,
+          params: { moduleKey: chapter.chapter_key },
+        }}
+      >
+        {copy.tCopy('linkContent')}
+      </Link>
     </div>
   )
 }
 
-function HubStatusView({ copy, xp, badges, progress, mission }: StatusViewProps) {
+function HubStatusView({ copy, xp, badges, progress, chapter }: StatusViewProps) {
   return (
     <section aria-label={copy.tCopy('statusLabel')} data-ppg-hub="status">
       <h2 className="ppg-heading ppg-heading-text ppg-hub-status-title">{copy.tCopy('statusLabel')}</h2>
@@ -203,43 +218,64 @@ function HubStatusView({ copy, xp, badges, progress, mission }: StatusViewProps)
       <div className="ppg-hub-grid">
         <ProgressRow copy={copy} progress={progress} />
         <BadgesRow copy={copy} badges={badges} />
-        <MissionRow copy={copy} mission={mission} />
+        <ChapterRow copy={copy} chapter={chapter} />
       </div>
     </section>
   )
 }
 
-/** The learner hub: the ONE place the dashboard reads (six server reads,
- * the caller's JWT + RLS throughout); every decision lives in the pure
- * `buildHubView` (unit-tested), the components only render. */
+/** The learner hub: the ONE place the dashboard reads (the gate, the close
+ * reads, the Course map, the hub rows, XP, the chapter attempt stream and the
+ * Final Test aggregate — the caller's JWT + RLS throughout). Every decision
+ * lives in the pure `buildHubView` / `chapterProgress` functions, the
+ * components only render. */
 async function LearnerHub() {
   const t = await getTranslations('home')
   const ht = await getTranslations('header')
   const tR = await getTranslations('reward')
   const locale = await getLocale()
-  const [gate, posttest, survey, map, rows, xp] = await Promise.all([
+  const [gate, posttest, survey, map, rows, xp, chapterData, finalTest] = await Promise.all([
     readGateViaTable(),
     readPosttestState(),
     readSurveyState(),
     readCourseMapViaRpc(),
     readHubRowsViaTables(),
     readXpSummaryViaRpc(),
+    readChapterProgressData(),
+    readFinalTestState(),
   ])
-  const view = buildHubView({ gate, posttest, survey, map, rows, xp })
+  const view = buildHubView({
+    gate,
+    posttest,
+    survey,
+    map,
+    rows,
+    xp,
+    chapterAttempts: chapterData.status === 'ok' ? { status: 'ok', rows: chapterData.attempts } : { status: chapterData.status },
+    finalTest,
+  })
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
+  const tRaw = t as unknown as (key: string, values?: Record<string, string | number>) => string
+  const action = view.nextAction
+  const chapterTitle = pick(action?.chapterTitleTh ?? '', action?.chapterTitleEn ?? '')
+  const actionValues = { chapter: chapterTitle, n: String(action?.chapterOrder ?? '') }
   return (
     <div className="ppg-page-wrap">
       <HubNextActionView
         tCopy={(key) => t(key as never)}
-        lines={view.lines}
-        cta={view.cta ? { href: view.cta.href, label: t(view.cta.labelKey) } : null}
+        lines={view.lines.filter(
+          (line) => !['states.gateOpen', 'states.closeLocked', 'states.closeDone'].includes(line.key),
+        )}
+        action={action}
+        actionLabel={action ? tRaw(action.labelKey, actionValues) : null}
+        explanation={action?.explanationKey ? tRaw(action.explanationKey, actionValues) : null}
       />
       <HubStatusView
         copy={{ tCopy: (key) => t(key as never), htCopy: (key) => ht(key as never), pick }}
         xp={view.xp}
         badges={view.badges}
-        progress={view.progress}
-        mission={view.mission}
+        progress={view.chapterProgress}
+        chapter={view.currentChapter}
       />
       {/* #53: the level-up celebration — the hub is the ONLY page that reads
           the derived level, so it owns the LEVEL section. The first observed

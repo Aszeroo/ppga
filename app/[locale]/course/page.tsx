@@ -4,6 +4,9 @@ import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../lib/i18n/routing'
 
 import { readCourseMapViaRpc, readOwnCompletedModuleKeysViaTable } from '../../../lib/sup/curriculum'
+import { readChapterProgressData } from '../../../lib/sup/chapterProgress'
+import { readFinalTestState } from '../../../lib/sup/posttest'
+import { buildChapterProgress, chapterStatusText } from '../../../lib/chapterProgress'
 import { buildStageMapView, type Stage } from '../../../lib/courseStages'
 import { ProgressBar } from '../../../components/ProgressBar'
 import { StageMap } from '../../../components/StageMap'
@@ -27,20 +30,47 @@ export const dynamic = 'force-dynamic'
 async function CourseStageMap() {
   const t = await getTranslations('course')
   const locale = await getLocale()
-  const [map, completed] = await Promise.all([
+  const [map, completed, chapterData, finalTest] = await Promise.all([
     readCourseMapViaRpc(),
     readOwnCompletedModuleKeysViaTable(),
+    readChapterProgressData(),
+    readFinalTestState(),
   ])
-  const view = buildStageMapView(map, completed)
+  const chapters = buildChapterProgress(
+    completed.uid ?? chapterData.uid ?? '',
+    (map.modules ?? []).map((m) => ({
+      chapter_key: m.module_key,
+      order_index: m.order_index,
+      title_th: m.title_th,
+      title_en: m.title_en,
+      open: m.lock_state === 'open',
+    })),
+    chapterData.status === 'ok' ? chapterData.attempts ?? [] : [],
+    chapterData.status === 'ok' ? chapterData.missions ?? [] : [],
+  )
+  const view = buildStageMapView(map, completed, chapters)
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
   const stateCopy = (state: Stage['state']) =>
     state === 'cleared' ? t('states.cleared') : state === 'open' ? t('states.open') : t('states.locked')
+  const statusCopy = (progress: NonNullable<Stage['progress']>) =>
+    chapterStatusText(progress, {
+      pre: t('chapterStatus.pre'),
+      post: t('chapterStatus.post'),
+      mission: t('chapterStatus.mission'),
+      missionDone: t('chapterStatus.missionDone'),
+      missionPending: t('chapterStatus.missionPending'),
+      notStarted: t('chapterStatus.notStarted'),
+      passed: t('chapterStatus.passed'),
+      notPassed: t('chapterStatus.notPassed'),
+    })
 
   const nodes: StageNodeProps[] = view.stages.map((stage) => ({
     moduleKey: stage.module_key,
     orderIndex: stage.order_index,
     title: pick(stage.title_th, stage.title_en),
-    summary: pick(stage.summary_th, stage.summary_en),
+    summary: stage.progress
+      ? `${pick(stage.summary_th, stage.summary_en)} — ${statusCopy(stage.progress)}`
+      : pick(stage.summary_th, stage.summary_en),
     state: stage.state,
     stateCopy: stateCopy(stage.state),
     isNext: view.next?.module_key === stage.module_key,
@@ -89,7 +119,34 @@ async function CourseStageMap() {
             </p>
           ) : null}
           <StageMap stages={nodes} mapLabel={t('mapLabel')} />
+          <section className="ppg-work-card" data-ppg-final-test-state={finalTest ? 'present' : 'absent'}>
+            <h2 className="ppg-list-title">{t('finalTest.title')}</h2>
+            {finalTest ? (
+              <>
+                <p className="ppg-card-text">
+                  {finalTest.completed ? t('finalTest.completed') : t('finalTest.notTaken')}
+                </p>
+                {finalTest.completed ? (
+                  <>
+                    <p className="ppg-card-text">
+                      {t('finalTest.firstScore')}: {finalTest.first_score ?? '—'} ·{' '}
+                      {t('finalTest.bestScore')}: {finalTest.best_score ?? '—'} ·{' '}
+                      {t('finalTest.attempts')}: {finalTest.attempts}
+                    </p>
+                    <p className="ppg-card-text">
+                      {t('finalTest.instrumentVersion')}: {finalTest.instrument_version ?? '—'}
+                    </p>
+                  </>
+                ) : null}
+              </>
+            ) : (
+              <p className="ppg-card-text">{t('finalTest.unavailable')}</p>
+            )}
+          </section>
         </>
+      ) : null}
+      {chapterData.status !== 'ok' && view.status === 'ok' ? (
+        <p className="ppg-state-line">{t('chapterStatus.unavailable')} {chapterData.detail}</p>
       ) : null}
       {view.status === 'empty' ? <p>{t('states.empty')} {view.detail}</p> : null}
       {view.status === 'error' ? <p>{t('states.error')} {view.detail}</p> : null}
