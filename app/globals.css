@@ -3,7 +3,7 @@
  * No ad-hoc colors anywhere: a component may only use `var(--ppg-…)`.
  *
  * ADR-0004 / ticket #50: the palette VALUES are the owner-authored V3 design
- * system ("Cute 8-bit PowerPoint Learning Adventure" — bright pastel arcade:
+ * system ("Cute 8-bit Presentation Program Learning Adventure" — bright pastel arcade:
  * pink/blue primaries with purple/mint/gold support, white rounded cards on a
  * light-blue page). Token NAMES are unchanged from the previous sheet (the CI
  * token-purity suite asserts them); only the values moved. Literal colors

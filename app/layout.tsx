@@ -43,7 +43,7 @@ const ppgBody = Noto_Sans_Thai({
 })
 
 export const metadata: Metadata = {
-  title: 'PPGA — Gamified PowerPoint Learning Platform',
+  title: 'PPGA — Gamified Presentation Program',
   description:
     'A bilingual (Thai/English) gamified web platform for ปวช.2 vocational learners to build real Microsoft PowerPoint presentation-creation skills.',
 }
