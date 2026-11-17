@@ -1,5 +1,7 @@
 import 'server-only'
 
+import { cache } from 'react'
+
 import { createClient } from '@supabase/supabase-js'
 
 import { createSupaSessionClient } from './sessionClient'
@@ -31,7 +33,7 @@ export interface ProfileState {
   row?: ProfileRow
 }
 
-export async function readOwnProfile(): Promise<ProfileState> {
+async function readOwnProfileUncached(): Promise<ProfileState> {
   // read-only cookie jar for server-render: the session JWT is carried in,
   // cookies are never written from a page (the shared factory — PPGA #43
   // extracted it so the hub read reuses ONE copy).
@@ -91,3 +93,6 @@ export async function updateOwnLocale(
 
   return { ok: true, detail: 'locale stored on profile' }
 }
+
+/** Per-request memo: the layout and the page share one profile read. */
+export const readOwnProfile = cache(readOwnProfileUncached)

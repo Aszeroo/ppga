@@ -1,5 +1,7 @@
 import 'server-only'
 
+import { cache } from 'react'
+
 import { cookies } from 'next/headers'
 
 import { createClient } from '@supabase/supabase-js'
@@ -211,7 +213,7 @@ export async function checkSelfCheckViaRpc(lessonKey: string, answers: Record<st
  * numbers (the state is the ledger's read, never a client count); filtered
  * to the CALLER's own rows (an other learner's XP/Level never appears).
  */
-export async function readXpSummaryViaRpc(): Promise<XpSummaryState> {
+async function readXpSummaryViaRpcUncached(): Promise<XpSummaryState> {
   const sup = await createSupaSessionClient()
   if (!sup) return { status: 'not-configured', detail: 'NEXT_PUBLIC_SUP_* missing' }
 
@@ -288,3 +290,6 @@ export async function readOwnXpEventsViaTable(): Promise<XpLedgerRead> {
   if (error) return { status: 'error', detail: error.message }
   return { status: 'ok', uid, rows: (data ?? []) as XpLedgerRead['rows'] }
 }
+
+/** Per-request memo: the Shell HUD and the dashboard share one XP read. */
+export const readXpSummaryViaRpc = cache(readXpSummaryViaRpcUncached)

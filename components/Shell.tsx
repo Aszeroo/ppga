@@ -8,6 +8,7 @@ import { Link } from '../lib/i18n/routing'
 
 import { LanguageSelector } from './LanguageSelector'
 import { XPHud } from './XPHud'
+import type { XpSummaryState } from '../lib/sup/xp'
 import { Nav } from './Nav'
 
 /**
@@ -67,6 +68,8 @@ export interface ShellProps {
    * nav item derives from it (the gallery's `.nl.on`); never a security
    * decision, only the visual current-page state. */
   activeSection?: string
+  /** The layout's shared XP read (one round-trip for the whole Shell). */
+  xpSummary?: XpSummaryState
   children: ReactNode
 }
 
@@ -101,7 +104,7 @@ const TITLE_DECO = [
   { className: 'ppg-deco ppg-deco-sq ppg-deco-sq-blue', style: { top: '70%', right: '28%', animationDelay: '2s' } },
 ] as const
 
-export async function Shell({ role, contextTitle, standalone, activeSection, children }: ShellProps) {
+export async function Shell({ role, contextTitle, standalone, activeSection, xpSummary, children }: ShellProps) {
   const t = await getTranslations('shell')
   const navT = await getTranslations('nav')
 
@@ -140,7 +143,7 @@ export async function Shell({ role, contextTitle, standalone, activeSection, chi
            * `ppg_xp_summary` read), the user chip, the compact switcher and
            * the logout chip. */}
           <div className="ppg-hud-cluster">
-            <XPHud />
+            <XPHud summary={xpSummary} />
             {role ? (
               <span className="ppg-user-chip">
                 <span aria-hidden="true">{ROLE_ICON[role]}</span> {t(ROLE_COPY[role])}

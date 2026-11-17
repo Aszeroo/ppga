@@ -55,8 +55,7 @@ export function InstrumentItems({
               <Badge text={questionTag(n)} tone="neutral" />
               <Badge text={itemProgress(n, total)} tone="neutral" />
             </div>
-            <p className="ppg-sc-question">{item.th.prompt}</p>
-            <p className="ppg-card-text">{item.en.prompt}</p>
+            <p className="ppg-sc-question">{locale === 'th' ? item.th.prompt : item.en.prompt}</p>
             <div className="ppg-sc-options">
               {Object.entries(choiceSet ?? {}).map(([letter, text]) => (
                 <div key={letter} className="ppg-instr-opt">

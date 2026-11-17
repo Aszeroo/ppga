@@ -8,6 +8,8 @@ import { checkDatabaseConnectivity } from '../../../lib/sup/health'
  * deployment then serves the frozen status for every request.
  */
 export const dynamic = 'force-dynamic'
+/** Keep the probe next to the database where the plan allows it. */
+export const preferredRegion = 'sin1'
 
 export async function GET() {
   const result = await checkDatabaseConnectivity()

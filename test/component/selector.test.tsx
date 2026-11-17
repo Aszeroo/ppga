@@ -26,7 +26,6 @@ afterEach(() => cleanup())
 
 import { LanguageSelectorSelect } from '../../components/LanguageSelectorSelect'
 import { type Locale } from '../../lib/i18n/locales'
-import { mergeMessages } from '../../lib/i18n/messages-merge'
 import { humanReadableFallback } from '../../lib/i18n/fallbackText'
 
 import thMessages from '../../messages/th.json'
@@ -46,7 +45,7 @@ test('selector is labelled, shows current language and is keyboard accessible', 
   }
 
   for (const locale of ['th', 'en'] as Locale[]) {
-    const messages = mergeMessages(locale, { th: thMessages, en: enMessages })
+    const messages = locale === 'th' ? thMessages : enMessages
     const { getByRole } = render(
       <NextIntlClientProvider locale={locale} messages={messages}>
         <LanguageSelectorSelect labels={labels} />
@@ -69,7 +68,7 @@ test('selector is labelled, shows current language and is keyboard accessible', 
 })
 
 test('selector label is the selected language copy, never a raw key or undefined', () => {
-  const messages = mergeMessages('th', { th: thMessages, en: enMessages })
+  const messages = thMessages
   const { getByRole } = render(
     <NextIntlClientProvider
       locale="th"
