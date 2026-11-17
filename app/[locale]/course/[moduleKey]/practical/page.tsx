@@ -1,5 +1,3 @@
-import { Suspense } from 'react'
-
 import { getLocale, getTranslations } from 'next-intl/server'
 import { Link } from '../../../../../lib/i18n/routing'
 
@@ -14,6 +12,7 @@ import { Card } from '../../../../../components/Card'
 import { ChallengeTrack } from '../../../../../components/ChallengeTrack'
 import { MissionPanel } from '../../../../../components/MissionPanel'
 import { RewardCelebration } from '../../../../../components/RewardCelebration'
+import { UnavailableSurface } from '../../../../../components/UnavailableSurface'
 import { UploadArea } from '../../../../../components/UploadArea'
 
 /**
@@ -52,7 +51,8 @@ export const dynamic = 'force-dynamic'
  * preview NEVER creates, blocks or mutates a submission row. */
 const MAX_UPLOAD_BYTES = 25_000_000
 
-async function PracticalAttempt({ moduleKey }: { moduleKey: string }) {
+// fallow-ignore-next-line unused-export, complexity
+export async function PracticalAttempt({ moduleKey }: { moduleKey: string }) {
   const t = await getTranslations('practical')
   const tC = await getTranslations('challenge')
   const tR = await getTranslations('reward')
@@ -226,12 +226,20 @@ async function PracticalAttempt({ moduleKey }: { moduleKey: string }) {
   )
 }
 
-export default async function PracticalPage({ params }: { params: Promise<{ moduleKey: string }> }) {
+/**
+ * PPGA #85: Practical Missions left the learner journey. The route stays
+ * registered so an old bookmark reaches this clear unavailable state; the
+ * upload surface above is retained (exported as `PracticalAttempt`) for
+ * historical reuse but is never rendered. No read, no form, no mutation on a
+ * direct visit.
+ */
+export default async function PracticalPage() {
   const t = await getTranslations('practical')
-  const { moduleKey } = await params
   return (
-    <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <PracticalAttempt moduleKey={moduleKey} />
-    </Suspense>
+    <UnavailableSurface
+      title={t('unavailableTitle')}
+      body={t('unavailableBody')}
+      linkLabel={t('unavailableLink')}
+    />
   )
 }

@@ -101,8 +101,6 @@ test('Nav mapping is server-side, only existing routes, and per-role exactly', a
     "'/course'",
     "'/badges'",
     "'/leaderboard'",
-    // teacher destination
-    "'/teacher/review'",
     // admin destinations
     "'/admin/publication'",
     "'/admin/users'",
@@ -113,6 +111,8 @@ test('Nav mapping is server-side, only existing routes, and per-role exactly', a
   ] as string[]) {
     expect(src).toContain(route)
   }
+  // PPGA #85: the retired Teacher review queue is NOT an active destination.
+  expect(src).not.toContain("'/teacher/review'")
   // Nothing unauthorised renders for another role: the renderer emits nothing
   // for a caller whose role is not one of the lists (a `role == undefined`
   // sees an empty nav, not a hidden affordance that a URL could pass).

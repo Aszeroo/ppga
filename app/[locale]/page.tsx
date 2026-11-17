@@ -12,7 +12,6 @@ import { readHubRowsViaTables } from '../../lib/sup/hub'
 import { readOwnProfile } from '../../lib/sup/profile'
 import {
   buildHubView,
-  submissionPresentation,
   type HubCtaHref,
   type HubStateLine,
   type HubViewModel,
@@ -20,7 +19,6 @@ import {
 import { XPBar } from '../../components/XPBar'
 import { ProgressBar } from '../../components/ProgressBar'
 import { Badge } from '../../components/Badge'
-import { StatusPill } from '../../components/StatusPill'
 import { RewardCelebration } from '../../components/RewardCelebration'
 
 /**
@@ -39,50 +37,18 @@ import { RewardCelebration } from '../../components/RewardCelebration'
  * game-hub next-action screen — ONE primary CTA (the `.ppg-cta` face as of
  * #52, carrying the `data-ppg-cta` primary marker) chosen by `pickPrimaryCta` off
  * the SAME server reads the old screen spoke (gate → Pre-Test → Course;
- * Post-Test → Survey) plus the ticket's awaiting-review state (the FINAL
- * module's own submission round is `submitted` — the Teacher holds the
- * research-close decision), and a compact player-status summary: Level, XP,
+ * Post-Test → Survey), and a compact player-status summary: Level, XP,
  * progress toward the next Level, course progress (the learner's own
  * `complete` Mission rows over the modules the map showed), earned badges
- * (the awards), the current Mission (the highest-OPEN module's, linked), the
- * latest submission round + its status, and the Teacher's feedback where a
- * round carries notes. ZERO fabricated data — every value is a row/RPC the
+ * (the awards), and the current Mission (the highest-OPEN module's, linked).
+ * PPGA #85 removed the retired submission-status, review CTA and feedback
+ * cards from this screen. ZERO fabricated data — every value is a row/RPC the
  * server already owns; a missing datum renders NO row. Rank never renders
  * here (the Leaderboard destination owns it). Teacher/Admin keep the
  * utilitarian legacy screen (the issue: full 8-bit framing is LEARNER
  * surfaces only).
  */
 export const dynamic = 'force-dynamic'
-
-/** The submission status → its `home.states.*` copy key (bilingual state
- * word beside the raw DB token — state never a colour-only cue). */
-function submissionStateKey(status: string): string {
-  return (
-    {
-      in_progress: 'inProgress',
-      submitted: 'submitted',
-      needs_improvement: 'needsImprovement',
-      approved: 'approved',
-    } as Record<string, string>
-  )[status] ?? 'empty'
-}
-
-/** The submission status → the StatusPill tone (colour rides ALONGSIDE the
- * text label + raw token, never alone). */
-function submissionTone(status: string): 'success' | 'warning' | 'error' {
-  if (status === 'approved') return 'success'
-  if (status === 'needs_improvement') return 'error'
-  return 'warning'
-}
-
-/** The CTA destination → the typed Link target (the review CTA rides the
- * FINAL module's dynamic route; everything else is a top-level route). */
-function ctaTarget(href: HubCtaHref) {
-  if (typeof href !== 'string') {
-    return { pathname: '/course/[moduleKey]/review' as const, params: { moduleKey: href.reviewModuleKey } }
-  }
-  return href
-}
 
 /** The learner's next-action card: the state lines the old screen spoke
  * (`deriveNextActionLines` — same statuses, same details) + the ONE primary
@@ -110,7 +76,7 @@ function HubNextActionView({ tCopy, lines, cta }: NextActionViewProps) {
         <p className="ppg-hero-cta-row">
           {/** The ONE primary CTA — the login submit's `.ppg-cta` face as a
            * link (the class carries the focus ring + reduced-motion rules). */}
-          <Link className="ppg-cta" data-ppg-cta="primary" href={ctaTarget(cta.href)}>
+          <Link className="ppg-cta" data-ppg-cta="primary" href={cta.href}>
             {cta.label}
           </Link>
         </p>
@@ -118,13 +84,10 @@ function HubNextActionView({ tCopy, lines, cta }: NextActionViewProps) {
     </section>
   )}
 
-/** The current-Mission row's typed route (the practical kind is the upload
- * screen, the knowledge kind the quiz). */
+/** The current-Mission row's typed route (the CAI course's Missions are
+ * Knowledge Missions; PPGA #85 removed the practical upload destination). */
 function missionRoute(mission: StatusViewProps['mission']) {
   if (!mission) return { pathname: '/course' as const }
-  if (mission.kind === 'practical') {
-    return { pathname: '/course/[moduleKey]/practical' as const, params: { moduleKey: mission.moduleKey } }
-  }
   return { pathname: '/course/[moduleKey]/mission' as const, params: { moduleKey: mission.moduleKey } }
 }
 
@@ -138,10 +101,12 @@ interface HubCopy {
 /**
  * The compact player-status summary — PPGA #52: the gallery's `#s-dash`
  * status row (the gold XP panel + the white `card strip lift` cards: course
- * progress, achievements, submission status, feedback). Every row prop is
- * EITHER real view data or null (a missing datum renders no card: zero
- * fabricated data). The row types ride the view model (ONE declaration in
- * `dashboardHub`, no re-typed twins here). Rank stays on the Leaderboard
+ * progress, achievements, the current Mission). PPGA #85 removed the
+ * submission-status and feedback cards: the worksheet journey is retired, so
+ * the dashboard never promises a file submission or a Teacher review. Every
+ * row prop is EITHER real view data or null (a missing datum renders no card:
+ * zero fabricated data). The row types ride the view model (ONE declaration
+ * in `dashboardHub`, no re-typed twins here). Rank stays on the Leaderboard
  * destination, never here. Each row is its own tiny component: the presence
  * decision has one guard, and the grid is a branchless list of cards.
  */
@@ -151,8 +116,6 @@ interface StatusViewProps {
   badges: HubViewModel['badges']
   progress: HubViewModel['progress']
   mission: HubViewModel['mission']
-  submission: HubViewModel['submission']
-  feedback: HubViewModel['feedback']
 }
 
 function XpRow({ copy, xp }: { copy: HubCopy; xp: StatusViewProps['xp'] }) {
@@ -232,42 +195,7 @@ function MissionRow({ copy, mission }: { copy: HubCopy; mission: StatusViewProps
   )
 }
 
-function SubmissionRow({ copy, submission }: { copy: HubCopy; submission: StatusViewProps['submission'] }) {
-  if (!submission) return null
-  return (
-    <div className="ppg-status-card ppg-strip-top">
-      <h3 className="ppg-status-card-title">
-        <span aria-hidden="true">📤 </span>
-        {copy.tCopy('submissionLabel')}
-      </h3>
-      <p className="ppg-status-card-value">
-        {submission.missionId} #{submission.submissionSeq}{' '}
-        <StatusPill
-          tone={submissionTone(submission.status)}
-          label={`${copy.tCopy(`states.${submissionStateKey(submission.status)}`)} (${submission.status})`}
-        />
-      </p>
-    </div>
-  )
-}
-
-function FeedbackRow({ copy, feedback }: { copy: HubCopy; feedback: StatusViewProps['feedback'] }) {
-  if (!feedback) return null
-  const shown = submissionPresentation(feedback, copy.pick)
-  return (
-    <div className="ppg-status-card ppg-strip-top">
-      <h3 className="ppg-status-card-title">
-        <span aria-hidden="true">🧑‍🏫 </span>
-        {copy.tCopy('feedbackLabel')}
-      </h3>
-      <p className="ppg-status-card-value">
-        {feedback.missionId} ({shown.verdict}) {shown.notes}
-      </p>
-    </div>
-  )
-}
-
-function HubStatusView({ copy, xp, badges, progress, mission, submission, feedback }: StatusViewProps) {
+function HubStatusView({ copy, xp, badges, progress, mission }: StatusViewProps) {
   return (
     <section aria-label={copy.tCopy('statusLabel')} data-ppg-hub="status">
       <h2 className="ppg-heading ppg-heading-text ppg-hub-status-title">{copy.tCopy('statusLabel')}</h2>
@@ -276,8 +204,6 @@ function HubStatusView({ copy, xp, badges, progress, mission, submission, feedba
         <ProgressRow copy={copy} progress={progress} />
         <BadgesRow copy={copy} badges={badges} />
         <MissionRow copy={copy} mission={mission} />
-        <SubmissionRow copy={copy} submission={submission} />
-        <FeedbackRow copy={copy} feedback={feedback} />
       </div>
     </section>
   )
@@ -314,8 +240,6 @@ async function LearnerHub() {
         badges={view.badges}
         progress={view.progress}
         mission={view.mission}
-        submission={view.submission}
-        feedback={view.feedback}
       />
       {/* #53: the level-up celebration — the hub is the ONLY page that reads
           the derived level, so it owns the LEVEL section. The first observed

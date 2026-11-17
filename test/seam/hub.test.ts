@@ -44,9 +44,6 @@ const sql = (statement: string) =>
 const asClaims = (role: string, sub: string) =>
   `SET LOCAL "request.jwt.claims" = '{"role":"${role}","sub":"${sub}"}';`
 
-const impersonate = (role: string, sub: string) =>
-  `BEGIN; SET LOCAL role authenticated; SET LOCAL "request.jwt.claims" = '{"role":"${role}","sub":"${sub}"}';`
-
 test(
   'hub reads: the OWN complete Mission rows — a stranger learner reads NONE',
   { skip: !hasLocalStack },
@@ -103,14 +100,22 @@ test(
 )
 
 test(
-  'hub reads: the practical-mission catalog is a learner-readable list (4 uploads)',
+  'hub reads: the archived practical-mission catalog is hidden from learners; teacher/admin keep it for history',
   { skip: !hasLocalStack },
   () => {
     const out = sql(
-      `${impersonate('learner', seededIds.learnerOne)}
+      `BEGIN;
+        SET LOCAL role authenticated;
+        SET LOCAL "request.jwt.claims" = '{"role":"learner","sub":"${seededIds.learnerOne}"}';
+        SELECT 'learner=' || count(*) FROM ppg_practical_missions;
+        SET LOCAL "request.jwt.claims" = '{"role":"teacher","sub":"22222222-2222-2222-2222-222222222222"}';
         SELECT 'kind=' || module_key FROM ppg_practical_missions ORDER BY module_key;
       ROLLBACK;`,
     )
+    // PPGA #85: every seeded practical Mission is archived, so the learner's
+    // catalog read is EMPTY — the dashboard can never surface an upload kind.
+    expect(out.includes('learner=0')).toBe(true)
+    // The teacher/admin history read keeps all four archived rows.
     for (const k of ['kind=module-08', 'kind=module-09', 'kind=module-10', 'kind=module-11']) {
       expect(out.includes(k)).toBe(true)
     }

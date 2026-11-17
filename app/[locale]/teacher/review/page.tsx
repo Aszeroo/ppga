@@ -1,12 +1,10 @@
-import { Suspense } from 'react'
-
-import { useTranslations } from 'next-intl'
 import { getTranslations } from 'next-intl/server'
 import { Link } from '../../../../lib/i18n/routing'
 
 import { readReviewQueueViaRpc } from '../../../../lib/sup/reviews'
 import { Badge } from '../../../../components/Badge'
 import { StatusPill } from '../../../../components/StatusPill'
+import { UnavailableSurface } from '../../../../components/UnavailableSurface'
 
 /**
  * Ticket #14 teacher review queue, #55 V3 utilitarian dressing (presentation
@@ -26,7 +24,8 @@ import { StatusPill } from '../../../../components/StatusPill'
  */
 export const dynamic = 'force-dynamic'
 
-async function TeacherQueue() {
+// fallow-ignore-next-line unused-export, complexity
+export async function TeacherQueue() {
   const t = await getTranslations('review')
 
   // the queue across the practical missions 08–11 (the Final Project rides
@@ -131,11 +130,18 @@ async function TeacherQueue() {
   )
 }
 
-export default function TeacherReviewPage() {
-  const t = useTranslations('review')
+/**
+ * PPGA #85: the worksheet review queue left the active Teacher navigation and
+ * journey. A direct visit shows the unavailable state; the queue component
+ * above is retained (exported) for historical reuse, never rendered here.
+ */
+export default async function TeacherReviewPage() {
+  const t = await getTranslations('review')
   return (
-    <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <TeacherQueue />
-    </Suspense>
+    <UnavailableSurface
+      title={t('unavailableTitle')}
+      body={t('unavailableBody')}
+      linkLabel={t('unavailableLink')}
+    />
   )
 }
