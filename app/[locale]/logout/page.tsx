@@ -5,7 +5,6 @@ import { Suspense } from 'react'
 import { useCallback, useState } from 'react'
 
 import { useTranslations } from 'next-intl'
-import { Link } from '../../../lib/i18n/routing'
 
 import { LanguageSelectorPill } from '../../../components/LanguageSelectorPill'
 
@@ -56,8 +55,9 @@ export default function LogoutPage() {
    * derivation: mascot + the pixel `PPGA` wordmark + the page's own intro
    * line + the ONE CTA + the language switch on the card). The MECHANICS are
    * byte-identical to what #3 shipped: the same `confirm: true` POST to
-   * `/api/auth/logout`, the same revoke + observable redirect, the same
-   * busy/message copy lines and the same follow-up links.
+   * `/api/auth/logout`, the same revoke + observable redirect, and the same
+   * busy/message copy lines. The card carries one action only; the old footer
+   * repeated the intro sentence as two links with the same label.
    */
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
@@ -73,10 +73,6 @@ export default function LogoutPage() {
         {busy ? <p className="ppg-form-note">{t('busy')}</p> : null}
         {message ? <p className="ppg-form-note">{message}</p> : null}
         <LanguageSelectorPill />
-        <p className="ppg-title-sub ppg-title-after">
-          <Link href="/profile">{t('intro')}</Link> ·{' '}
-          <Link href="/login">{t('intro')}</Link>
-        </p>
       </section>
     </Suspense>
   )

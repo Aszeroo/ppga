@@ -110,6 +110,13 @@ test('login renders the design card standalone: wordmark heading, welcome, two-l
     const nav = getByRole('navigation', { name: m.selector.label })
     expect(nav.getAttribute('class')).toContain('ppg-lang-sw')
     expect(nav.querySelector('#ppga-locale-selector')).toBeTruthy()
+    // The footer note explains the flow in plain text. Linking it to the
+    // dashboard bounced anonymous visitors back to this same page, so the
+    // line carries no anchor at all.
+    const after = container.querySelector('.ppg-title-after')!
+    expect(after.textContent).toContain(m.login.intro)
+    expect(after.textContent).toContain(m.login.afterSuccess)
+    expect(after.querySelector('a')).toBeFalsy()
     // NO framed chrome on a title screen — and NO floating menu toggle.
     expect(container.querySelector('header')).toBeFalsy()
     expect(container.querySelector('footer')).toBeFalsy()
