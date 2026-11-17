@@ -44,16 +44,16 @@ test.describe('PPGA #18 responsive sweep', () => {
       // Sign in at the width (the gate's redirect is observable).
       await signIn(page, locale, learner, '/profile')
 
-      // No horizontal overflow on the dashboard, the course map, a lesson —
-      // and (PPGA #46) on the Shell epic's challenge-framing surfaces: the
-      // module page's challenge track, the practical panel, the review panel.
+      // No horizontal overflow on the dashboard, the course map, a chapter,
+      // the CAI lesson player, a chapter test and the Knowledge Mission —
+      // the CAI loop's signed-in surfaces in both locales.
       for (const path of [
         '/',
         '/course',
-        '/course/module-01/module-01-lesson-01',
-        '/course/module-01',
-        '/course/module-08/practical',
-        '/course/module-08/review',
+        '/course/chapter-01',
+        '/course/chapter-01/chapter-01-lesson-01',
+        '/course/chapter-01/chapter-test/pre',
+        '/course/chapter-01/mission',
       ]) {
         await page.goto(`/${locale}${path}`)
         const scroll = await page.evaluate(() => ({

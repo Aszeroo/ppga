@@ -1,5 +1,7 @@
 import path from 'node:path'
 
+import { execSync } from 'node:child_process'
+
 import { expect } from '@playwright/test'
 
 import { type Page } from '@playwright/test'
@@ -40,6 +42,13 @@ export function t(path: string[], locale: string): string {
   throw new Error(`messages ${locale} path ${path.join('.')} is not a string (got ${JSON.stringify(v)})`)
 }
 
+/** The clean copy lookup, then the `{name}` placeholders the pages fill. */
+export function tFormat(path: string[], locale: string, values: Record<string, string | number>): string {
+  let copy = t(path, locale)
+  for (const [key, value] of Object.entries(values)) copy = copy.replaceAll(`{${key}}`, String(value))
+  return copy
+}
+
 /** The raw-key-leak regex: the key namespace + a dot + a letter/dot tail.
  * The legit copy has dots only inside numerals/parens (`(8.1-8.4)`,
  * `Total 28 / 35`) — never a letter-prefixed `word.word`. Ticket #46 adds the
@@ -53,6 +62,9 @@ export const accounts = {
   teacher: 'teacher',
   learners: { th: '64110001', en: '64110002' } as Record<string, string>,
 }
+
+/** The seeded display names (the leaderboard rows print them). */
+export const LEARNER_NAME = { th: 'Learner One', en: 'Learner Two' } as Record<string, string>
 
 /** The e2e roster's shared password (the provisioning seed's own temp
  * password — a LOCAL-stack dev credential, never a production secret). */
@@ -92,6 +104,10 @@ export async function signOut(page: Page, locale: string) {
   const response = page.waitForResponse((r) => r.url().includes('/api/auth/logout') && r.ok())
   await page.getByRole('button', { name: t(['logout', 'submit'], locale) }).click()
   await response
+  // The page then assigns `window.location.href = result.redirect`; wait for
+  // the real navigation to leave `/logout` so the next `goto` never aborts a
+  // navigation still in flight (PPGA #99 flake: `net::ERR_ABORTED`).
+  await page.waitForURL((url) => !url.pathname.endsWith('/logout'), { timeout: 30000 })
 }
 
 /** The native form's submit + the JSON the API route returns — the
@@ -172,21 +188,21 @@ export function clearedStateCopy(locale: string): string {
  * the journey's observable proof that every destination a role can reach
  * appears in the Shell, and nothing another-role's destination does). The
  * copy rides the `nav.*` keys: the learner sees Dashboard, Course, Badges,
- * Leaderboard, Profile; the teacher sees Dashboard, Review Queue, Profile;
- * the admin sees Dashboard, Course / Publication, User list, Audit stream,
- * Provision roster, Export, Health, Profile.
+ * Leaderboard, Profile; the teacher sees Dashboard, Chapter progress,
+ * Profile; the admin sees Dashboard, Chapter progress, Course / Publication,
+ * User list, Audit stream, Provision roster, Export, Health, Profile.
  */
 const NAV_BY_ROLE = {
   learner: ['home', 'course', 'badges', 'leaderboard', 'profile'] as string[],
-  teacher: ['home', 'reviewQueue', 'profile'] as string[],
-  admin: ['home', 'coursePublication', 'adminUsers', 'adminAudit', 'adminProvisioning', 'adminExport', 'health', 'profile'] as string[],
+  teacher: ['home', 'progress', 'profile'] as string[],
+  admin: ['home', 'progress', 'coursePublication', 'adminUsers', 'adminAudit', 'adminProvisioning', 'adminExport', 'health', 'profile'] as string[],
 }
 
 /** The Shell's nav shows EXACTLY the session role's destinations — asserted
  * on the NAV LANDMARK itself (never body text: a page's own copy may repeat a
  * label, the landmark cannot lie about which links the Shell renders). The
  * link count is the exactness gate: the learner's five, the teacher's three,
- * the admin's eight — nothing another-role's destination renders. */
+ * the admin's nine — nothing another-role's destination renders. */
 export async function expectShellNav(page: Page, locale: string, role: 'learner' | 'teacher' | 'admin') {
   const nav = page.getByRole('navigation', { name: t(['shell', 'navLabel'], locale) })
   await expect(nav).toBeVisible()
@@ -215,3 +231,155 @@ export async function expectStandaloneScreen(page: Page, locale: string) {
   await expect(page.locator('#ppg-menu-toggle')).toHaveCount(0)
   await expect(page.locator('#ppga-locale-selector')).toBeVisible()
 }
+
+/**
+ * PPGA #99: the local-stack database seam, the SAME `docker exec
+ * supabase_db_ppga psql -U postgres -tA` pattern the `test/seam/*` suites
+ * already use. The e2e journey drives the REAL UI + the REAL API routes; this
+ * helper only (a) reads seed-owned answer keys the browser is never allowed
+ * to see, so the journey can answer instruments as a learner would, and
+ * (b) writes the explicit fixture that seeds chapters 2-9 (below). Product
+ * outcomes are never mocked: every score, XP grant, unlock and badge in the
+ * journey still comes from the shipped RPC under the learner's own JWT.
+ */
+const DB_CONTAINER = 'supabase_db_ppga'
+
+export function dbQuery(sql: string): string {
+  return execSync(`docker exec -i ${DB_CONTAINER} psql -U postgres -tA`, {
+    input: sql,
+    encoding: 'utf8',
+  }).trim()
+}
+
+function parseAnswerKey(sql: string): Record<string, string> {
+  const raw = dbQuery(sql)
+  if (!raw) throw new Error('answer key query returned no row')
+  return JSON.parse(raw) as Record<string, string>
+}
+
+/** The global research pre-test key (`item_<n>` -> A/B/C/D), server-side only. */
+export function pretestAnswerKey(version = '2026.11.1'): Record<string, string> {
+  return parseAnswerKey(
+    `select answer_key::text from public.ppg_pretest_instruments where version = '${version}';`,
+  )
+}
+
+/** The Final Test key (`item_<n>` -> A/B/C/D), server-side only. */
+export function posttestAnswerKey(version = '2026.11.1'): Record<string, string> {
+  return parseAnswerKey(
+    `select answer_key::text from public.ppg_posttest_instruments where version = '${version}';`,
+  )
+}
+
+/** One chapter bank's key (`<order_index>` -> a/b/c), server-side only. */
+export function chapterTestAnswerKey(chapterKey: string, phase: 'pre' | 'post'): Record<string, string> {
+  return parseAnswerKey(
+    `select coalesce(jsonb_object_agg(order_index, option_key), '{}'::jsonb)::text
+       from public.ppg_chapter_test_questions
+      where chapter_key = '${chapterKey}' and phase = '${phase}' and is_correct;`,
+  )
+}
+
+/** One Knowledge Mission's key (`<order_index>` -> a/b/c), server-side only. */
+export function missionAnswerKey(moduleKey: string): Record<string, string> {
+  return parseAnswerKey(
+    `select coalesce(jsonb_object_agg(order_index, option_key), '{}'::jsonb)::text
+       from public.ppg_knowledge_mission_questions
+      where module_key = '${moduleKey}' and is_correct;`,
+  )
+}
+
+/** One lesson's mini-check keys (`<step_order_index>` -> a/b/c/d). */
+export function lessonCheckAnswerKey(lessonKey: string): Record<string, string> {
+  return parseAnswerKey(
+    `select coalesce(jsonb_object_agg(order_index, check_answer_key), '{}'::jsonb)::text
+       from public.ppg_lesson_steps
+      where lesson_key = '${lessonKey}' and kind = 'check';`,
+  )
+}
+
+/**
+ * Normalise a key into the form the UI posts: `item_1` .. `item_<count>`.
+ * Chapter tests key their answer object by bare `order_index`, the
+ * instruments by `item_<n>`; both collapse to the same answer object here.
+ */
+export function answersFromKey(key: Record<string, string>, count = Object.keys(key).length): Record<string, string> {
+  const answers: Record<string, string> = {}
+  for (let n = 1; n <= count; n++) answers[`item_${n}`] = key[`item_${n}`] ?? key[String(n)] ?? ''
+  return answers
+}
+
+/** Any option letter different from the correct one (the fail-path answer). */
+export function wrongOption(correct: string): string {
+  return ['a', 'b', 'c', 'd'].find((letter) => letter !== correct.toLowerCase()) ?? 'a'
+}
+
+/** A fully-wrong answer object for an instrument/bank key. */
+export function wrongAnswersFromKey(key: Record<string, string>, count = Object.keys(key).length): Record<string, string> {
+  const correct = answersFromKey(key, count)
+  const wrong: Record<string, string> = {}
+  for (let n = 1; n <= count; n++) wrong[`item_${n}`] = wrongOption(correct[`item_${n}`] ?? 'a')
+  return wrong
+}
+
+/**
+ * Fill every item of the pre-test / Final Test (`input`, ids
+ * `#<prefix>_answer_item_<n>`) or of a chapter bank (`radio`, one
+ * `input[name="item_<n>"]` per question). The letter always comes from the
+ * database key — no chapter item text is ever hardcoded.
+ */
+export async function fillInstrument(
+  page: Page,
+  prefix: string,
+  count: number,
+  answers: Record<string, string>,
+  kind: 'input' | 'radio' = 'input',
+) {
+  for (let n = 1; n <= count; n++) {
+    const answer = answers[`item_${n}`]
+    if (!answer) throw new Error(`fillInstrument: no answer for item ${n} (${prefix})`)
+    if (kind === 'radio') {
+      await page.locator(`input[name="item_${n}"][value="${answer.toLowerCase()}"]`).check()
+    } else {
+      // The instrument controls are `pattern="^[A-D]$"` (uppercase); the
+      // chapter banks post lowercase radio values, so the text inputs are
+      // normalised here.
+      await page.locator(`#${prefix}_answer_item_${n}`).fill(answer.toUpperCase())
+    }
+  }
+}
+
+/**
+ * Submit a chapter pre/post-test. The route redirects the native form back to
+ * the test screen (303), so the observable is the persisted receipt the next
+ * read renders — never the POST body (the shipped pattern: the screen prints
+ * the SERVER's decision).
+ */
+export async function submitChapterTest(page: Page, phase: 'pre' | 'post'): Promise<void> {
+  const response = page.waitForResponse((r) => r.url().includes('/api/chapter-test/submit'))
+  await page.locator(`form[data-ppg-chapter-test="${phase}"] button[type="submit"]`).click()
+  await response
+  await page.waitForLoadState()
+}
+
+/**
+ * PPGA #99 TEST FIXTURE, NOT A PRODUCT CLAIM. The journey proves the whole
+ * CAI loop on chapter-01 (both sides of the 70% gate); running all nine
+ * chapters through the browser would only repeat the same proven loop. Under
+ * the #86 rule the Final Test unlocks on NINE distinct `ppg_chapter_unlocks`
+ * rows (chapter-02..chapter-10), so this seeds that fixture for the learner
+ * whose chapter-01 pass already wrote the chapter-02 row. It deliberately
+ * skips the chapters 2-9 UI loop; every Final Test outcome (score, XP,
+ * badge, retries) is still the shipped RPC's own.
+ */
+export function seedChapterUnlocksFixture(learnerUuid: string, chapters: string[]): void {
+  const rows = chapters
+    .map((chapter) => `('${learnerUuid}', '${chapter}', 10, 10)`)
+    .join(', ')
+  dbQuery(
+    `insert into public.ppg_chapter_unlocks (learner_id, chapter_key, unlocked_by_score, item_count)
+     values ${rows}
+     on conflict (learner_id, chapter_key) do nothing;`,
+  )
+}
+
