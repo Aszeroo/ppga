@@ -127,7 +127,7 @@ async function PreTestForm({ locale }: { locale: string }) {
           <PreTestItems
             items={items}
             locale={locale}
-            questionTag={(n) => `${t('questionTag')} ${n}`}
+            questionTag={(n) => t('questionTag', { n: String(n) })}
             itemProgress={(n, total) => t('itemProgress', { n: String(n), total: String(total) })}
             answerForQuestion={(n) => t('answerForQuestion', { n: String(n) })}
           />

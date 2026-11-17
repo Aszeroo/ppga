@@ -107,7 +107,7 @@ async function TestScreen({ chapterKey, phase }: { chapterKey: string; phase: Ch
             {questions.map((q, index) => (
               <div key={q.order_index} className="ppg-instr-item">
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--ppg-space-2)', flexWrap: 'wrap' }}>
-                  <Badge text={`${t('questionTag')} ${q.order_index}`} tone="neutral" />
+                  <Badge text={t('questionTag', { n: String(q.order_index) })} tone="neutral" />
                   <Badge text={t('itemProgress', { n: String(index + 1), total: String(total) })} tone="neutral" />
                 </div>
                 <p className="ppg-sc-question">{pick(locale, q.prompt_th, q.prompt_en)}</p>
@@ -148,7 +148,7 @@ async function TestScreen({ chapterKey, phase }: { chapterKey: string; phase: Ch
               const q = questions.find((row) => row.order_index === f.order_index)
               return (
                 <li key={f.order_index}>
-                  {t('questionTag')} {f.order_index}: {q ? pick(locale, q.prompt_th, q.prompt_en) : ''} —{' '}
+                  {t('questionTag', { n: String(f.order_index) })}: {q ? pick(locale, q.prompt_th, q.prompt_en) : ''} —{' '}
                   {f.correct ? t('feedbackCorrect') : t('feedbackIncorrect')}
                 </li>
               )

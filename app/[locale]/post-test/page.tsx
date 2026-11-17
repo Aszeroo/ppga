@@ -127,7 +127,7 @@ async function PosttestForm({ locale }: { locale: string }) {
             items={items}
             locale={locale}
             answerIdPrefix="posttest"
-            questionTag={(n) => `${t('questionTag')} ${n}`}
+            questionTag={(n) => t('questionTag', { n: String(n) })}
             itemProgress={(n, total) => t('itemProgress', { n: String(n), total: String(total) })}
             answerForQuestion={(n) => `${t('answerLabel')} ${n}`}
           />
