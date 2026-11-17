@@ -24,7 +24,10 @@ import { z } from 'zod'
  * lands (the read RPC never carries `is_correct`). Missing environment
  * yields `not-configured` so the app shows the state, never crashes.
  */
-const moduleKeySchema = z.string().regex(/^module-\d{2}$/i)
+// PPGA #99: the CAI spine's Knowledge Missions ride `chapter-NN` keys (the
+// archived legacy spine keeps `module-NN`); both are accepted, the RPCs and
+// their gates decide the rest.
+const moduleKeySchema = z.string().regex(/^(?:module|chapter)-\d{2}$/i)
 
 // PPGA #18 (the live-browser finding): `ppg_submit_mission(p_answers jsonb)`
 // reads `p_answers ->> q.order_index` — the payload must stay a JSON OBJECT

@@ -68,11 +68,17 @@ export async function POST(req: NextRequest) {
   )
 
   if (!isJson && result.ok) {
-    const target = new URL(
-      `/${locale}/course/${parsed.data.chapter_key}/chapter-test/${parsed.data.phase}`,
-      req.url,
-    )
-    return NextResponse.redirect(target, 303)
+    // PPGA #99: a RELATIVE Location (a plain 303) keeps the browser on its
+    // own origin. `new URL(path, req.url)` used the server's internal host
+    // (`localhost:3000`) while the app is normally reached at
+    // `127.0.0.1:3000`, so the redirect was cross-origin and the session
+    // cookies (set for the caller's origin) never reached the test screen.
+    return new NextResponse(null, {
+      status: 303,
+      headers: {
+        Location: `/${locale}/course/${parsed.data.chapter_key}/chapter-test/${parsed.data.phase}`,
+      },
+    })
   }
   return NextResponse.json(result)
 }

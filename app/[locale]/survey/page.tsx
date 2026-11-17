@@ -100,7 +100,7 @@ async function Items({ locale }: { locale: string }) {
           return (
             <div key={item.id} className="ppg-instr-item">
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--ppg-space-2)', flexWrap: 'wrap' }}>
-                <Badge text={`${t('questionTag')} ${i + 1}`} tone="neutral" />
+                <Badge text={t('questionTag', { n: String(i + 1) })} tone="neutral" />
                 <Badge text={t('itemProgress', { n: String(i + 1), total: String(total) })} tone="neutral" />
               </div>
               <p className="ppg-sc-question">{pick.prompt}</p>
