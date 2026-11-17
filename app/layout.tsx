@@ -4,6 +4,8 @@ import type { ReactNode } from 'react'
 import { getLocale, getMessages } from 'next-intl/server'
 import { NextIntlClientProvider } from 'next-intl'
 
+import { LocaleLangSync } from '../components/LocaleLangSync'
+
 import { Noto_Sans_Thai, Press_Start_2P } from 'next/font/google'
 
 import './globals.css'
@@ -86,7 +88,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       className={ppgDisplay.variable}
     >
       <body className={ppgBody.variable}>
-        <NextIntlClientProvider locale={locale} messages={clientMessages}>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider locale={locale} messages={clientMessages}>
+          <LocaleLangSync />
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   )
