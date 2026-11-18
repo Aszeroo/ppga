@@ -2010,6 +2010,77 @@ a.ppg-cta {
   display: flex;
   flex-direction: column;
   gap: var(--ppg-space-3);
+  min-width: 0;
+}
+
+/* The step content is the reader's ONE card surface. Scoped to the player so
+ * the shared `.ppg-card` class (plain prose on other pages) keeps its shipped
+ * face. Mobile-first: 16px padding on phones, 24px from the tablet width. */
+.ppg-lesson-player .ppg-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-3);
+  box-sizing: border-box;
+  min-width: 0;
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-3);
+  padding: var(--ppg-space-3);
+  box-shadow: var(--ppg-shadow-pixel-2);
+}
+
+@media (min-width: 700px) {
+  .ppg-lesson-player .ppg-card {
+    padding: var(--ppg-space-4);
+  }
+}
+
+/* The kind stays a visible, focusable `<h2>` for the focus move and the
+ * screen-reader announcement, but reads as a compact overline: small, muted,
+ * letter-spaced, and no longer competing with the body headings. */
+.ppg-lesson-kicker {
+  margin: 0;
+  font-family: var(--font-ppg-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ppg-muted);
+}
+
+.ppg-lesson-kicker:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+/* The "Step n / m · kind" status line sits tight under the progress bar; the
+ * card itself carries the reading rhythm. */
+.ppg-lesson-status {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ppg-muted);
+}
+
+/* Back / Next: one centered row that wraps instead of overflowing at 390.
+ * Scoped to DIRECT children so the mini-check CTA inside the card is not
+ * touched. */
+.ppg-lesson-player > .ppg-sc-cta-row {
+  flex-wrap: wrap;
+  gap: var(--ppg-space-2);
+}
+
+/* The two learning-path links (module + course map) are one compact footer
+ * row, not two widely spaced paragraphs. */
+.ppg-lesson-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ppg-space-2) var(--ppg-space-4);
+  margin: 0;
 }
 
 /* The mini-check reveal: only the learner's SELECTED option is painted, and
@@ -2057,13 +2128,44 @@ a.ppg-cta {
 }
 
 /* The static "read all steps" fallback: collapsed by default, always in the
- * server-rendered HTML, no answer keys. */
+ * server-rendered HTML, no answer keys. The summary is a real affordance:
+ * its native disclosure marker stays visible, it carries padding and a
+ * focus ring, and the collapsed block adds no empty vertical space. */
 .ppg-step-readall summary {
+  display: list-item;
+  list-style-position: inside;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
   cursor: pointer;
+  padding: var(--ppg-space-2) var(--ppg-space-3);
+  border-radius: var(--ppg-radius-2);
+  font-family: var(--font-ppg-body);
+  font-weight: 700;
+  color: var(--ppg-fg-heading);
+}
+
+.ppg-step-readall summary:hover {
+  background-color: var(--ppg-gray-100);
+}
+
+.ppg-step-readall summary:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+.ppg-step-readall[open] > summary {
+  margin-bottom: var(--ppg-space-2);
 }
 
 .ppg-step-readall-entry + .ppg-step-readall-entry {
   margin-top: var(--ppg-space-3);
+}
+
+/* The fallback's own kind headings lose the browser's default block margin
+ * so an OPEN list reads with the same rhythm as the step card. */
+.ppg-step-readall-entry .ppg-heading {
+  margin: 0 0 var(--ppg-space-2);
 }
 
 /* Imported lesson prose: a comfortable reading measure, roomy line height,

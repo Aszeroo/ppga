@@ -154,12 +154,12 @@ export function LessonPlayer({ lessonKey, steps, locale }: LessonPlayerProps) {
       data-ppg-step-index={step.orderIndex}
     >
       <ProgressBar value={progress.value} min={progress.min} max={progress.max} label={t('progressLabel')} />
-      <p role="status" aria-live="polite" className="ppg-card-text" data-ppg-step-status={step.kind}>
+      <p role="status" aria-live="polite" className="ppg-card-text ppg-lesson-status" data-ppg-step-status={step.kind}>
         {t('stepOf', { current: progress.value, total: steps.length })} · {kindLabel}
       </p>
 
       <div className="ppg-card" data-ppg-step-kind={step.kind}>
-        <h2 className="ppg-heading ppg-heading-text" tabIndex={-1} ref={headingRef}>
+        <h2 className="ppg-lesson-kicker" tabIndex={-1} ref={headingRef}>
           {kindLabel}
         </h2>
         {step.body ? <LessonProse text={step.body} /> : null}
@@ -255,7 +255,7 @@ export function LessonPlayer({ lessonKey, steps, locale }: LessonPlayerProps) {
       {/* Static server-rendered fallback: all step text + prompt + options,
           no answer keys (the model never carries them). Works without JS. */}
       <details className="ppg-step-readall" data-ppg-step-readall>
-        <summary className="ppg-link">{t('readAll')}</summary>
+        <summary>{t('readAll')}</summary>
         <div>
           {steps.map((entry) => (
             <section className="ppg-step-readall-entry" key={entry.orderIndex} aria-label={t(`kind.${entry.kind}`)}>

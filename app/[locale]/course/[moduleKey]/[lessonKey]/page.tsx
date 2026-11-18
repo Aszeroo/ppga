@@ -120,12 +120,10 @@ async function LessonView({ moduleKey, lessonKey }: { moduleKey: string; lessonK
       {questions && questions.status === 'denied' ? <p>{tS('states.denied')} {questions.detail}</p> : null}
       {questions && questions.status === 'unauthorized' ? <p>{tS('states.unauthorized')} {questions.detail}</p> : null}
       {questions && questions.status === 'not-configured' ? <p>{tS('states.notConfigured')} {questions.detail}</p> : null}
-      <p>
+      <div className="ppg-lesson-footer">
         <Link className="ppg-link" href={{ pathname: '/course/[moduleKey]', params: { moduleKey } }}>{t('linkModule')}</Link>
-      </p>
-      <p>
         <Link className="ppg-link" href="/course">{t('linkMap')}</Link>
-      </p>
+      </div>
     </section>
   )
 }
