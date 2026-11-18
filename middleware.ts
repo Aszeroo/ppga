@@ -93,7 +93,9 @@ export default async function middleware(req: NextRequest) {
   // clear or smuggle them; the login route's read of the DATABASE already
   // spoke). A signed-in Learner without consent sees the dashboard's
   // respectful explanation and no access to the Pre-Test — any other
-  // pathname goes back to `/<locale>` (the no-consent state). A consenting
+  // pathname goes back to `/<locale>` (the no-consent state) — except the
+  // explanation page (`/content`), which is the CTA's destination and the
+  // one screen an unconsented Learner must be able to read. A consenting
   // un-submitted Learner reaches ONLY the Pre-Test pathname (or logout/
   // change-password/profile the allowlist the #3 guard carries): the
   // content pathname goes back to `/<locale>/pre-test` until the response
@@ -124,7 +126,7 @@ export default async function middleware(req: NextRequest) {
   // (or a payload that never decodes — the safe default) rides the gate.
   const gateRole = jwtRole(req.cookies.get(sessionCookie)?.value)
   if (hasSession && !mustChange && (gateRole == null || gateRole === 'learner')) {
-    if (!consent && !pathname.startsWith(`/${locale}/login`) && !pathname.startsWith(`/${locale}/logout`) && pathname !== `/${locale}`) {
+    if (!consent && !pathname.startsWith(`/${locale}/login`) && !pathname.startsWith(`/${locale}/logout`) && !pathname.startsWith(`/${locale}/content`) && pathname !== '/content' && pathname !== `/${locale}`) {
       return NextResponse.redirect(new URL(`/${locale}`, req.url))
     }
     if (consent && !unlockedGateOpen && (pathname.startsWith(`/${locale}/content`) || pathname.startsWith(`/${locale}/course`))) {
