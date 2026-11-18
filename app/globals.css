@@ -3287,12 +3287,13 @@ a.ppg-cta {
 
 /* The learner modal: a native `<dialog>` opened with showModal(), so focus is
  * trapped and the page behind is inert. The backdrop dims and blurs the grid;
- * the panel caps at 720px / 85dvh and scrolls internally, with 16px side
- * margins on phones. Tokens only (the V3 pastel/pixel family). */
+ * the panel caps at 1040px / 85dvh and scrolls vertically inside, with 16px
+ * side margins on phones. Chapter rows wrap instead of forcing a sideways
+ * scrollbar. Tokens only (the V3 pastel/pixel family). */
 .ppg-teacher-dialog {
   box-sizing: border-box;
-  width: min(720px, calc(100vw - 32px));
-  max-width: calc(100vw - 32px);
+  width: min(1040px, calc(100vw - 32px));
+  max-width: 1040px;
   max-height: 85dvh;
   margin: auto;
   padding: 0;
@@ -3383,16 +3384,20 @@ a.ppg-cta {
 
 .ppg-teacher-dialog-body {
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   padding: var(--ppg-space-3) var(--ppg-space-4) var(--ppg-space-4);
 }
 
 .ppg-teacher-dialog-body .ppg-board-list {
+  width: 100%;
   max-width: none;
   margin: 0;
 }
 
 .ppg-teacher-dialog-body .ppg-board-item {
+  box-sizing: border-box;
+  width: 100%;
   align-items: flex-start;
   font-size: 14px;
 }
@@ -3400,6 +3405,10 @@ a.ppg-cta {
 .ppg-teacher-dialog-body .ppg-board-item > span:first-child {
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.ppg-teacher-dialog-body .ppg-board-item > .ppg-status-pill {
+  flex: none;
 }
 
 /* The open/close motion is opt-in: reduced-motion users get the final state
