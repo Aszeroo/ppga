@@ -1,12 +1,11 @@
 import 'server-only'
 
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 import { type ReactNode } from 'react'
 
-import { Link } from '../lib/i18n/routing'
-
 import { LanguageSelector } from './LanguageSelector'
+import { HeaderLogoutButton } from './HeaderLogoutButton'
 import { XPHud } from './XPHud'
 import type { XpSummaryState } from '../lib/sup/xp'
 import { Nav } from './Nav'
@@ -92,6 +91,7 @@ const TITLE_DECO = [
 export async function Shell({ role, contextTitle, standalone, activeSection, xpSummary, children }: ShellProps) {
   const t = await getTranslations('shell')
   const navT = await getTranslations('nav')
+  const locale = await getLocale()
 
   /**
    * PPGA #49 (owner preview review): the standalone title screens are the
@@ -118,7 +118,7 @@ export async function Shell({ role, contextTitle, standalone, activeSection, xpS
   return (
     <section>
       <header className="ppg-shell-header ppg-strip-bottom">
-        <div className="ppg-shell-in">
+        <div className="ppg-shell-in" data-ppg-role={role ?? 'anonymous'}>
           {/** LEFT: the pixel identity + the contextual Course/Module title. */}
           <div className="ppg-brand">
             <span className="ppg-logo">{t('logo')}</span>
@@ -132,9 +132,7 @@ export async function Shell({ role, contextTitle, standalone, activeSection, xpS
           <div className="ppg-hud-cluster">
             <XPHud summary={xpSummary} />
             <LanguageSelector />
-            <Link className="ppg-nav-item ppg-logout-chip" href="/logout">
-              {navT('logout')}
-            </Link>
+            <HeaderLogoutButton label={navT('logout')} fallbackHref={`/${locale}/logout`} />
           </div>
         </div>
       </header>

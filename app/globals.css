@@ -467,7 +467,9 @@ body {
  * surface beside the form, instead of a narrow card marooned in empty
  * background. The card keeps its single-column stack below 1000px. */
 @media (min-width: 1000px) {
-  .ppg-login-card {
+  /* Only the login screen splits into two panels: the /logout card shares the
+   * `.ppg-login-card` face but is a single centred column at every width. */
+  .ppg-login-card-split {
     max-width: 940px;
     padding: 0;
     display: grid;
@@ -646,6 +648,7 @@ body {
  * #18 axe sweep would flag it on EVERY authenticated stage. */
 .ppg-logout-chip {
   font-family: var(--font-ppg-body);
+  appearance: none;
   background-color: var(--ppg-bg-surface);
   border-width: 3px;
   border-style: solid;
@@ -654,6 +657,7 @@ body {
   padding: 8px 14px;
   font-weight: 700;
   font-size: 14px;
+  line-height: 1.2;
   color: var(--ppg-ink);
   white-space: nowrap;
 }
@@ -1020,6 +1024,27 @@ body {
   }
   .ppg-menu-wrap .ppg-nav-item {
     display: block;
+  }
+  /* Admin carries nine nav pills — wider than its middle grid cell at wide
+   * viewports, so the row painted under the brand and HUD. The admin frame
+   * gets two rows instead: brand | HUD, then the nav centred across both.
+   * Learners/teachers (five and three pills) keep the one-row layout. */
+  [data-ppg-role='admin'] {
+    grid-template-columns: auto 1fr;
+    grid-template-areas:
+      'brand hud'
+      'nav nav';
+  }
+  [data-ppg-role='admin'] .ppg-brand {
+    grid-area: brand;
+  }
+  [data-ppg-role='admin'] .ppg-hud-cluster {
+    grid-area: hud;
+    justify-self: end;
+  }
+  [data-ppg-role='admin'] .ppg-nav {
+    grid-area: nav;
+    justify-content: center;
   }
 }
 

@@ -109,7 +109,7 @@ export default function LoginPage() {
    */
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
-      <section className="ppg-login-card ppg-strip-top">
+      <section className="ppg-login-card ppg-login-card-split ppg-strip-top">
         <div className="ppg-login-brand">
           <div className="ppg-mascot" aria-hidden="true">
             🎓
