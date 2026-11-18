@@ -34,28 +34,9 @@ async function LeaderTable() {
   return (
     <section aria-label={t('tableLabel')} className="ppg-page-wrap">
       {state.status === 'ok' && rows.length ? (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 'var(--ppg-space-3)',
-          }}
-        >
-          <h1
-            className="ppg-heading ppg-heading-text"
-            style={{
-              fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
-              color: 'var(--ppg-pink-300)',
-              fontSize: '28px',
-              fontWeight: 800,
-            }}
-          >
-            {t('tableLabel')}
-          </h1>
-          <p style={{ color: 'var(--ppg-muted)' }} className="ppg-card-text">
-            {t('weekSub')}
-          </p>
+        <div className="ppg-board-head">
+          <h1 className="ppg-heading ppg-heading-text ppg-gallery-title">{t('tableLabel')}</h1>
+          <p className="ppg-card-text">{t('weekSub')}</p>
         </div>
       ) : null}
 
@@ -68,11 +49,14 @@ async function LeaderTable() {
               key={row.rank}
               aria-label={`${t('rank')} ${row.rank} — ${row.full_name}: ${t('level')} ${row.level}, ${t('xp')} ${row.total_xp}`}
             >
+              <span className="ppg-pod-rank" aria-hidden="true">
+                {row.rank}
+              </span>
               <span className="ppg-pod-avatar" aria-hidden="true">
                 🧑‍🎓
               </span>
-              <span>{row.full_name}</span>
-              <span style={{ fontWeight: 800 }}>
+              <span className="ppg-pod-name">{row.full_name}</span>
+              <span className="ppg-pod-xp">
                 {row.total_xp} {t('xp')}
               </span>
             </div>

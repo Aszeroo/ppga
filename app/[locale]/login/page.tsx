@@ -110,55 +110,59 @@ export default function LoginPage() {
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <section className="ppg-login-card ppg-strip-top">
-        <div className="ppg-mascot" aria-hidden="true">
-          🎓
+        <div className="ppg-login-brand">
+          <div className="ppg-mascot" aria-hidden="true">
+            🎓
+          </div>
+          <h1 className="ppg-title-h1">{tShell('logo')}</h1>
+          <p className="ppg-title-welcome">{t('welcome')}</p>
+          <p className="ppg-title-sub ppg-title-blurb">
+            {t('blurbLine1')}
+            <br />
+            {t('blurbLine2')}
+          </p>
         </div>
-        <h1 className="ppg-title-h1">{tShell('logo')}</h1>
-        <p className="ppg-title-welcome">{t('welcome')}</p>
-        <p className="ppg-title-sub ppg-title-blurb">
-          {t('blurbLine1')}
-          <br />
-          {t('blurbLine2')}
-        </p>
-        <form className="ppg-login-form" onSubmit={handleSubmit}>
-          <div className="ppg-login-field">
-            <label className="ppg-field-label" htmlFor="identifier">{t('identifier')}</label>
-            <input
-              id="identifier"
-              name="identifier"
-              className="ppg-input"
-              placeholder={t('identifierPlaceholder')}
-              required
-              minLength={3}
-              maxLength={50}
-            />
-          </div>
-          <div className="ppg-login-field">
-            <label className="ppg-field-label" htmlFor="password">{t('password')}</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              className="ppg-input"
-              placeholder={t('passwordPlaceholder')}
-              required
-              minLength={8}
-              maxLength={72}
-            />
-          </div>
-          <button type="submit" className="ppg-button ppg-cta ppg-cta-block">
-            {t('submit')}
-          </button>
-        </form>
-        {busy ? <p className="ppg-form-note">{t('busy')}</p> : null}
-        {message ? <p className="ppg-form-note">{message}</p> : null}
-        {/** The switch on the card — the design's `.lang-sw` row (the same
-         * select mechanics as the frame's switcher: the `/api/locale` POST +
-         * the locale navigation). */}
-        <LanguageSelectorPill />
-        <p className="ppg-title-sub ppg-title-after">
-          {t('intro')} — {t('afterSuccess')}
-        </p>
+        <div className="ppg-login-form-panel">
+          <form className="ppg-login-form" onSubmit={handleSubmit}>
+            <div className="ppg-login-field">
+              <label className="ppg-field-label" htmlFor="identifier">{t('identifier')}</label>
+              <input
+                id="identifier"
+                name="identifier"
+                className="ppg-input"
+                placeholder={t('identifierPlaceholder')}
+                required
+                minLength={3}
+                maxLength={50}
+              />
+            </div>
+            <div className="ppg-login-field">
+              <label className="ppg-field-label" htmlFor="password">{t('password')}</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                className="ppg-input"
+                placeholder={t('passwordPlaceholder')}
+                required
+                minLength={8}
+                maxLength={72}
+              />
+            </div>
+            <button type="submit" className="ppg-button ppg-cta ppg-cta-block">
+              {t('submit')}
+            </button>
+          </form>
+          {busy ? <p className="ppg-form-note">{t('busy')}</p> : null}
+          {message ? <p className="ppg-form-note">{message}</p> : null}
+          {/** The switch on the card — the design's `.lang-sw` row (the same
+           * select mechanics as the frame's switcher: the `/api/locale` POST +
+           * the locale navigation). */}
+          <LanguageSelectorPill />
+          <p className="ppg-title-sub ppg-title-after">
+            {t('intro')} — {t('afterSuccess')}
+          </p>
+        </div>
       </section>
     </Suspense>
   )

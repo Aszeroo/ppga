@@ -135,8 +135,10 @@ export async function Shell({ role, contextTitle, standalone, activeSection, xpS
       <header className="ppg-shell-header ppg-strip-bottom">
         <div className="ppg-shell-in">
           {/** LEFT: the pixel identity + the contextual Course/Module title. */}
-          <span className="ppg-logo">{t('logo')}</span>
-          {contextTitle ? <p className="ppg-context-title">{contextTitle}</p> : null}
+          <div className="ppg-brand">
+            <span className="ppg-logo">{t('logo')}</span>
+            {contextTitle ? <p className="ppg-context-title">{contextTitle}</p> : null}
+          </div>
           {/** CENTER: the role-gated primary navigation (active section on). */}
           <Nav role={role} activeSection={activeSection} />
           {/** RIGHT (the gallery's `.hright`): XP + Level chips (the REAL
@@ -145,8 +147,9 @@ export async function Shell({ role, contextTitle, standalone, activeSection, xpS
           <div className="ppg-hud-cluster">
             <XPHud summary={xpSummary} />
             {role ? (
-              <span className="ppg-user-chip">
-                <span aria-hidden="true">{ROLE_ICON[role]}</span> {t(ROLE_COPY[role])}
+              <span className="ppg-user-chip" title={t(ROLE_COPY[role])}>
+                <span aria-hidden="true">{ROLE_ICON[role]}</span>
+                <span className="ppg-user-chip-label">{t(ROLE_COPY[role])}</span>
               </span>
             ) : null}
             <LanguageSelector />

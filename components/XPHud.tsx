@@ -28,6 +28,9 @@ export async function XPHud({ summary: provided }: { summary?: XpSummaryState } 
   const summary = provided ?? (await readXpSummaryViaRpc())
   const xp = summary.totalXp ?? 0
   const level = summary.level ?? 1
+  // The RPC's xp_to_next is the REMAINING XP, so the level-relative pair is
+  // (xp - level floor, 100) — printing total/remaining read "2300 / 100".
+  const intoLevel = Math.max(0, xp - (level - 1) * 100)
   return (
     <section aria-label={t('label')} className="ppg-hud">
       {summary.status === 'ok' ? (
@@ -40,7 +43,7 @@ export async function XPHud({ summary: provided }: { summary?: XpSummaryState } 
             <b className="ppg-level-chip-number">{level}</b>
           </span>
           <span className="ppg-hud-progress">
-            {t('progress')} {xp} / {summary.xpToNext ?? 100}
+            {t('progress')} {intoLevel} / 100
           </span>
         </>
       ) : null}
