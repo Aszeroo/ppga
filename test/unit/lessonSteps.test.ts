@@ -56,6 +56,31 @@ test('mapStepRows: sorted, localized, options lettered in key order', () => {
   expect(thai[2].check?.prompt).toBe('prompt-th')
 })
 
+test('mapStepRows: an empty body_en falls back to the Thai body', () => {
+  const rows: LessonStepRow[] = [
+    { order_index: 1, kind: 'explanation', body_th: 'thai-body', body_en: '' },
+    {
+      order_index: 2,
+      kind: 'check',
+      body_th: '',
+      body_en: '',
+      check: {
+        prompt_th: 'prompt-th',
+        prompt_en: '',
+        options: [
+          { option_key: 'a', option_th: 'a-th', option_en: '' },
+          { option_key: 'b', option_th: 'b-th', option_en: 'b-en' },
+        ],
+      },
+    },
+  ]
+  const steps = mapStepRows(rows, 'en')
+  expect(steps[0].body).toBe('thai-body')
+  expect(steps[1].check?.prompt).toBe('prompt-th')
+  expect(steps[1].check?.options[0].label).toBe('a-th')
+  expect(steps[1].check?.options[1].label).toBe('b-en')
+})
+
 test('mapStepRows: drops unknown kinds and never carries answer-key/explanation fields', () => {
   const leaked = {
     ...CHECK_ROW,

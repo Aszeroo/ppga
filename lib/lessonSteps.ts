@@ -62,7 +62,12 @@ export interface LessonStep {
 
 type Locale = 'th' | 'en'
 
-const pick = (locale: Locale, th: string, en: string) => (locale === 'th' ? th : en)
+/**
+ * Localize a field. An untranslated English side falls back to the Thai
+ * source rather than rendering a blank step. Imported prose bodies carry
+ * `body_en = ''` until translations land.
+ */
+const pick = (locale: Locale, th: string, en: string) => (locale === 'th' ? th : en) || th
 
 /**
  * Project the RPC rows into the player model. Only the whitelisted fields

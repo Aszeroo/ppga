@@ -2066,6 +2066,59 @@ a.ppg-cta {
   margin-top: var(--ppg-space-3);
 }
 
+/* Imported lesson prose: a comfortable reading measure, roomy line height,
+ * and block spacing owned by the wrapper (the blocks themselves stay at
+ * margin 0 so an adjacent sibling never doubles a gap). Token-only colours;
+ * `overflow-wrap` keeps a long Thai word or URL inside the card at 390. */
+.ppg-lesson-prose {
+  max-width: 68ch;
+  min-width: 0;
+  color: var(--ppg-fg-body);
+  font-family: var(--font-ppg-body);
+  font-size: 1rem;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.ppg-lesson-prose > * + * {
+  margin-top: var(--ppg-space-3);
+}
+
+.ppg-prose-heading {
+  margin: 0;
+  color: var(--ppg-fg-heading);
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  line-height: 1.4;
+}
+
+.ppg-prose-heading-2 {
+  font-size: 1.15rem;
+}
+
+.ppg-prose-heading-3 {
+  font-size: 1.02rem;
+}
+
+.ppg-prose-paragraph {
+  margin: 0;
+}
+
+.ppg-prose-list {
+  margin: 0;
+  padding-left: var(--ppg-space-4);
+}
+
+.ppg-prose-list > li + li {
+  margin-top: var(--ppg-space-1);
+}
+
+/* The source text keeps its own "1." / "2." prefix, so the browser must not
+ * add a second marker. */
+.ppg-prose-numbered {
+  padding-left: 0;
+  list-style: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ppg-sc-opt {
     transition-duration: 0s;
