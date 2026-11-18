@@ -56,6 +56,18 @@ export async function TeacherChapterProgress() {
     data.retries ?? [],
   )
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
+  const statusCopy = {
+    pre: t('chapterStatus.pre'),
+    post: t('chapterStatus.post'),
+    mission: t('chapterStatus.mission'),
+    missionDone: t('chapterStatus.missionDone'),
+    missionPending: t('chapterStatus.missionPending'),
+    notStarted: t('chapterStatus.notStarted'),
+    passed: t('chapterStatus.passed'),
+    notPassed: t('chapterStatus.notPassed'),
+  }
+  const tileState = (chapter: (typeof roster)[number]['chapters'][number]) =>
+    chapter.post.passed ? 'passed' : chapter.pre.submitted ? 'in-progress' : 'not-started'
 
   return (
     <main>
@@ -65,54 +77,82 @@ export async function TeacherChapterProgress() {
 
         {roster.length === 0 ? <p className="ppg-state-line">{t('states.empty')}</p> : null}
 
-        {roster.map((learner) => (
-          <div key={learner.learner_id} className="ppg-work-card" data-ppg-learner={learner.learner_id}>
-            <h2 className="ppg-list-title">
-              {learner.full_name} ({learner.student_id})
-            </h2>
-            <p className="ppg-card-text">
-              {t('cleared')}: {learner.cleared} / {learner.total}
-              {learner.current ? ` · ${t('current')}: ${learner.current.order_index}. ${pick(learner.current.title_th, learner.current.title_en)}` : ` · ${t('allCleared')}`}
-            </p>
-            <p className="ppg-card-text">
-              {t('finalTest')}:{' '}
-              {learner.final_test
-                ? learner.final_test.completed
-                  ? `${learner.final_test.best_score ?? '—'} · ${t('attempts')}: ${learner.final_test.attempts} · ${learner.final_test.instrument_version ?? '—'}`
-                  : t('notTaken')
-                : t('notTaken')}
-            </p>
-            <ul className="ppg-board-list">
-              {learner.chapters.map((chapter) => (
-                <li key={chapter.chapter_key} className="ppg-board-item">
-                  <span>
-                    {chapter.order_index}. {pick(chapter.title_th, chapter.title_en)} —{' '}
-                    {chapterStatusText(chapter, {
-                      pre: t('chapterStatus.pre'),
-                      post: t('chapterStatus.post'),
-                      mission: t('chapterStatus.mission'),
-                      missionDone: t('chapterStatus.missionDone'),
-                      missionPending: t('chapterStatus.missionPending'),
-                      notStarted: t('chapterStatus.notStarted'),
-                      passed: t('chapterStatus.passed'),
-                      notPassed: t('chapterStatus.notPassed'),
-                    })}
-                  </span>{' '}
-                  <StatusPill
-                    tone={chapter.post.passed ? 'success' : chapter.open ? 'warning' : 'locked'}
-                    label={
-                      chapter.post.passed
-                        ? t('chapterStatus.passed')
-                        : chapter.pre.submitted
-                          ? t('chapterStatus.inProgress')
-                          : t('chapterStatus.notStarted')
-                    }
-                  />
-                </li>
-              ))}
-            </ul>
+        {roster.length > 0 ? (
+          <div className="ppg-teacher-grid">
+            {roster.map((learner) => (
+              <div key={learner.learner_id} className="ppg-status-card ppg-teacher-card" data-ppg-learner={learner.learner_id}>
+                <h2 className="ppg-teacher-card-name">{learner.full_name}</h2>
+                <p className="ppg-teacher-card-meta">{learner.student_id}</p>
+
+                {/* The nine-chapter scan strip: the numeral + the state glyph
+                 * stay visual, the full pre/post/Mission status stays in the
+                 * accessible name and the disclosure rows below. */}
+                <ul className="ppg-teacher-chapter-grid">
+                  {learner.chapters.map((chapter) => {
+                    const status = chapterStatusText(chapter, statusCopy)
+                    const state = tileState(chapter)
+                    return (
+                      <li
+                        key={chapter.chapter_key}
+                        className="ppg-teacher-chapter-tile"
+                        data-state={state}
+                        title={status}
+                      >
+                        <span className="ppg-teacher-tile-number" aria-hidden="true">
+                          {chapter.order_index}
+                        </span>
+                        <span className="ppg-teacher-tile-icon" aria-hidden="true">
+                          {state === 'passed' ? '✓' : state === 'in-progress' ? '…' : '–'}
+                        </span>
+                        <span className="ppg-teacher-sr">
+                          {chapter.order_index}. {pick(chapter.title_th, chapter.title_en)} — {status}
+                        </span>
+                      </li>
+                    )
+                  })}
+                </ul>
+
+                <p className="ppg-teacher-card-line">
+                  {t('finalTest')}:{' '}
+                  {learner.final_test
+                    ? learner.final_test.completed
+                      ? `${learner.final_test.best_score ?? '—'} · ${t('attempts')}: ${learner.final_test.attempts} · ${learner.final_test.instrument_version ?? '—'}`
+                      : t('notTaken')
+                    : t('notTaken')}
+                </p>
+
+                <details className="ppg-teacher-details">
+                  <summary className="ppg-teacher-details-summary">
+                    {t('cleared')}: {learner.cleared} / {learner.total}
+                    {learner.current
+                      ? ` · ${t('current')}: ${learner.current.order_index}. ${pick(learner.current.title_th, learner.current.title_en)}`
+                      : ` · ${t('allCleared')}`}
+                  </summary>
+                  <ul className="ppg-board-list">
+                    {learner.chapters.map((chapter) => (
+                      <li key={chapter.chapter_key} className="ppg-board-item">
+                        <span>
+                          {chapter.order_index}. {pick(chapter.title_th, chapter.title_en)} —{' '}
+                          {chapterStatusText(chapter, statusCopy)}
+                        </span>{' '}
+                        <StatusPill
+                          tone={chapter.post.passed ? 'success' : chapter.open ? 'warning' : 'locked'}
+                          label={
+                            chapter.post.passed
+                              ? t('chapterStatus.passed')
+                              : chapter.pre.submitted
+                                ? t('chapterStatus.inProgress')
+                                : t('chapterStatus.notStarted')
+                          }
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              </div>
+            ))}
           </div>
-        ))}
+        ) : null}
       </section>
     </main>
   )
