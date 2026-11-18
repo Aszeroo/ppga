@@ -1130,6 +1130,15 @@ body {
   }
 }
 
+/* Below 380px the four HUD chips are wider than the content box; let them
+ * take a second line rather than overflow the viewport. */
+@media (max-width: 379px) {
+  .ppg-hud-cluster {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}
+
 /*
  * Ticket #46: the phone-width overflow the LIVE sweep caught on the review
  * page (scrollWidth 463 vs 360): the SERVER-authored feedback text is real
