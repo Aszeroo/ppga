@@ -66,6 +66,7 @@ const NAV_ITEMS = {
   teacher: [
     { href: '/', key: 'home' },
     { href: '/teacher/progress', key: 'progress' },
+    { href: '/teacher/students', key: 'students' },
     { href: '/profile', key: 'profile' },
   ] as NavItem[],
   admin: [
