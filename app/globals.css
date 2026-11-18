@@ -3393,6 +3393,9 @@ a.ppg-cta {
   width: 100%;
   max-width: none;
   margin: 0;
+  /* The UA's <ul> start padding (40px) made the list 40px wider than the
+   * dialog body, clipping the row borders despite overflow-x: hidden. */
+  padding: 0;
 }
 
 .ppg-teacher-dialog-body .ppg-board-item {
