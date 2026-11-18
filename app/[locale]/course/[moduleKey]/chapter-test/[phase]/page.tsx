@@ -70,13 +70,22 @@ async function TestScreen({ chapterKey, phase }: { chapterKey: string; phase: Ch
 
   return (
     <section className="ppg-page-wrap" aria-label={t('label')}>
-      <p className="ppg-card-text" style={{ color: 'var(--ppg-muted)' }}>
-        {pick(locale, state.title_th, state.title_en)} · {chapterKey}
-      </p>
-      <h1 className="ppg-heading ppg-heading-text">
-        {phase === 'pre' ? t('preTitle') : t('postTitle')}
-      </h1>
-      <p className="ppg-card-text">{phase === 'pre' ? t('preIntro') : t('postIntro')}</p>
+      {/** The course/badges header pattern: left-aligned ink title, the
+       * intro under it, the chapter meta aligned in the same block. */}
+      <div className="ppg-gallery-head">
+        <div>
+          <h1 className="ppg-heading ppg-heading-text ppg-gallery-title">
+            {phase === 'pre' ? t('preTitle') : t('postTitle')}
+          </h1>
+          <p className="ppg-card-text">{phase === 'pre' ? t('preIntro') : t('postIntro')}</p>
+        </div>
+        <div className="ppg-gallery-counts">
+          <Badge
+            text={`${pick(locale, state.title_th, state.title_en)} · ${chapterKey}`}
+            tone="neutral"
+          />
+        </div>
+      </div>
 
       {submitted ? (
         <div className="ppg-instr-receipt">

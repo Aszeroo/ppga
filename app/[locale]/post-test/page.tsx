@@ -40,35 +40,21 @@ async function UnlockStatus({ state, finalState }: {
   const t = await getTranslations('posttest')
   return (
     <section aria-label={t('gateLabel')}>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 'var(--ppg-space-2)',
-          textAlign: 'center',
-        }}
-      >
-        <h1
-          className="ppg-heading ppg-heading-text"
-          style={{
-            fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
-            color: 'var(--ppg-pink-300)',
-            fontSize: '28px',
-            fontWeight: 800,
-          }}
-        >
-          {t('instrumentHeading')}
-        </h1>
-        {state.status === 'ok' && state.unlocked ? (
-          <p className="ppg-card-text" style={{ color: 'var(--ppg-muted)' }}>
-            {t('unlockedSub')}
-          </p>
-        ) : null}
-        <p style={{ display: 'flex', gap: 'var(--ppg-space-2)', flexWrap: 'wrap', justifyContent: 'center' }}>
+      {/** The course/badges header pattern: left-aligned ink title, the
+       * secondary line under it, the research/no-XP tags aligned beside. */}
+      <div className="ppg-gallery-head">
+        <div>
+          <h1 className="ppg-heading ppg-heading-text ppg-gallery-title">
+            {t('instrumentHeading')}
+          </h1>
+          {state.status === 'ok' && state.unlocked ? (
+            <p className="ppg-card-text">{t('unlockedSub')}</p>
+          ) : null}
+        </div>
+        <div className="ppg-gallery-counts">
           <Badge text={t('researchTag')} tone="neutral" />
           <Badge text={t('noXpTag')} tone="warning" />
-        </p>
+        </div>
       </div>
 
       {state.status === 'ok' && !state.unlocked ? <p className="ppg-state-line">{t('states.locked')} {state.detail}</p> : null}

@@ -45,33 +45,20 @@ async function GateStatus({ state }: { state: Awaited<ReturnType<typeof readGate
   const t = await getTranslations('pretest')
   return (
     <section aria-label={t('gateLabel')}>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 'var(--ppg-space-2)',
-          textAlign: 'center',
-        }}
-      >
-        <h1
-          className="ppg-heading ppg-heading-text"
-          style={{
-            fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
-            color: 'var(--ppg-pink-300)',
-            fontSize: '28px',
-            fontWeight: 800,
-          }}
-        >
-          {t('instrumentHeading')}
-        </h1>
-        <p className="ppg-card-text" style={{ color: 'var(--ppg-muted)' }}>
-          {t('noXpSub')}
-        </p>
-        <p style={{ display: 'flex', gap: 'var(--ppg-space-2)', flexWrap: 'wrap', justifyContent: 'center' }}>
+      {/** Same header pattern as the course/badges screens: left-aligned
+       * ink display title, the secondary line under it, the tags in the
+       * same block (no centered pink heading on a pale surface). */}
+      <div className="ppg-gallery-head">
+        <div>
+          <h1 className="ppg-heading ppg-heading-text ppg-gallery-title">
+            {t('instrumentHeading')}
+          </h1>
+          <p className="ppg-card-text">{t('noXpSub')}</p>
+        </div>
+        <div className="ppg-gallery-counts">
           <Badge text={t('researchTag')} tone="neutral" />
           <Badge text={t('noXpTag')} tone="warning" />
-        </p>
+        </div>
       </div>
 
       {state.status === 'ok' && !state.consent && !state.override ? <p className="ppg-state-line">{t('states.noConsent')} {state.detail}</p> : null}
