@@ -46,6 +46,7 @@ const ROLE_COPY: Record<'learner' | 'teacher' | 'admin', 'userLearner' | 'userTe
 async function ProfileContent() {
   const t = await getTranslations('profile')
   const ts = await getTranslations('shell')
+  const tn = await getTranslations('nav')
   const state = await readOwnProfile()
   const row = state.row
   return (
@@ -83,12 +84,10 @@ async function ProfileContent() {
         <div className="ppg-status-card ppg-strip-top">
           <h2 className="ppg-status-card-title">{t('editLabel')}</h2>
           <p className="ppg-hero-cta-row">
-            <Link className="ppg-cta" href="/change-password">{t('links')}</Link>
+            <Link className="ppg-cta" href="/change-password">{tn('changePassword')}</Link>
           </p>
           <p className="ppg-hero-cta-row">
-            <Link className="ppg-link" href="/logout">{t('links')}</Link>
-            {' · '}
-            <Link className="ppg-link" href="/login">{t('links')}</Link>
+            <Link className="ppg-link" href="/logout">{tn('logout')}</Link>
           </p>
         </div>
       ) : null}
