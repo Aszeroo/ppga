@@ -65,14 +65,13 @@ export function InstrumentItems({
               <Badge text={questionTag(n)} tone="neutral" />
               <Badge text={itemProgress(n, total)} tone="neutral" />
             </div>
-            <p className="ppg-sc-question" id={`${answerIdPrefix}_prompt_item_${n}`}>
+            <p className="ppg-sc-question">
               {locale === 'th' ? item.th.prompt : item.en.prompt}
             </p>
             <div
               className="ppg-sc-options"
               role="radiogroup"
               aria-label={answerForQuestion(n)}
-              aria-describedby={`${answerIdPrefix}_prompt_item_${n}`}
             >
               {Object.entries(choiceSet ?? {}).map(([key, text]) => {
                 const value = key.toUpperCase()
