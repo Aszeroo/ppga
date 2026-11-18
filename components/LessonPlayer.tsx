@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { ProgressBar } from './ProgressBar'
+import { LessonProse } from './LessonProse'
 import { nextStepIndex, previousStepIndex, stepProgress, type LessonStep } from '../lib/lessonSteps'
 
 /**
@@ -161,7 +162,7 @@ export function LessonPlayer({ lessonKey, steps, locale }: LessonPlayerProps) {
         <h2 className="ppg-heading ppg-heading-text" tabIndex={-1} ref={headingRef}>
           {kindLabel}
         </h2>
-        {step.body ? <p className="ppg-card-text">{step.body}</p> : null}
+        {step.body ? <LessonProse text={step.body} /> : null}
 
         {step.check
           ? (
@@ -259,7 +260,7 @@ export function LessonPlayer({ lessonKey, steps, locale }: LessonPlayerProps) {
           {steps.map((entry) => (
             <section className="ppg-step-readall-entry" key={entry.orderIndex} aria-label={t(`kind.${entry.kind}`)}>
               <h3 className="ppg-heading ppg-heading-text">{t(`kind.${entry.kind}`)}</h3>
-              {entry.body ? <p className="ppg-card-text">{entry.body}</p> : null}
+              {entry.body ? <LessonProse text={entry.body} /> : null}
               {entry.check
                 ? (
                   <div>
