@@ -44,6 +44,7 @@ export const routing = defineRouting({
     '/teacher/review': '/teacher/review',
     '/teacher/review/[submissionId]': '/teacher/review/[submissionId]',
     '/teacher/progress': '/teacher/progress',
+    '/teacher/students': '/teacher/students',
     '/badges': '/badges',
     '/leaderboard': '/leaderboard',
     '/admin/publication': '/admin/publication',

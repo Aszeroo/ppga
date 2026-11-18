@@ -3443,3 +3443,280 @@ a.ppg-cta {
     opacity: 1;
   }
 }
+
+/* ========================================================================
+ * TEACHER/ADMIN STUDENT MANAGEMENT (/teacher/students)
+ * A self-contained block appended at the end of the sheet so a rebase with
+ * the parallel teacher-card work stays a clean append. Every colour rides a
+ * token; the backdrop scrim is the one literal rgba this block needs (the
+ * same pattern the celebration scrim above already uses).
+ * ====================================================================== */
+
+/* The add block: two entry points side by side on wide screens, stacked
+ * below 900px so neither form ever overflows a tablet/mobile viewport. */
+.ppg-student-add-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ppg-space-3);
+  align-items: start;
+}
+
+.ppg-student-add-grid .ppg-work-form {
+  background-color: var(--ppg-cream);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-3);
+}
+
+.ppg-student-report {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-2);
+}
+
+/* The list section's heading + honest live count. */
+.ppg-students-toolbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--ppg-space-2);
+}
+
+.ppg-students-count {
+  font-family: var(--font-ppg-body);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ppg-muted);
+  margin: 0;
+}
+
+/* The roster: one compact row per learner. The grid collapses to a stacked
+ * card at <=760px; every action stays a full-width 44px target on phones. */
+.ppg-student-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ppg-student-row {
+  box-sizing: border-box;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(140px, 0.7fr) auto;
+  align-items: center;
+  gap: var(--ppg-space-2) var(--ppg-space-3);
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-2) var(--ppg-space-3);
+}
+
+.ppg-student-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ppg-student-name {
+  font-family: var(--font-ppg-body);
+  font-weight: 800;
+  color: var(--ppg-fg-heading);
+  overflow-wrap: anywhere;
+}
+
+.ppg-student-handle {
+  font-family: var(--font-ppg-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ppg-muted);
+  overflow-wrap: anywhere;
+}
+
+.ppg-student-consent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ppg-student-consent .ppg-field-label {
+  margin: 0;
+}
+
+.ppg-student-consent-value {
+  font-family: var(--font-ppg-body);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ppg-fg-heading);
+  overflow-wrap: anywhere;
+}
+
+.ppg-student-consent-value[data-ppg-consent="yes"] {
+  color: var(--ppg-status-success);
+}
+
+.ppg-student-consent-value[data-ppg-consent="no"] {
+  color: var(--ppg-faint);
+}
+
+.ppg-student-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--ppg-space-2);
+}
+
+.ppg-student-actions .ppg-btn-secondary {
+  min-height: 44px;
+}
+
+.ppg-student-empty {
+  font-family: var(--font-ppg-body);
+  font-weight: 600;
+  color: var(--ppg-muted);
+  margin: 0;
+  padding: var(--ppg-space-3);
+  text-align: center;
+  border-width: var(--ppg-border-2);
+  border-style: dashed;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-2);
+}
+
+.ppg-btn-danger {
+  color: var(--ppg-status-error);
+  border-color: var(--ppg-status-error);
+  background-color: var(--ppg-bg-surface);
+}
+
+.ppg-btn-danger:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+.ppg-inline-error {
+  font-family: var(--font-ppg-body);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ppg-error-deep);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.ppg-student-confirm {
+  font-family: var(--font-ppg-body);
+  font-weight: 600;
+  color: var(--ppg-fg-body);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The reset result: a selectable, high-contrast one-time password. */
+.ppg-temp-password {
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ppg-fg-heading);
+  background-color: var(--ppg-yellow-tint);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-gold);
+  border-radius: var(--ppg-radius-1);
+  padding: var(--ppg-space-2) var(--ppg-space-3);
+  margin: 0;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+/* The shared accessible dialog: dimmed fixed scrim (no blur) + a white
+ * panel. z-index 60 matches the celebration scrim's existing level. */
+.ppg-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ppg-space-3);
+  background-color: rgba(26, 32, 44, 0.55);
+}
+
+.ppg-dialog-panel {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100vh - 2 * var(--ppg-space-3));
+  overflow-y: auto;
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-3);
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  border-radius: var(--ppg-radius-3);
+  padding: var(--ppg-space-4);
+  box-shadow: var(--ppg-shadow-pixel-3);
+}
+
+.ppg-dialog-panel:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+.ppg-dialog-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: var(--ppg-space-2);
+  margin-top: var(--ppg-space-2);
+}
+
+.ppg-dialog-actions .ppg-btn-secondary {
+  min-height: 44px;
+}
+
+@media (max-width: 900px) {
+  .ppg-student-add-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 760px) {
+  .ppg-student-row {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .ppg-student-consent {
+    flex-direction: row;
+    align-items: baseline;
+    gap: var(--ppg-space-2);
+  }
+
+  .ppg-student-actions {
+    justify-content: flex-start;
+  }
+
+  .ppg-student-actions .ppg-btn-secondary {
+    flex: 1 1 30%;
+  }
+}
+
+@media (max-width: 420px) {
+  .ppg-student-actions .ppg-btn-secondary {
+    flex: 1 1 100%;
+  }
+
+  .ppg-dialog-panel {
+    padding: var(--ppg-space-3);
+  }
+}

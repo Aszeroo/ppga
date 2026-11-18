@@ -15,7 +15,8 @@
     "adminUsers": "User list",
     "adminAudit": "Audit stream",
     "adminProvisioning": "Provision roster",
-    "progress": "Chapter progress"
+    "progress": "Chapter progress",
+    "students": "Students"
   },
   "shell": {
     "identity": "PPGA — Gamified Presentation Program",
@@ -866,6 +867,63 @@
       "passed": "passed",
       "notPassed": "not passed",
       "inProgress": "in progress"
+    }
+  },
+  "studentAdmin": {
+    "title": "Students",
+    "sub": "Manage learner accounts: add learners, edit names and student IDs, reset passwords, or delete accounts.",
+    "listLabel": "Learner list",
+    "searchLabel": "Search by name or student ID",
+    "searchPlaceholder": "Type a name or student ID",
+    "count": "{count} learners",
+    "empty": "No learners yet. Add the first learner above.",
+    "noResults": "No learners match your search.",
+    "consentLabel": "Consent",
+    "consentYes": "Yes (paper consent on file)",
+    "consentNo": "No consent",
+    "studentIdLabel": "Student ID",
+    "fullNameLabel": "Full name",
+    "addTitle": "Add learners",
+    "addIntro": "Paste a roster (student ID and name per line) or add one learner at a time. Accounts are created by the existing provisioning route with one-time temporary passwords.",
+    "addBusy": "Adding learners...",
+    "editAction": "Edit",
+    "resetAction": "Reset password",
+    "deleteAction": "Delete",
+    "editTitle": "Edit learner",
+    "editIntro": "Change the display name and the login handle (student ID). The login handle must be unique.",
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "close": "Close",
+    "resetTitle": "Reset password",
+    "resetIntro": "Generate a new one-time password. The learner must change it at the next login.",
+    "resetConfirm": "Reset the password for {name} ({studentId})?",
+    "resetConfirmLabel": "Reset password",
+    "resetting": "Resetting...",
+    "resetDone": "Password reset",
+    "tempPasswordLabel": "Temporary password (shown once)",
+    "tempPasswordHint": "Give this password to the learner now. It is not stored in plain text anywhere and cannot be shown again.",
+    "deleteTitle": "Delete learner",
+    "deleteConfirm": "Delete {name} ({studentId}) permanently? Their scores, XP, attempts and answers are permanently deleted. This cannot be undone.",
+    "deleteConfirmLabel": "Delete permanently",
+    "deleting": "Deleting...",
+    "success": {
+      "edit": "Learner updated.",
+      "delete": "Learner deleted."
+    },
+    "errors": {
+      "name": "The name must be 1 to 80 characters.",
+      "handle": "The student ID must be 3 to 50 characters using a-z, 0-9, dot, hyphen or underscore.",
+      "handleTaken": "That student ID is already in use. Nothing was changed.",
+      "targetMissing": "That learner was not found.",
+      "forbidden": "Only learner accounts can be managed here.",
+      "failed": "Something went wrong. Please try again."
+    },
+    "states": {
+      "denied": "Student management is teacher/admin-only.",
+      "unauthorized": "Please sign in first.",
+      "notConfigured": "The service is not configured.",
+      "error": "Something went wrong."
     }
   }
 }

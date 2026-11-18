@@ -66,6 +66,7 @@ const CLIENT_MESSAGE_NAMESPACES = [
   'logout',
   'changePassword',
   'admin',
+  'studentAdmin',
   'nav',
   'shell',
   'course',
