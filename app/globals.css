@@ -728,6 +728,12 @@ body {
   max-width: 100%;
 }
 
+/* Interactive surfaces read as clickable even when they are not anchors. */
+:where(.ppg-button, .ppg-cta, .ppg-menu-toggle, .ppg-nav-pill, .ppg-logout-chip) {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
 .ppg-cta {
   font-family: var(--font-ppg-body);
   display: inline-flex;
@@ -1279,7 +1285,7 @@ a.ppg-cta {
 }
 
 .ppg-hero-title {
-  font-size: 22px;
+  font-size: 24px;
   margin: 0 0 var(--ppg-space-2);
 }
 
@@ -1390,7 +1396,7 @@ a.ppg-cta {
 }
 
 .ppg-map-title {
-  font-size: 30px;
+  font-size: 32px;
   line-height: 1.15;
   margin: 0;
 }
@@ -1469,7 +1475,7 @@ a.ppg-cta {
   grid-column: 2;
   grid-row: 1;
   margin: 0;
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1.35;
 }
 
@@ -2431,7 +2437,7 @@ a.ppg-cta {
 }
 
 .ppg-gallery-title {
-  font-size: 30px;
+  font-size: 32px;
   line-height: 1.15;
   color: var(--ppg-ink);
   margin: 0 0 6px;
