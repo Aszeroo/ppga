@@ -131,6 +131,10 @@ test('middleware: the gate redirects speak the cookie flags (never a hidden UI)'
   expect(mw.includes('ppga_pretest_submitted')).toBe(true)
   expect(mw.includes('/pre-test')).toBe(true)
   expect(mw.includes('/content')).toBe(true)
+  // The no-consent gate must let the explanation page through: the dashboard
+  // CTA points there, so gating it back to the hub would keep the dead end.
+  expect(mw).toContain('!pathname.startsWith(`/${locale}/content`)')
+  expect(mw).toContain("pathname !== '/content'")
 })
 
 test('pages: the PreTest/Content pages read the gate via the server-only lib', () => {
