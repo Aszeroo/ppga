@@ -338,6 +338,7 @@ async function StaffHome({ role }: { role: 'teacher' | 'admin' }) {
   const tNav = await getTranslations('nav')
   const tHome = await getTranslations('home')
   const tAdmin = await getTranslations('admin')
+  const tLeaderboard = await getTranslations('leaderboard')
 
   const roleTitle = role === 'admin' ? tShell('userAdmin') : tShell('userTeacher')
   const progressCard: StaffCard = {
@@ -355,7 +356,13 @@ async function StaffHome({ role }: { role: 'teacher' | 'admin' }) {
     description: tHealth('systemSub'),
   }
   const commonCards: StaffCard[] = [
-    { key: 'leaderboard', href: '/leaderboard', icon: '🥇', title: tHome('linkLeaderboard') },
+    {
+      key: 'leaderboard',
+      href: '/leaderboard',
+      icon: '🥇',
+      title: tHome('linkLeaderboard'),
+      description: tLeaderboard('weekSub'),
+    },
     { key: 'profile', href: '/profile', icon: '👤', title: tNav('profile') },
   ]
   const adminCards: StaffCard[] =
@@ -396,7 +403,7 @@ async function StaffHome({ role }: { role: 'teacher' | 'admin' }) {
         </div>
       </section>
       <section aria-label={roleTitle}>
-        <div className="ppg-hub-grid">
+        <div className={`ppg-hub-grid ppg-staff-grid ppg-staff-grid-${role}`}>
           {cards.map((card) => (
             <StaffCard key={card.key} card={card} />
           ))}

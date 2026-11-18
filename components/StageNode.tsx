@@ -31,6 +31,10 @@ export interface StageNodeProps {
   orderIndex: number
   title: string
   summary: string
+  /** The pre/post/mission status line — rendered on its OWN unclamped line
+   * below the (clamped) description. Optional: the module/lesson
+   * `ChallengeTrack` never passes it and keeps its current rendering. */
+  progressText?: string
   state: StageState
   /** The localized state copy (the chip text — the non-colour cue). */
   stateCopy: string
@@ -129,6 +133,7 @@ export function StageNode({
   orderIndex,
   title,
   summary,
+  progressText,
   state,
   stateCopy,
   isNext = false,
@@ -180,7 +185,10 @@ export function StageNode({
             title
           )}
         </h2>
-        <p className="ppg-card-text">{summary}</p>
+        <p className="ppg-card-text ppg-stage-description">{summary}</p>
+        {progressText ? (
+          <p className="ppg-card-text ppg-stage-progress">{progressText}</p>
+        ) : null}
         <div className="ppg-stage-chips">
           <span className="ppg-stage-state-chip" data-ppg-stage-state={state} style={chipStyle}>
             <span aria-hidden="true">{`${STATE_ICON[state]} `}</span>

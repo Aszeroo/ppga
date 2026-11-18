@@ -68,9 +68,10 @@ async function CourseStageMap() {
     moduleKey: stage.module_key,
     orderIndex: stage.order_index,
     title: pick(stage.title_th, stage.title_en),
-    summary: stage.progress
-      ? `${pick(stage.summary_th, stage.summary_en)} — ${statusCopy(stage.progress)}`
-      : pick(stage.summary_th, stage.summary_en),
+    summary: pick(stage.summary_th, stage.summary_en),
+    // The pre/post/mission status rides its OWN unclamped line so the card
+    // never ellipsises "Mission: …" off the end of a clamped description.
+    progressText: stage.progress ? statusCopy(stage.progress) : undefined,
     state: stage.state,
     stateCopy: stateCopy(stage.state),
     isNext: view.next?.module_key === stage.module_key,
