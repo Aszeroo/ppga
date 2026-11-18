@@ -154,9 +154,11 @@ export async function expectBadge(page: Page, locale: string, badgeKey: string) 
   await expect(hub.locator(`[data-ppg-badge="${badgeKey}"]`)).toHaveCount(1)
 }
 
-/** The XP + Level the gamified spine shows on the signed-in learner. */
+/** The XP + Level the gamified spine shows on the signed-in learner. The
+ * header prints the learner's XP over the level threshold (level N ends at
+ * N*100 XP), so `xpToNext` (the remaining XP) is added back to get it. */
 export async function expectXpLine(page: Page, xp: number, xpToNext: number) {
-  await expect(page.locator('body')).toContainText(`${xp} / ${xpToNext}`)
+  await expect(page.locator('body')).toContainText(`${xp} / ${xp + xpToNext}`)
 }
 
 /**

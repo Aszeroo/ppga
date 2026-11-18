@@ -24,12 +24,12 @@ export function XPBar({ xp, level = 0 }: XPBarProps) {
   const t = useTranslations('gallery')
 
   // `ppg_xp_summary` derives level = floor(total/100)+1, so one level is 100
-  // XP wide. The meter shows the progress INSIDE the current level; the old
-  // `xp/255` fill (and the numeral printed on top of it) was arbitrary and
-  // read the total as if it were level progress.
+  // XP wide. The meter fills by progress INSIDE the current level; the old
+  // `xp/255` fill (and the numeral printed on top of it) was arbitrary.
   const step = 100
-  const withinLevel = Math.max(0, Math.min(step, xp - (level > 0 ? (level - 1) * step : 0)))
-  const valuemax = level > 0 ? level * step : 255
+  const shownLevel = level > 0 ? level : Math.floor(xp / step) + 1
+  const withinLevel = Math.max(0, Math.min(step, xp - (shownLevel - 1) * step))
+  const levelThreshold = shownLevel * step
 
   const style: CSSProperties = {
     borderWidth: 'var(--ppg-border-1)',
@@ -47,7 +47,7 @@ export function XPBar({ xp, level = 0 }: XPBarProps) {
       role="progressbar"
       aria-valuenow={xp}
       aria-valuemin={0}
-      aria-valuemax={valuemax}
+      aria-valuemax={levelThreshold}
       aria-label={t('xp.label')}
       aria-valuetext={`${t('xp.value')} ${xp}`}
       tabIndex={0}
@@ -63,7 +63,7 @@ export function XPBar({ xp, level = 0 }: XPBarProps) {
         }}
       />
       <span className="ppg-xp-numeral">
-        {withinLevel} / {step}
+        {xp} / {levelThreshold}
       </span>
     </div>
   )

@@ -120,9 +120,9 @@ interface StatusViewProps {
 
 function XpRow({ copy, xp }: { copy: HubCopy; xp: StatusViewProps['xp'] }) {
   if (!xp) return null
-  // `ppg_xp_summary` levels are 100 XP wide; xpToNext is the REMAINING XP,
-  // so the pair below is the progress inside the current level.
-  const intoLevel = Math.max(0, xp.totalXp - (xp.level - 1) * 100)
+  // Level N runs from (N-1)*100 to N*100, so the pair is the learner's real
+  // position in the level; the old `totalXp / xpToNext` printed the remaining
+  // XP as the denominator ("2300 / 100").
   return (
     <div className="ppg-xp-panel">
       <p className="ppg-xp-panel-row">
@@ -132,7 +132,7 @@ function XpRow({ copy, xp }: { copy: HubCopy; xp: StatusViewProps['xp'] }) {
         </span>
         <span>
           <span aria-hidden="true">⚡ </span>
-          {copy.htCopy('progress')} {intoLevel} / 100 {copy.htCopy('xpUnit')}
+          {copy.htCopy('progress')} {xp.totalXp} / {xp.level * 100} {copy.htCopy('xpUnit')}
         </span>
       </p>
       <XPBar xp={xp.totalXp} level={xp.level} />

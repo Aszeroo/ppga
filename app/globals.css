@@ -390,17 +390,6 @@ body {
   gap: 6px;
 }
 
-/* Below the desktop composition the role is carried by the emoji + the
- * accessible name on the chip; the label costs 70px the nav needs. */
-@media (max-width: 1279px) {
-  .ppg-user-chip-label {
-    display: none;
-  }
-  .ppg-user-chip {
-    padding: 8px 10px;
-  }
-}
-
 .ppg-lang-compact {
   font-family: var(--font-ppg-body);
   font-size: 12.5px;
@@ -1079,17 +1068,40 @@ body {
     justify-content: space-between;
     gap: 6px;
   }
+  /* The chips carry XP and level on the compact header; the sentence
+   * returns with the desktop row. */
+  .ppg-hud-progress {
+    display: none;
+  }
 }
 
-/* The HUD's full sentence is the first thing to give up width: the chips
- * still speak the same state (story #9), and the dashboard repeats it. */
+/* Below the widest composition the contextual route title and the role
+ * label give up their width first. The XP sentence stays: it is the state
+ * the learner never loses (story #9). */
 @media (max-width: 1359px) {
-  .ppg-hud-progress {
+  .ppg-context-title {
+    display: none;
+  }
+  /* The role lives on the profile page; the chip's width is better spent on
+   * the nav and the XP sentence. */
+  .ppg-user-chip {
     display: none;
   }
   .ppg-nav-pill {
     padding: 8px 14px;
     font-size: 14px;
+  }
+}
+
+/* Phones and small tablets keep the XP/LV chips and the numbers; the
+ * sentence's label drops, and the nav pills tighten. */
+@media (max-width: 1099px) {
+  .ppg-hud-progress-label {
+    display: none;
+  }
+  .ppg-nav-pill {
+    padding: 7px 11px;
+    font-size: 13px;
   }
 }
 
