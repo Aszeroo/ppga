@@ -3098,3 +3098,175 @@ a.ppg-cta {
   font-weight: 800;
   color: var(--ppg-fg-heading);
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * TEACHER/ADMIN CHAPTER PROGRESS (the learner card grid) ──────────────────
+ * The roster used to stack one full-width work card per learner, so 27+
+ * learners produced a long unbroken column. The grid keeps the same data in
+ * compact learner cards: 1 column below 640px, 2 at 640-1023px, 3 at
+ * 1024-1279px, 4 at 1280px and up. `minmax(0, 1fr)` plus `min-width: 0` on
+ * every card keeps long Thai names and status strings wrapping instead of
+ * forcing a horizontal scrollbar. Tokens only (the V3 pastel/pixel family).
+ */
+.ppg-teacher-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ppg-space-3);
+  align-items: stretch;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .ppg-teacher-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .ppg-teacher-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .ppg-teacher-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.ppg-teacher-card {
+  box-sizing: border-box;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-2);
+  overflow-wrap: anywhere;
+}
+
+.ppg-teacher-card-name {
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ppg-fg-heading);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.ppg-teacher-card-meta {
+  font-family: var(--font-ppg-body);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ppg-muted);
+  margin: calc(-1 * var(--ppg-space-1)) 0 0;
+  overflow-wrap: anywhere;
+}
+
+.ppg-teacher-card-line {
+  font-family: var(--font-ppg-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ppg-fg-body);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The 3x3 scan strip. Each tile shows the chapter number + a state glyph;
+ * the full status string rides the tile's title and visually hidden text. */
+.ppg-teacher-chapter-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ppg-space-1);
+}
+
+.ppg-teacher-chapter-tile {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: var(--ppg-space-1);
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-1);
+  font-family: var(--font-ppg-body);
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ppg-ink);
+}
+
+.ppg-teacher-chapter-tile[data-state='passed'] {
+  background-color: var(--ppg-mint-tint);
+  border-color: var(--ppg-mint);
+}
+
+.ppg-teacher-chapter-tile[data-state='in-progress'] {
+  background-color: var(--ppg-yellow-tint);
+  border-color: var(--ppg-yellow);
+}
+
+.ppg-teacher-tile-icon {
+  font-weight: 800;
+  line-height: 1;
+}
+
+.ppg-teacher-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The disclosure keeps the original nine chapter rows (full status text and
+ * pills) one keyboard stop away. The summary carries the cleared line. */
+.ppg-teacher-details {
+  min-width: 0;
+  margin-top: auto;
+  padding-top: var(--ppg-space-2);
+  border-top: 1px solid var(--ppg-line);
+}
+
+.ppg-teacher-details-summary {
+  cursor: pointer;
+  font-family: var(--font-ppg-body);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ppg-fg-heading);
+  overflow-wrap: anywhere;
+}
+
+.ppg-teacher-details-summary:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+.ppg-teacher-details[open] .ppg-teacher-details-summary {
+  margin-bottom: var(--ppg-space-2);
+}
+
+.ppg-teacher-details .ppg-board-list {
+  max-width: none;
+  margin: var(--ppg-space-2) 0 0;
+}
+
+.ppg-teacher-details .ppg-board-item {
+  align-items: flex-start;
+  font-size: 14px;
+}
+
+.ppg-teacher-details .ppg-board-item > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
