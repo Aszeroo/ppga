@@ -3292,7 +3292,7 @@ a.ppg-cta {
 .ppg-teacher-dialog {
   box-sizing: border-box;
   width: min(720px, calc(100vw - 32px));
-  max-width: 720px;
+  max-width: calc(100vw - 32px);
   max-height: 85dvh;
   margin: auto;
   padding: 0;
@@ -3308,8 +3308,8 @@ a.ppg-cta {
 
 .ppg-teacher-dialog::backdrop {
   background-color: color-mix(in srgb, var(--ppg-ink) 38%, transparent);
-  backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 
 .ppg-teacher-dialog-inner {
