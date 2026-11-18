@@ -3308,8 +3308,8 @@ a.ppg-cta {
 
 .ppg-teacher-dialog::backdrop {
   background-color: color-mix(in srgb, var(--ppg-ink) 38%, transparent);
-  backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
 }
 
 .ppg-teacher-dialog-inner {
