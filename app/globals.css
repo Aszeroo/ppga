@@ -3292,7 +3292,7 @@ a.ppg-cta {
 .ppg-teacher-dialog {
   box-sizing: border-box;
   width: min(720px, calc(100vw - 32px));
-  max-width: 720px;
+  max-width: calc(100vw - 32px);
   max-height: 85dvh;
   margin: auto;
   padding: 0;
