@@ -19,8 +19,7 @@ import { Nav } from './Nav'
  * the pixel `PPGA` logo (display font, blue/purple shadow), the CENTERED
  * role-gated nav pills with the active-section indication (`aria-current` +
  * the gradient pill — state never by colour alone), the gold XP chip + the LV
- * chip (the real `ppg_xp_summary` read — no fabricated numbers), the user chip
- * (role-appropriate label, the gallery's verbatim copy), the compact language
+ * chip (the real `ppg_xp_summary` read — no fabricated numbers), the compact language
  * switcher and the logout chip, all in the gallery's `.hright` cluster; the
  * simple white footer naming the course + audience under its strip. Mobile
  * (the V3 tablet breakpoint <1000px): the nav collapses behind the menu
@@ -71,20 +70,6 @@ export interface ShellProps {
   /** The layout's shared XP read (one round-trip for the whole Shell). */
   xpSummary?: XpSummaryState
   children: ReactNode
-}
-
-/** The user chip's icon per role (the gallery's uchip icons). */
-const ROLE_ICON: Record<'learner' | 'teacher' | 'admin', string> = {
-  learner: '🎓',
-  teacher: '🧑‍🏫',
-  admin: '🛡️',
-}
-
-/** The user chip's copy key per role (the gallery's verbatim role labels). */
-const ROLE_COPY: Record<'learner' | 'teacher' | 'admin', 'userLearner' | 'userTeacher' | 'userAdmin'> = {
-  learner: 'userLearner',
-  teacher: 'userTeacher',
-  admin: 'userAdmin',
 }
 
 /** The design's `#s-login` floating decoration (the gallery's `.deco`
@@ -142,16 +127,10 @@ export async function Shell({ role, contextTitle, standalone, activeSection, xpS
           {/** CENTER: the role-gated primary navigation (active section on). */}
           <Nav role={role} activeSection={activeSection} />
           {/** RIGHT (the gallery's `.hright`): XP + Level chips (the REAL
-           * `ppg_xp_summary` read), the user chip, the compact switcher and
+           * `ppg_xp_summary` read), the compact switcher and
            * the logout chip. */}
           <div className="ppg-hud-cluster">
             <XPHud summary={xpSummary} />
-            {role ? (
-              <span className="ppg-user-chip" title={t(ROLE_COPY[role])}>
-                <span aria-hidden="true">{ROLE_ICON[role]}</span>
-                <span className="ppg-user-chip-label">{t(ROLE_COPY[role])}</span>
-              </span>
-            ) : null}
             <LanguageSelector />
             <Link className="ppg-nav-item ppg-logout-chip" href="/logout">
               {navT('logout')}

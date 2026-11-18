@@ -315,10 +315,11 @@ body {
 
 .ppg-nav-pill {
   font-family: var(--font-ppg-body);
-  padding: 9px 18px;
+  padding: 8px 12px;
+  white-space: nowrap;
   border-radius: 12px;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 13.5px;
   border-width: 3px;
   border-style: solid;
   border-color: transparent;
@@ -333,6 +334,7 @@ body {
 }
 
 .ppg-xp-chip {
+  white-space: nowrap;
   background: linear-gradient(135deg, var(--ppg-gold), var(--ppg-gold-deep));
   border-width: 3px;
   border-style: solid;
@@ -372,22 +374,6 @@ body {
 .ppg-level-chip-number {
   font-size: 17px;
   font-weight: 800;
-}
-
-.ppg-user-chip {
-  background-color: #fff;
-  border-width: 3px;
-  border-style: solid;
-  border-color: var(--ppg-blue-300);
-  border-radius: 12px;
-  padding: 8px 14px;
-  font-weight: 700;
-  font-size: 14px;
-  white-space: nowrap;
-  font-family: var(--font-ppg-body);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .ppg-lang-compact {
@@ -465,6 +451,7 @@ body {
   position: relative;
   animation: ppg-glow 3.5s ease-in-out infinite;
   box-shadow: 0 20px 60px rgba(26, 32, 44, 0.22);
+  z-index: 1;
 }
 
 .ppg-login-brand {
@@ -591,6 +578,7 @@ body {
   font-size: 13px;
   color: var(--ppg-faint);
   margin: 0;
+  max-width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1081,37 +1069,9 @@ body {
   }
 }
 
-/* Below the widest composition the contextual route title and the role
- * label give up their width first. The XP sentence stays: it is the state
- * the learner never loses (story #9). */
+/* Narrow desktops and tablets drop the route title; the page's own h1
+ * repeats it. The XP sentence stays (story #9). */
 @media (max-width: 1359px) {
-  .ppg-context-title {
-    display: none;
-  }
-  /* The role lives on the profile page; the chip's width is better spent on
-   * the nav and the XP sentence. */
-  .ppg-user-chip {
-    display: none;
-  }
-  .ppg-nav-pill {
-    padding: 8px 14px;
-    font-size: 14px;
-  }
-}
-
-/* Phones and small tablets keep the XP/LV chips and the numbers; the
- * sentence's label drops, and the nav pills tighten. */
-@media (max-width: 1099px) {
-  .ppg-hud-progress-label {
-    display: none;
-  }
-  .ppg-nav-pill {
-    padding: 7px 11px;
-    font-size: 13px;
-  }
-}
-
-@media (max-width: 767px) {
   .ppg-context-title {
     display: none;
   }
@@ -1128,9 +1088,6 @@ body {
   .ppg-level-chip {
     width: 38px;
     height: 38px;
-  }
-  .ppg-user-chip {
-    display: none;
   }
   .ppg-logout-chip {
     font-size: 11.5px;
@@ -1448,7 +1405,7 @@ a.ppg-cta {
   }
   /* The ↓ connectors belong to the single-column road. */
   .ppg-page-wrap > .ppg-stage-map .ppg-stage-connector {
-    display: none;
+    display: none !important;
   }
 }
 
@@ -1584,7 +1541,10 @@ a.ppg-cta {
 
 @media (max-width: 639px) {
   .ppg-map-title {
-    font-size: 20px;
+    font-size: 18px;
+  }
+  .ppg-gallery-title {
+    font-size: 24px;
   }
   .ppg-hero-title {
     font-size: 18px;
