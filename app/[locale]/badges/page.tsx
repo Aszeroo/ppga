@@ -101,7 +101,7 @@ async function GalleryList() {
                   ? (
                     <>
                       <StatusPill tone="success" label={t('earned')} />
-                      <Badge text={`${t('earnedBadge')} ${row.event_ref ?? ''}`} tone="success" />
+                      <Badge text={t('earnedBadge')} tone="success" />
                     </>
                   )
                   : (

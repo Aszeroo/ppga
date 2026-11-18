@@ -43,8 +43,13 @@ export async function XPHud({ summary: provided }: { summary?: XpSummaryState } 
             <i className="ppg-level-chip-label">{t('levelChip')}</i>
             <b className="ppg-level-chip-number">{level}</b>
           </span>
-          <span className="ppg-hud-progress">
-            <span className="ppg-hud-progress-label">{t('progress')}</span> {xp} / {levelThreshold}
+          {/* The full sentence is the accessible name; the visible row stays
+           * numbers-only so the header keeps one row at every width. */}
+          <span
+            className="ppg-hud-progress"
+            aria-label={`${t('progress')} ${xp} / ${levelThreshold}`}
+          >
+            <span aria-hidden="true">⚡</span> {xp} / {levelThreshold}
           </span>
         </>
       ) : null}
