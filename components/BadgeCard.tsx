@@ -42,7 +42,7 @@ export function BadgeCard({ heading, body, status, icon }: BadgeCardProps) {
       <span className="ppg-badge-icon" aria-hidden="true">
         {icon}
       </span>
-      <h1 className="ppg-heading">{heading}</h1>
+      <h2 className="ppg-heading ppg-badge-card-title">{heading}</h2>
       <p className="ppg-card-text">{body}</p>
     </section>
   )

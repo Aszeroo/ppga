@@ -28,6 +28,9 @@ export interface ProgressBarProps {
 export function ProgressBar({ value, min = 0, max = 100, label }: ProgressBarProps) {
   const t = useTranslations('gallery')
 
+  const span = max - min
+  const ratio = span > 0 ? Math.max(0, Math.min(1, (value - min) / span)) : 0
+
   const style: CSSProperties = {
     // the `.ppg-progress-bar` class is the reduced-motion + focus ring target
     borderWidth: 'var(--ppg-border-1)',
@@ -54,13 +57,13 @@ export function ProgressBar({ value, min = 0, max = 100, label }: ProgressBarPro
         className="ppg-progress-fill"
         aria-hidden="true"
         style={{
-          width: `${(value / (max - min)) * 100}%`,
+          width: `${ratio * 100}%`,
           backgroundColor: 'var(--ppg-pink-accent)',
           transition: 'width 0.3s steps(8)', // 8-bit stepped fill, off in reduced-motion
         }}
       />
       <span className="ppg-progress-text ppg-xp-numeral">
-        {value}
+        {value} / {max}
       </span>
     </div>
   )

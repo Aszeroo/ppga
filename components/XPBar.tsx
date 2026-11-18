@@ -23,6 +23,14 @@ export interface XPBarProps {
 export function XPBar({ xp, level = 0 }: XPBarProps) {
   const t = useTranslations('gallery')
 
+  // `ppg_xp_summary` derives level = floor(total/100)+1, so one level is 100
+  // XP wide. The meter fills by progress INSIDE the current level; the old
+  // `xp/255` fill (and the numeral printed on top of it) was arbitrary.
+  const step = 100
+  const shownLevel = level > 0 ? level : Math.floor(xp / step) + 1
+  const withinLevel = Math.max(0, Math.min(step, xp - (shownLevel - 1) * step))
+  const levelThreshold = shownLevel * step
+
   const style: CSSProperties = {
     borderWidth: 'var(--ppg-border-1)',
     borderColor: 'var(--ppg-blue-300)',
@@ -39,7 +47,7 @@ export function XPBar({ xp, level = 0 }: XPBarProps) {
       role="progressbar"
       aria-valuenow={xp}
       aria-valuemin={0}
-      aria-valuemax={255}
+      aria-valuemax={levelThreshold}
       aria-label={t('xp.label')}
       aria-valuetext={`${t('xp.value')} ${xp}`}
       tabIndex={0}
@@ -49,13 +57,13 @@ export function XPBar({ xp, level = 0 }: XPBarProps) {
         className="ppg-xp-fill"
         aria-hidden="true"
         style={{
-          width: `${(xp / 255) * 100}%`,
+          width: `${(withinLevel / step) * 100}%`,
           backgroundColor: 'var(--ppg-pink-accent)',
           transition: 'width 0.3s steps(8)', // 8-bit stepped, off in reduced-motion
         }}
       />
       <span className="ppg-xp-numeral">
-        {xp}
+        {xp} / {levelThreshold}
       </span>
     </div>
   )

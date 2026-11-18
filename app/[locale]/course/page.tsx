@@ -94,15 +94,15 @@ async function CourseStageMap() {
            * `app/globals.css` — the components carry the semantics only). */}
           <div className="ppg-map-head">
             <h1 className="ppg-heading ppg-heading-text ppg-map-title">{t('title')}</h1>
-          </div>
-          <div className="ppg-map-progress">
-            <p className="ppg-card-text">
-              {t('progressCleared')}{' '}
-              <span className="ppg-xp-numeral">
-                {view.cleared} / {view.total}
-              </span>
-            </p>
-            <ProgressBar value={view.cleared} max={view.total} label={t('progressCleared')} />
+            <div className="ppg-map-progress">
+              <p className="ppg-card-text">
+                {t('progressCleared')}{' '}
+                <span className="ppg-xp-numeral">
+                  {view.cleared} / {view.total}
+                </span>
+              </p>
+              <ProgressBar value={view.cleared} max={view.total} label={t('progressCleared')} />
+            </div>
           </div>
           {view.next ? (
             <p className="ppg-stage-direction" data-ppg-stage-direction="next">

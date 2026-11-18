@@ -69,13 +69,15 @@ interface NextActionViewProps {
 function HubNextActionView({ tCopy, lines, action, actionLabel, explanation }: NextActionViewProps) {
   return (
     <section aria-label={tCopy('nextAction')} data-ppg-hub="next-action" className="ppg-hub-hero">
-      <h1 className="ppg-heading ppg-heading-text ppg-hero-title">{tCopy('nextAction')}</h1>
-      {lines.map((line) => (
-        <p className="ppg-card-text ppg-state-line" key={line.key}>
-          {tCopy(line.key)} {line.detail}
-        </p>
-      ))}
-      {explanation ? <p className="ppg-card-text ppg-state-line">{explanation}</p> : null}
+      <div className="ppg-hero-main">
+        <h1 className="ppg-heading ppg-heading-text ppg-hero-title">{tCopy('nextAction')}</h1>
+        {lines.map((line) => (
+          <p className="ppg-card-text ppg-state-line" key={line.key}>
+            {tCopy(line.key)} {line.detail}
+          </p>
+        ))}
+        {explanation ? <p className="ppg-card-text ppg-state-line">{explanation}</p> : null}
+      </div>
       {action && action.href && actionLabel ? (
         <p className="ppg-hero-cta-row">
           {/** The ONE primary CTA of the CAI loop — the login submit's
@@ -118,6 +120,9 @@ interface StatusViewProps {
 
 function XpRow({ copy, xp }: { copy: HubCopy; xp: StatusViewProps['xp'] }) {
   if (!xp) return null
+  // Level N runs from (N-1)*100 to N*100, so the pair is the learner's real
+  // position in the level; the old `totalXp / xpToNext` printed the remaining
+  // XP as the denominator ("2300 / 100").
   return (
     <div className="ppg-xp-panel">
       <p className="ppg-xp-panel-row">
@@ -127,11 +132,10 @@ function XpRow({ copy, xp }: { copy: HubCopy; xp: StatusViewProps['xp'] }) {
         </span>
         <span>
           <span aria-hidden="true">⚡ </span>
-          {copy.htCopy('progress')} {xp.totalXp} / {xp.xpToNext} {copy.htCopy('xpUnit')}
+          {copy.htCopy('progress')} {xp.totalXp} / {xp.level * 100} {copy.htCopy('xpUnit')}
         </span>
       </p>
       <XPBar xp={xp.totalXp} level={xp.level} />
-      <ProgressBar value={xp.progressPct} />
     </div>
   )
 }

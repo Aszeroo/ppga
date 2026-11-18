@@ -65,32 +65,12 @@ async function GalleryList() {
   return (
     <section aria-label={t('title')} className="ppg-page-wrap">
       {state.status === 'ok' && rows.length ? (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-end',
-            gap: 'var(--ppg-space-3)',
-            flexWrap: 'wrap',
-          }}
-        >
+        <div className="ppg-gallery-head">
           <div>
-            <h1
-              className="ppg-heading ppg-heading-text"
-              style={{
-                fontFamily: 'var(--font-ppg-display), var(--font-ppg-body)',
-                color: 'var(--ppg-pink-300)',
-                fontSize: '28px',
-                fontWeight: 800,
-              }}
-            >
-              {t('title')}
-            </h1>
-            <p style={{ color: 'var(--ppg-muted)' }} className="ppg-card-text">
-              {t('gallerySub')}
-            </p>
+            <h1 className="ppg-heading ppg-heading-text ppg-gallery-title">{t('title')}</h1>
+            <p className="ppg-card-text">{t('gallerySub')}</p>
           </div>
-          <div style={{ display: 'flex', gap: 'var(--ppg-space-2)', flexWrap: 'wrap' }}>
+          <div className="ppg-gallery-counts">
             <Badge text={`${t('tagAll')} ${rows.length}`} tone="neutral" />
             <Badge text={`${t('tagEarned')} ${earnedCount}`} tone="success" />
             <Badge text={`${t('tagLocked')} ${lockedCount}`} tone="locked" />
@@ -98,11 +78,12 @@ async function GalleryList() {
         </div>
       ) : null}
 
-      <div className="ppg-hub-grid">
+      <div className="ppg-badge-grid">
         {state.status === 'ok'
           ? rows.map((row) => (
             <section
               key={row.badge_key}
+              className="ppg-badge-cell"
               aria-label={`${pick(row.label_th, row.label_en)} — ${pick(row.criteria_th, row.criteria_en)}`}
             >
               <BadgeCard
@@ -115,19 +96,21 @@ async function GalleryList() {
                 status={row.earned ? 'available' : 'locked'}
                 icon={iconFor(row.badge_key)}
               />
-              {row.earned
-                ? (
-                  <p>
-                    <StatusPill tone="success" label={t('earned')} />
-                    <Badge text={`${t('earnedBadge')} ${row.event_ref ?? ''}`} tone="success" />
-                  </p>
-                )
-                : (
-                  <p>
-                    <StatusPill tone="locked" label={t('locked')} />
-                    <Badge text={t('lockedBadge')} tone="locked" />
-                  </p>
-                )}
+              <p className="ppg-badge-meta">
+                {row.earned
+                  ? (
+                    <>
+                      <StatusPill tone="success" label={t('earned')} />
+                      <Badge text={`${t('earnedBadge')} ${row.event_ref ?? ''}`} tone="success" />
+                    </>
+                  )
+                  : (
+                    <>
+                      <StatusPill tone="locked" label={t('locked')} />
+                      <Badge text={t('lockedBadge')} tone="locked" />
+                    </>
+                  )}
+              </p>
             </section>
           ))
           : null}
