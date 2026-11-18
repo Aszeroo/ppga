@@ -111,15 +111,15 @@ test.describe('PPGA #99 CAI critical journey', () => {
     // The 50-item instrument's controls (the shared `itemsLabel` collides
     // with the gate section's name in `th`, so the control count is the
     // unambiguous observable).
-    await expect(page.locator('#prettest_answer_item_1')).toBeVisible()
-    await expect(page.locator('#prettest_answer_item_50')).toBeVisible()
-    await expect(page.locator('input[name^="item_"]')).toHaveCount(50)
+    await expect(page.locator('input[name="item_1"]').first()).toBeVisible()
+    await expect(page.locator('input[name="item_50"]').first()).toBeVisible()
+    await expect(page.locator('[role="radiogroup"]')).toHaveCount(50)
 
     // 4. The global research pre-test: all 50 controls, scored SERVER-side
     // from the key the browser never sees. It grants no XP (ADR-0001).
     const pretestKey = pretestAnswerKey()
     expect(Object.keys(pretestKey).length).toBe(50)
-    await fillInstrument(page, 'prettest', 50, pretestKey)
+    await fillInstrument(page, 'prettest', 50, pretestKey, 'instrument-radio')
     const pretest = await submitForm(page, '[data-ppg-pretest-form=prettest]', '/api/prettest/submit', true)
     expect(pretest.score).toBe(50)
 
@@ -310,11 +310,11 @@ test.describe('PPGA #99 CAI critical journey', () => {
     // final_test_complete badge exactly once.
     await page.goto(`/${locale}/post-test`)
     await expect(page.locator('body')).toContainText(t(['posttest', 'states', 'unlocked'], locale))
-    await expect(page.locator('#posttest_answer_item_1')).toBeVisible()
-    await expect(page.locator('#posttest_answer_item_50')).toBeVisible()
+    await expect(page.locator('input[name="item_1"]').first()).toBeVisible()
+    await expect(page.locator('input[name="item_50"]').first()).toBeVisible()
     const finalKey = posttestAnswerKey()
     expect(Object.keys(finalKey).length).toBe(50)
-    await fillInstrument(page, 'posttest', 50, finalKey)
+    await fillInstrument(page, 'posttest', 50, finalKey, 'instrument-radio')
     const finalAttempt = await submitForm(page, '[data-ppg-posttest-form=posttest]', '/api/posttest/submit', true)
     expect(finalAttempt.score).toBe(50)
     await page.goto(`/${locale}`)
@@ -325,7 +325,7 @@ test.describe('PPGA #99 CAI critical journey', () => {
     // measure: the first score stays 50, the best stays 50, and the reward is
     // not granted twice (XP stays 700, one badge row).
     await page.goto(`/${locale}/post-test`)
-    await fillInstrument(page, 'posttest', 50, wrongAnswersFromKey(finalKey))
+    await fillInstrument(page, 'posttest', 50, wrongAnswersFromKey(finalKey), 'instrument-radio')
     const retryAttempt = await submitForm(page, '[data-ppg-posttest-form=posttest]', '/api/posttest/submit', true)
     expect(retryAttempt.score).toBe(0)
     await page.goto(`/${locale}/post-test`)

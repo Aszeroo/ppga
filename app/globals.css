@@ -2231,7 +2231,8 @@ a.ppg-cta {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ppg-sc-opt {
+  .ppg-sc-opt,
+  .ppg-instr-opt {
     transition-duration: 0s;
   }
 }
@@ -3021,13 +3022,17 @@ a.ppg-cta {
   box-shadow: var(--ppg-shadow-pixel-1);
 }
 
-/* The gallery's `.opt` row WITHOUT the interactive radio (the instrument's
- * answer field is the SHIPPED text input, unchanged — the tile presents the
- * seeded choices, it is never a control). */
+/* The gallery's `.opt` row as a REAL radio control: the whole `<label>` is
+ * clickable, the native radio stays the control (name/value/required/keyboard
+ * identical to the shipped form), and the instrument's `.ppg-sc-opt-radio`
+ * class covers the row invisibly — the letter tile stays the face the eye
+ * reads. Shared by the chapter-test path, whose radio is visible. */
 .ppg-instr-opt {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--ppg-space-3);
+  min-height: 44px;
   background-color: var(--ppg-bg-surface);
   border-width: var(--ppg-border-2);
   border-style: solid;
@@ -3036,6 +3041,7 @@ a.ppg-cta {
   padding: var(--ppg-space-2) var(--ppg-space-3);
   font-family: var(--font-ppg-body);
   color: var(--ppg-fg-heading);
+  cursor: pointer;
   transition:
     border-color 0.15s ease,
     background-color 0.15s ease;
@@ -3043,6 +3049,26 @@ a.ppg-cta {
 
 .ppg-instr-opt:hover {
   border-color: var(--ppg-blue-300);
+}
+
+/* SELECTED: the chapter-style pink-100 fill + pink-500 border, the letter
+ * tile's pink-200 face. The checked radio stays the authoritative cue (ink
+ * on pink-100 15.0, on pink-200 12.9 — never hue-only state). */
+.ppg-instr-opt:has(input:checked) {
+  background-color: var(--ppg-pink-100);
+  border-color: var(--ppg-pink-500);
+}
+
+.ppg-instr-opt:has(input:checked) .ppg-sc-opt-letter {
+  background-color: var(--ppg-pink-200);
+  border-color: var(--ppg-pink-500);
+}
+
+/* The token focus ring moves onto the ROW its radio owns (the radio paints
+ * nothing, so the row IS the focused surface — the ring is the visible cue). */
+.ppg-instr-opt:has(input:focus-visible) {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
 }
 
 /* The submitted-instrument receipt: the mint win-card face (the `#s-clear`
