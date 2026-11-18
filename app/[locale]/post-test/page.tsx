@@ -17,8 +17,9 @@ import { StatusPill } from '../../../components/StatusPill'
  * with a comprehensive 50-item instrument and retry-aware attempts. The
  * reads, the unlock machine, the SHIPPED form field names (`item_<n>`), the
  * `^[A-D]$` contract and the `data-ppg-*` attrs are unchanged; the item list
- * now renders INSIDE the one submitted form (one required control per item,
- * `#posttest_answer_item_<n>`) so every answer reaches the submit route.
+ * now renders INSIDE the one submitted form (one required radio group per
+ * item, `posttest_answer_item_<n>_<key>`) so every answer reaches the submit
+ * route.
  *
  * Retries: the first submitted attempt is the research measure and never
  * changes; later submits append attempts and only the best score is shown.
@@ -90,13 +91,13 @@ async function PosttestForm({ locale, itemsState }: { locale: string; itemsState
   return (
     <section aria-label={t('itemsLabel')}>
       {/* The single submit rides the native form. #84 moves the item list
-        INSIDE it: one required `item_<n>` control per item, named exactly
+        INSIDE it: one required `item_<n>` radio group per item, named exactly
         like the server-side key, so the route's `item_` filter forwards a
-        complete payload. The seeded choice tiles stay presentational; the
+        complete payload. The seeded choice rows are the controls; the
         answer key never reaches the browser. The submit function scores
         server-side, stamps the attempt immutably, and calls the one-time
-        reward helper. #54's `data-ppg-*` attrs and the `#posttest_answer_
-        item_1` selector are preserved. */}
+        reward helper. #54's `data-ppg-*` attrs and the unique
+        `posttest_answer_item_<n>_<key>` ids are preserved. */}
       <div className="ppg-sc-panel">
         <form
           data-ppg-posttest-form="posttest"

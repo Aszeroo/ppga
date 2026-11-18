@@ -325,17 +325,18 @@ export function wrongAnswersFromKey(key: Record<string, string>, count = Object.
 }
 
 /**
- * Fill every item of the pre-test / Final Test (`input`, ids
- * `#<prefix>_answer_item_<n>`) or of a chapter bank (`radio`, one
- * `input[name="item_<n>"]` per question). The letter always comes from the
- * database key — no chapter item text is ever hardcoded.
+ * Fill every item of the pre-test / Final Test (`instrument-radio`, one
+ * `input[name="item_<n>"][value="<UPPERCASE>"]` per item) or of a chapter bank
+ * (`radio`, one `input[name="item_<n>"][value="<lowercase>"]` per question).
+ * The letter always comes from the database key - no chapter item text is
+ * ever hardcoded.
  */
 export async function fillInstrument(
   page: Page,
   prefix: string,
   count: number,
   answers: Record<string, string>,
-  kind: 'input' | 'radio' = 'input',
+  kind: 'instrument-radio' | 'radio' = 'instrument-radio',
 ) {
   for (let n = 1; n <= count; n++) {
     const answer = answers[`item_${n}`]
@@ -343,10 +344,9 @@ export async function fillInstrument(
     if (kind === 'radio') {
       await page.locator(`input[name="item_${n}"][value="${answer.toLowerCase()}"]`).check()
     } else {
-      // The instrument controls are `pattern="^[A-D]$"` (uppercase); the
-      // chapter banks post lowercase radio values, so the text inputs are
-      // normalised here.
-      await page.locator(`#${prefix}_answer_item_${n}`).fill(answer.toUpperCase())
+      // The instruments post the shipped A-D keys uppercased; the chapter
+      // banks keep their own lowercase radio values.
+      await page.locator(`input[name="item_${n}"][value="${answer.toUpperCase()}"]`).check()
     }
   }
 }

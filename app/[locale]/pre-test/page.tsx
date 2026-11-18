@@ -14,9 +14,9 @@ import { StatusPill } from '../../../components/StatusPill'
  * submit route are UNCHANGED): the instrument wearing the gallery's card/tag
  * idiom — the heading block (the 📝 title + the explicit no-XP subline), the
  * research/no-XP chips, each item a question card with the real
- * Question {n}/{total} progress chips + the seeded choice tiles (the tiles
- * PRESENT the choices; each item's answer rides its own compact text input,
- * `item_<n>`, inside the ONE submitted form — #83), and the submitted
+ * Question {n}/{total} progress chips + the seeded choice rows (each row is a
+ * real radio control named `item_<n>`, one required group per item, inside the
+ * ONE submitted form: #83), and the submitted
  * receipt (the ✓ receipt heading, the immutable-once-submitted note + the
  * success pill; a second submit still reaches `already_submitted`, never a
  * silently-overwritten row). The instrument's items are the bilingual seeded
