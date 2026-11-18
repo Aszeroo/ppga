@@ -1081,21 +1081,29 @@ body {
   .ppg-shell-in {
     padding: 8px 14px;
   }
+  /* The four HUD chips share ONE row at 390px. At 11.5px type + 10px
+   * padding the cluster measured 378px inside a 346px cell and the logout
+   * chip clipped at x=400 in the 390px viewport. 11px type + 8px padding
+   * keeps every label on one line inside the content box (measured 334px of
+   * 362px) with nothing hidden — story #9 stays true. */
   .ppg-xp-chip {
-    font-size: 11.5px;
-    padding: 6px 10px;
+    font-size: 11px;
+    padding: 5px 8px;
   }
   .ppg-level-chip {
-    width: 38px;
-    height: 38px;
+    width: 34px;
+    height: 34px;
+  }
+  .ppg-level-chip-number {
+    font-size: 15px;
   }
   .ppg-logout-chip {
-    font-size: 11.5px;
-    padding: 6px 10px;
+    font-size: 11px;
+    padding: 5px 8px;
   }
   .ppg-lang-compact {
-    padding: 5px 12px;
-    font-size: 11.5px;
+    padding: 5px 8px;
+    font-size: 11px;
   }
   .ppg-title-h1 {
     font-size: 26px;
