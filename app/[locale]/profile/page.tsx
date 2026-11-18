@@ -47,6 +47,9 @@ async function ProfileContent() {
   const t = await getTranslations('profile')
   const ts = await getTranslations('shell')
   const tn = await getTranslations('nav')
+  const tAdmin = await getTranslations('admin')
+  const tSelector = await getTranslations('selector')
+  const tLanguage = await getTranslations('language')
   const state = await readOwnProfile()
   const row = state.row
   return (
@@ -80,9 +83,31 @@ async function ProfileContent() {
           </div>
         </div>
       ) : null}
-      {state.status === 'ok' ? (
+      {state.status === 'ok' && row ? (
         <div className="ppg-status-card ppg-strip-top">
           <h2 className="ppg-status-card-title">{t('editLabel')}</h2>
+          {/** A compact account summary from the row this page already read
+           * (`full_name`, `role`, `locale`, `student_id`) — labels are the
+           * existing `admin.users.*` / `selector.label` keys, the values the
+           * same read as the hero. No extra read, no new copy. */}
+          <dl className="ppg-account-summary">
+            <div className="ppg-account-row">
+              <dt>{tAdmin('users.fullName')}</dt>
+              <dd>{row.full_name || '—'}</dd>
+            </div>
+            <div className="ppg-account-row">
+              <dt>{tAdmin('users.role')}</dt>
+              <dd>{ts(ROLE_COPY[row.role])}</dd>
+            </div>
+            <div className="ppg-account-row">
+              <dt>{tSelector('label')}</dt>
+              <dd>{tLanguage(row.locale)}</dd>
+            </div>
+            <div className="ppg-account-row">
+              <dt>{tAdmin('users.studentId')}</dt>
+              <dd>{row.student_id}</dd>
+            </div>
+          </dl>
           <p className="ppg-hero-cta-row">
             <Link className="ppg-cta" href="/change-password">{tn('changePassword')}</Link>
           </p>

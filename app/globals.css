@@ -1413,6 +1413,47 @@ a.ppg-cta {
   gap: 6px;
 }
 
+/* The profile card's compact account summary: label/value rows that wrap
+ * instead of clipping (long Thai names and student IDs), separated by a
+ * hairline. Tokens only. */
+.ppg-account-summary {
+  margin: 0 0 var(--ppg-space-3);
+  padding: 0;
+}
+
+.ppg-account-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px var(--ppg-space-3);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--ppg-line);
+}
+
+.ppg-account-row:last-child {
+  border-bottom: 0;
+}
+
+.ppg-account-row dt {
+  font-family: var(--font-ppg-body);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ppg-muted);
+  min-width: 0;
+}
+
+.ppg-account-row dd {
+  margin: 0;
+  font-family: var(--font-ppg-body);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ppg-fg-heading);
+  min-width: 0;
+  overflow-wrap: break-word;
+  text-align: end;
+}
+
 /* ── Course Map stage road (gallery `#s-map`) ───────────────────────────── */
 
 .ppg-map-head {
