@@ -295,79 +295,128 @@ async function LearnerHub() {
   )
 }
 
-/**
- * Ticket #15 research close (the dashboard's next action after the Course):
- * the Post-Test unlocks on the Final Project's ACCEPTANCE, the Survey follows
- * the Post-Test — the unlocks ride the DATABASE's own gate functions (the
- * completion the Teacher's approval writes; the learner's own submitted
- * Post-Test stamp), never a browser-smuggled flag. Nothing here grants a
- * reward: the close instruments are research, not currency (ADR-0001).
- * Kept for the Teacher/Admin utilitarian home (stage 2's framing is
- * LEARNER-only) — the old screen verbatim.
- */
-async function LegacyNextAction() {
-  const t = await getTranslations('home')
-  const state = await readGateViaTable()
+/** One destination card on the staff overview: the icon is decoration, the
+ * title doubles as the link's accessible name, and the description is shown
+ * only when an existing `messages/*` key describes the destination. */
+interface StaffCard {
+  key: string
+  href: string
+  icon: string
+  title: string
+  description?: string
+}
+
+function StaffCard({ card }: { card: StaffCard }) {
   return (
-    <section aria-label={t('nextAction')}>
-      {state.status === 'ok' && !state.consent && !state.override ? <p>{t('states.noConsent')} {state.detail}</p> : null}
-      {state.status === 'ok' && !state.consent && !state.override ? <p><Link href="/">{t('nextActionExplanation')}</Link></p> : null}
-      {state.status === 'ok' && state.consent && !state.submitted && !state.override ? <p>{t('states.consentNoSubmit')} {state.detail}</p> : null}
-      {state.status === 'ok' && state.consent && !state.submitted && !state.override ? <p><Link href="/pre-test">{t('linkPreTest')}</Link></p> : null}
-      {state.status === 'ok' && (state.submitted || state.override) ? <p>{t('states.gateOpen')} {state.detail}</p> : null}
-      {state.status === 'ok' && (state.submitted || state.override) ? <p><Link href="/course">{t('linkCourse')}</Link></p> : null}
-      {state.status === 'error' ? <p>{t('states.error')} {state.detail}</p> : null}
-      {state.status === 'denied' ? <p>{t('states.denied')} {state.detail}</p> : null}
-      {state.status === 'unauthorized' ? <p>{t('states.unauthorized')} {state.detail}</p> : null}
-      {state.status === 'not-configured' ? <p>{t('states.notConfigured')} {state.detail}</p> : null}
-    </section>
+    <div className="ppg-status-card ppg-strip-top" data-ppg-staff-card={card.key}>
+      <h2 className="ppg-status-card-title">
+        <Link className="ppg-link" href={card.href as never}>
+          <span aria-hidden="true">{card.icon} </span>
+          {card.title}
+        </Link>
+      </h2>
+      {card.description ? <p className="ppg-card-text">{card.description}</p> : null}
+    </div>
   )
 }
 
-async function LegacyCloseChain() {
-  const t = await getTranslations('home')
-  const posttest = await readPosttestState()
-  const survey = await readSurveyState()
-  const ready = posttest.status === 'ok' && survey.status === 'ok'
+/**
+ * The Teacher/Admin overview. The learner gate/close screen belongs to the
+ * learner loop (a staff account has no consent by construction, so it showed
+ * a misleading consent explanation and research-close sentence). Staff get
+ * the destinations they actually own instead: the same routes the role nav
+ * carries, each as a card with a title, an existing short description and a
+ * plain `.ppg-link`. No hero CTA: the cards are the actions, so the ONE
+ * `.ppg-cta` rule is untouched. Every label/description is an existing
+ * `messages/*` key — no new copy, no client code, no extra DB read (the
+ * layout already read the role).
+ */
+async function StaffHome({ role }: { role: 'teacher' | 'admin' }) {
+  const tShell = await getTranslations('shell')
+  const tProgress = await getTranslations('teacherProgress')
+  const tHealth = await getTranslations('health')
+  const tNav = await getTranslations('nav')
+  const tHome = await getTranslations('home')
+  const tAdmin = await getTranslations('admin')
+
+  const roleTitle = role === 'admin' ? tShell('userAdmin') : tShell('userTeacher')
+  const progressCard: StaffCard = {
+    key: 'progress',
+    href: '/teacher/progress',
+    icon: '📈',
+    title: tProgress('title'),
+    description: tProgress('sub'),
+  }
+  const healthCard: StaffCard = {
+    key: 'health',
+    href: '/health',
+    icon: '🩺',
+    title: role === 'admin' ? tNav('health') : tHealth('systemTitle'),
+    description: tHealth('systemSub'),
+  }
+  const commonCards: StaffCard[] = [
+    { key: 'leaderboard', href: '/leaderboard', icon: '🥇', title: tHome('linkLeaderboard') },
+    { key: 'profile', href: '/profile', icon: '👤', title: tNav('profile') },
+  ]
+  const adminCards: StaffCard[] =
+    role === 'admin'
+      ? [
+          {
+            key: 'publication',
+            href: '/admin/publication',
+            icon: '📖',
+            title: tNav('coursePublication'),
+            description: tAdmin('publication.sub'),
+          },
+          {
+            key: 'users',
+            href: '/admin/users',
+            icon: '👥',
+            title: tNav('adminUsers'),
+            description: tAdmin('users.sub'),
+          },
+          { key: 'audit', href: '/admin/audit', icon: '📜', title: tNav('adminAudit') },
+          {
+            key: 'provisioning',
+            href: '/admin/provisioning',
+            icon: '📥',
+            title: tNav('adminProvisioning'),
+          },
+          { key: 'export', href: '/admin/export', icon: '📦', title: tNav('adminExport') },
+        ]
+      : []
+  const cards = [progressCard, ...adminCards, healthCard, ...commonCards]
+
   return (
-    <section aria-label={t('closeLabel')}>
-      {ready && !posttest.unlocked ? <p>{t('states.closeLocked')}</p> : null}
-      {ready && posttest.unlocked && !posttest.submitted ? (
-        <p>
-          <Link href="/post-test">{t('linkPostTest')}</Link>
-        </p>
-      ) : null}
-      {ready && survey.unlocked && !survey.submitted ? (
-        <p>
-          <Link href="/survey">{t('linkSurvey')}</Link>
-        </p>
-      ) : null}
-      {ready && survey.submitted ? <p>{t('states.closeDone')}</p> : null}
-      {posttest.status === 'error' || survey.status === 'error' ? <p>{t('states.error')} {posttest.detail ?? survey.detail}</p> : null}
-    </section>
+    <div className="ppg-page-wrap" data-ppg-hub="staff" data-ppg-staff-role={role}>
+      <section aria-label={roleTitle} className="ppg-hub-hero">
+        <div className="ppg-hero-main">
+          <h1 className="ppg-heading ppg-heading-text ppg-hero-title">{roleTitle}</h1>
+          <p className="ppg-card-text ppg-state-line">{tProgress('sub')}</p>
+        </div>
+      </section>
+      <section aria-label={roleTitle}>
+        <div className="ppg-hub-grid">
+          {cards.map((card) => (
+            <StaffCard key={card.key} card={card} />
+          ))}
+        </div>
+      </section>
+    </div>
   )
 }
 
 export default async function HomePage() {
   const t = await getTranslations('home')
   const profile = await readOwnProfile()
-  const isLearner = profile.status === 'ok' && profile.row?.role === 'learner'
+  const role = profile.status === 'ok' ? profile.row?.role : undefined
   return (
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <main>
-        {isLearner ? (
+        {role === 'learner' ? (
           <LearnerHub />
         ) : (
-          <>
-            <LegacyNextAction />
-            <LegacyCloseChain />
-            <section>
-              <Link href="/health">{t('healthLink')}</Link>
-            </section>
-            <section aria-label={t('linkLeaderboard')}>
-              <Link href="/leaderboard">{t('linkLeaderboard')}</Link>
-            </section>
-          </>
+          <StaffHome role={role === 'admin' ? 'admin' : 'teacher'} />
         )}
       </main>
     </Suspense>
