@@ -1423,10 +1423,12 @@ a.ppg-cta {
   font-weight: 700;
 }
 
-/* The road. One column on phones; the course map pairs the chapters on wide
- * screens so nine full-width cards stop being three screens of scroll. The
- * module pages' challenge track keeps the single column (it is not a direct
- * child of `.ppg-page-wrap`). */
+/* The road. The COURSE page (a `.ppg-stage-map` directly under
+ * `.ppg-page-wrap`) is a catalog grid of uniform chapter cards: 3 columns
+ * at >=1100px, 2 at 700-1099px, 1 below 700px. The module/lesson
+ * `ChallengeTrack` is ALSO a direct child on the lesson page, so every
+ * course-grid rule below excludes `.ppg-challenge-track` — it keeps the
+ * single-column road. */
 .ppg-stage-map {
   list-style: none;
   margin: 0;
@@ -1436,56 +1438,154 @@ a.ppg-cta {
   gap: var(--ppg-space-4);
 }
 
-@media (min-width: 900px) {
-  .ppg-page-wrap > .ppg-stage-map {
+@media (min-width: 700px) {
+  .ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 18px;
+    /* Equal row heights: every card row matches the tallest tile. */
+    grid-auto-rows: 1fr;
   }
   /* The ↓ connectors belong to the single-column road. */
-  .ppg-page-wrap > .ppg-stage-map .ppg-stage-connector {
+  .ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-connector {
     display: none !important;
   }
 }
 
-/* The course card's compact internal grid: numeral beside the title, the
- * summary underneath, the state pills at the bottom. */
-.ppg-page-wrap > .ppg-stage-map .ppg-stage-node {
+@media (min-width: 1100px) {
+  .ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* The grid item stretches to the row; the card (a flex child) fills it. */
+.ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-item {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* The chapter tile's internal grid: the gold numeral beside a 2-line title,
+ * the compact meta line, and the state pill(s) anchored at the bottom. The
+ * generous surface padding is token-driven (`--ppg-space-4`). */
+.ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-node {
+  position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   align-items: start;
   column-gap: 12px;
-  row-gap: 8px;
+  row-gap: var(--ppg-space-2);
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-height: 208px;
+  padding: var(--ppg-space-4) !important;
+  transition: transform 140ms ease, box-shadow 140ms ease;
 }
 
-.ppg-page-wrap > .ppg-stage-map .ppg-stage-numeral {
+.ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-numeral {
   grid-column: 1;
   grid-row: 1;
+  align-self: start;
+  white-space: nowrap;
 }
 
-.ppg-page-wrap > .ppg-stage-map .ppg-stage-clear-mark {
+.ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-clear-mark {
   display: none;
 }
 
-.ppg-page-wrap > .ppg-stage-map .ppg-stage-node h2 {
+.ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-node h2 {
   grid-column: 2;
   grid-row: 1;
   margin: 0;
   font-size: 18px;
-  line-height: 1.35;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+  hyphens: none;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
-.ppg-page-wrap > .ppg-stage-map .ppg-stage-node p {
+.ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-node p {
   grid-column: 1 / -1;
+  grid-row: 2;
   margin: 0;
   font-size: 13.5px;
   line-height: 1.65;
   color: var(--ppg-muted);
+  overflow-wrap: break-word;
+  hyphens: none;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
-.ppg-page-wrap > .ppg-stage-map :is(.ppg-stage-state-chip, .ppg-stage-next-chip) {
+/* The state pills sit in the card's last row, so every tile aligns its
+ * chips along the same bottom edge. */
+.ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-chips {
   grid-column: 1 / -1;
-  justify-self: start;
-  margin-inline-start: 0;
+  grid-row: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ppg-space-2);
+  min-width: 0;
+}
+
+.ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-next-chip {
+  margin-inline-start: 0 !important;
+}
+
+/* Stretched link: the title link keeps the accessible name, its ::after
+ * makes one transparent hit area over the whole card. Nothing nested is
+ * interactive, so there is no click-target conflict. */
+.ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-node:has(.ppg-stage-link) {
+  cursor: pointer;
+}
+
+.ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+/* Visible hover/elevation without a border-width change (no layout shift). */
+@media (hover: hover) {
+  .ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-node:has(.ppg-stage-link):hover {
+    transform: translateY(-2px);
+    box-shadow: var(--ppg-shadow-pixel-3) !important;
+  }
+}
+
+.ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-node:has(.ppg-stage-link):active {
+  transform: translateY(0);
+  box-shadow: var(--ppg-shadow-pixel-1) !important;
+}
+
+/* The focus ring belongs to the whole card; the title link keeps the
+ * accessible name and the keyboard tab stop. */
+.ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-node:has(.ppg-stage-link:focus-visible) {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+.ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-link:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-node {
+    transition: none;
+  }
+  .ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-node:has(.ppg-stage-link):hover,
+  .ppg-page-wrap > .ppg-stage-map:not(.ppg-challenge-track) .ppg-stage-node:has(.ppg-stage-link):active {
+    transform: none;
+  }
 }
 
 /* The ↓ arrow between stages (the gallery's `.arrow-down`) rides the

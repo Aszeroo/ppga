@@ -181,23 +181,25 @@ export function StageNode({
           )}
         </h2>
         <p className="ppg-card-text">{summary}</p>
-        <span className="ppg-stage-state-chip" data-ppg-stage-state={state} style={chipStyle}>
-          <span aria-hidden="true">{`${STATE_ICON[state]} `}</span>
-          {stateCopy}
-        </span>
-        {isNext && nextCopy ? (
-          <span
-            className="ppg-stage-next-chip"
-            data-ppg-stage-chip="current"
-            style={{
-              ...chipStyle,
-              marginInlineStart: 'var(--ppg-space-2)',
-              borderColor: 'var(--ppg-pink-accent)',
-            }}
-          >
-            {nextCopy}
+        <div className="ppg-stage-chips">
+          <span className="ppg-stage-state-chip" data-ppg-stage-state={state} style={chipStyle}>
+            <span aria-hidden="true">{`${STATE_ICON[state]} `}</span>
+            {stateCopy}
           </span>
-        ) : null}
+          {isNext && nextCopy ? (
+            <span
+              className="ppg-stage-next-chip"
+              data-ppg-stage-chip="current"
+              style={{
+                ...chipStyle,
+                marginInlineStart: 'var(--ppg-space-2)',
+                borderColor: 'var(--ppg-pink-accent)',
+              }}
+            >
+              {nextCopy}
+            </span>
+          ) : null}
+        </div>
       </section>
     </li>
   )

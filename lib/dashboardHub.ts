@@ -60,6 +60,7 @@ export type CompletedKeys = readonly string[]
  * typed top-level route; no review screen is ever a learner CTA. */
 export type HubCtaHref =
   | '/'
+  | '/content'
   | '/pre-test'
   | '/post-test'
   | '/survey'
@@ -101,7 +102,7 @@ export interface HubCtaFlags {
  */
 export function pickPrimaryCta(f: HubCtaFlags): HubCta | null {
   if (!f.gateOk) return null
-  if (!f.consent && !f.override) return { href: '/', labelKey: 'nextActionExplanation' }
+  if (!f.consent && !f.override) return { href: '/content', labelKey: 'nextActionExplanation' }
   if (!f.pretestSubmitted && !f.override) return { href: '/pre-test', labelKey: 'linkPreTest' }
   if (f.closeReady && f.postUnlocked && !f.postSubmitted) return { href: '/post-test', labelKey: 'linkPostTest' }
   if (f.closeReady && f.surveyUnlocked && !f.surveySubmitted) return { href: '/survey', labelKey: 'linkSurvey' }
