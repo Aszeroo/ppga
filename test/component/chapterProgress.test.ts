@@ -124,6 +124,8 @@ test('next action: consent -> global pre-test -> chapter pre-test -> lessons/mis
   }
 
   expect(deriveLoopNextAction(base)?.kind).toBe('consent')
+  // The consent CTA must reach the explanation page, never reload the hub.
+  expect(deriveLoopNextAction(base)?.href).toBe('/content')
   expect(deriveLoopNextAction({ ...base, consent: true })?.kind).toBe('global-pretest')
   expect(
     deriveLoopNextAction({ ...base, consent: true, globalPretestSubmitted: true })?.kind,

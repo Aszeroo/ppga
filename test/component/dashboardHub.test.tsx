@@ -49,7 +49,7 @@ const flags = (over: Partial<HubCtaFlags> = {}): HubCtaFlags => ({
 })
 
 test('CTA chain: fresh sees the explanation, the consenting see the Pre-Test, the gated see the Course', () => {
-  expect(pickPrimaryCta(flags())).toEqual({ href: '/', labelKey: 'nextActionExplanation' })
+  expect(pickPrimaryCta(flags())).toEqual({ href: '/content', labelKey: 'nextActionExplanation' })
   expect(pickPrimaryCta(flags({ consent: true }))).toEqual({ href: '/pre-test', labelKey: 'linkPreTest' })
   expect(pickPrimaryCta(flags({ consent: true, pretestSubmitted: true }))).toEqual({
     href: '/course',

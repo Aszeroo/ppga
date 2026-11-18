@@ -213,6 +213,7 @@ export type LoopActionKind =
 /** The typed destinations, structurally mirroring the routing pathnames. */
 export type LoopHref =
   | '/'
+  | '/content'
   | '/pre-test'
   | '/post-test'
   | '/survey'
@@ -264,7 +265,7 @@ export function deriveLoopNextAction(state: LoopState): LoopAction | null {
   if (!state.consent && !state.override) {
     return {
       kind: 'consent',
-      href: '/',
+      href: '/content',
       labelKey: 'loop.consentCta',
       explanationKey: 'loop.consent',
     }
