@@ -2080,14 +2080,12 @@ a.ppg-cta {
   overflow-wrap: anywhere;
 }
 
-.ppg-lesson-prose > * + * {
-  margin-top: var(--ppg-space-3);
-}
-
 .ppg-prose-heading {
   margin: 0;
   color: var(--ppg-fg-heading);
-  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  /* Body font: the display face is ASCII-only and its square space leaves a
+   * wide gap after a "3." prefix in Thai headings. */
+  font-family: var(--font-ppg-body);
   line-height: 1.4;
 }
 
@@ -2117,6 +2115,17 @@ a.ppg-cta {
 .ppg-prose-numbered {
   padding-left: 0;
   list-style: none;
+}
+
+/* Block spacing lives last so it beats the per-block `margin: 0` shorthand
+ * (same specificity, later wins). Paragraph-to-paragraph gets a small gap;
+ * a heading gets a clear section break above it. */
+.ppg-lesson-prose > * + * {
+  margin-top: var(--ppg-space-2);
+}
+
+.ppg-lesson-prose > .ppg-prose-heading:not(:first-child) {
+  margin-top: var(--ppg-space-4);
 }
 
 @media (prefers-reduced-motion: reduce) {
