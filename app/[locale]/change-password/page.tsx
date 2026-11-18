@@ -100,7 +100,7 @@ export default function ChangePasswordPage() {
          * fields, ids, names, the zod-gated POST and the `/api/auth/change-
          * password` route stay BYTE-IDENTICAL; only `className` is added. */}
         <div className="ppg-work-card">
-          <form onSubmit={handleSubmit} className="ppg-work-form">
+          <form method="post" onSubmit={handleSubmit} className="ppg-work-form">
             <label className="ppg-field-label" htmlFor="currentPassword">
               {t('currentPassword')}
             </label>

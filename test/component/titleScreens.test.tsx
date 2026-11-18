@@ -51,6 +51,7 @@ function contractOf(locale: 'th' | 'en') {
   const submit = container.querySelector('button[type=submit]') as HTMLButtonElement
   return {
     formAction: form.getAttribute('action'),
+    formMethod: form.getAttribute('method'),
     identifier: {
       name: identifier.getAttribute('name'),
       type: identifier.getAttribute('type'),
@@ -73,6 +74,7 @@ test('login form contract is byte-identical across locales and unchanged: same i
   expect(contractOf('th')).toEqual(contractOf('en'))
   expect(contractOf('th')).toEqual({
     formAction: null,
+    formMethod: 'post',
     identifier: { name: 'identifier', type: null, required: true, min: '3', max: '50' },
     password: { name: 'password', type: 'password', required: true, min: '8', max: '72' },
     submitType: 'submit',

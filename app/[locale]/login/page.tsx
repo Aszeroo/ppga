@@ -123,7 +123,7 @@ export default function LoginPage() {
           </p>
         </div>
         <div className="ppg-login-form-panel">
-          <form className="ppg-login-form" onSubmit={handleSubmit}>
+          <form className="ppg-login-form" method="post" onSubmit={handleSubmit}>
             <div className="ppg-login-field">
               <label className="ppg-field-label" htmlFor="identifier">{t('identifier')}</label>
               <input

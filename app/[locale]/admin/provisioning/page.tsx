@@ -124,7 +124,7 @@ export default function ProvisioningPage() {
           <p className="ppg-work-head-sub">{t('provisioning.intro')}</p>
         </div>
         <div className="ppg-work-card">
-          <form onSubmit={handleSubmit} data-ppg-provision-form="roster" className="ppg-work-form" aria-label={t('provisioning.paste')}>
+          <form method="post" onSubmit={handleSubmit} data-ppg-provision-form="roster" className="ppg-work-form" aria-label={t('provisioning.paste')}>
             <label className="ppg-field-label" htmlFor="provision_roster">{t('provisioning.paste')}</label>
             <textarea className="ppg-input" id="provision_roster" name="roster" required placeholder={t('provisioning.placeholder')} maxLength={8192} />
             <input type="hidden" name="ppg_provision_kind" value="roster" />
@@ -132,7 +132,7 @@ export default function ProvisioningPage() {
           </form>
         </div>
         <div className="ppg-work-card">
-          <form onSubmit={handleSubmit} data-ppg-provision-form="single" className="ppg-work-form" aria-label={t('provisioning.single')}>
+          <form method="post" onSubmit={handleSubmit} data-ppg-provision-form="single" className="ppg-work-form" aria-label={t('provisioning.single')}>
             <label className="ppg-field-label" htmlFor="provision_student_id">{t('users.studentId')}</label>
             <input className="ppg-input" id="provision_student_id" name="student_id" required minLength={3} maxLength={50} />
             <label className="ppg-field-label" htmlFor="provision_full_name">{t('users.fullName')}</label>
