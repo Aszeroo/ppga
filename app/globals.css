@@ -1234,6 +1234,11 @@ a.ppg-cta {
   gap: var(--ppg-space-3);
 }
 
+/* A hero with no primary action is a one-line notice, not a stage. */
+.ppg-hub-hero:not(:has(.ppg-cta)) {
+  padding-block: var(--ppg-space-3);
+}
+
 .ppg-hero-main {
   display: flex;
   flex-direction: column;
