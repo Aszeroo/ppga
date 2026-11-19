@@ -2004,6 +2004,367 @@ a.ppg-cta {
   margin: 0;
 }
 
+/* ── Chapter overview: lesson card grid + test status cards ─────────────── */
+
+.ppg-chapter-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-2);
+}
+
+.ppg-chapter-intro {
+  margin: 0;
+  max-width: 72ch;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  color: var(--ppg-muted);
+}
+
+.ppg-chapter-lessons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-3);
+}
+
+/* Lesson cards: 1 column on phones, 2 from 700px, 3 from 1280px. The
+ * `1fr` auto rows plus the stretched card give every tile equal height. */
+.ppg-lesson-card-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: 1fr;
+  gap: var(--ppg-space-4);
+}
+
+@media (min-width: 700px) {
+  .ppg-lesson-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .ppg-lesson-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.ppg-lesson-card-item {
+  display: flex;
+  min-width: 0;
+}
+
+/* The whole card is the link: `.ppg-lesson-card-link::after` stretches the
+ * title link's hit area over the surface. Hover / focus / press are all
+ * explicit, and the surface keeps a full border on every side. */
+.ppg-lesson-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ppg-space-3);
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-4);
+  box-shadow: var(--ppg-shadow-pixel-1);
+  transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease;
+}
+
+.ppg-lesson-card-numeral {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.6rem;
+  min-height: 2.6rem;
+  padding: var(--ppg-space-1);
+  box-sizing: border-box;
+  background-color: var(--ppg-pink-100);
+  color: var(--ppg-fg-heading);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-pink-300);
+  border-radius: var(--ppg-radius-1);
+  box-shadow: var(--ppg-shadow-pixel-1);
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.ppg-lesson-card-main {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-2);
+  min-width: 0;
+}
+
+.ppg-lesson-card-title {
+  margin: 0;
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--ppg-fg-heading);
+  text-wrap: balance;
+}
+
+.ppg-lesson-card-link {
+  color: inherit;
+  text-decoration: none;
+  overflow-wrap: break-word;
+}
+
+/* The stretched hit area. Nothing else inside the card is interactive. */
+.ppg-lesson-card-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+.ppg-lesson-card-summary {
+  margin: 0;
+  font-family: var(--font-ppg-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ppg-muted);
+  overflow-wrap: break-word;
+}
+
+.ppg-lesson-card-arrow {
+  flex: 0 0 auto;
+  align-self: center;
+  color: var(--ppg-fg-heading);
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+
+@media (hover: hover) {
+  .ppg-lesson-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--ppg-shadow-pixel-3);
+    border-color: var(--ppg-blue-300);
+  }
+}
+
+.ppg-lesson-card:active {
+  transform: translateY(0);
+  box-shadow: var(--ppg-shadow-pixel-1);
+}
+
+.ppg-lesson-card:has(.ppg-lesson-card-link:focus-visible) {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+.ppg-lesson-card-link:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ppg-lesson-card,
+  .ppg-lesson-card:hover,
+  .ppg-lesson-card:active {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* Pre-test / post-test as two status cards, each with ONE inline action
+ * instead of two duplicated full-width CTA faces. */
+.ppg-chapter-tests {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ppg-space-4);
+}
+
+@media (min-width: 700px) {
+  .ppg-chapter-tests {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.ppg-chapter-test-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-3);
+  min-width: 0;
+  box-sizing: border-box;
+  background-color: var(--ppg-bg-surface);
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-4);
+  box-shadow: var(--ppg-shadow-pixel-2);
+}
+
+.ppg-chapter-test-card[data-ppg-chapter-test='post'] {
+  border-color: var(--ppg-pink-300);
+}
+
+.ppg-chapter-test-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ppg-space-2);
+}
+
+.ppg-chapter-test-title {
+  margin: 0;
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 1.02rem;
+  line-height: 1.45;
+  color: var(--ppg-fg-heading);
+}
+
+.ppg-chapter-test-status {
+  flex: 0 0 auto;
+  padding: 2px var(--ppg-space-2);
+  background-color: var(--ppg-blue-100);
+  border-width: var(--ppg-border-1);
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  border-radius: var(--ppg-radius-pill);
+  color: var(--ppg-muted);
+  font-family: var(--font-ppg-body);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.ppg-chapter-test-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ppg-space-2) var(--ppg-space-4);
+  margin: 0;
+}
+
+.ppg-chapter-test-metrics > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ppg-chapter-test-metrics dt {
+  font-family: var(--font-ppg-body);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ppg-muted);
+}
+
+.ppg-chapter-test-metrics dd {
+  margin: 0;
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--ppg-fg-heading);
+}
+
+.ppg-chapter-test-action {
+  align-self: flex-start;
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ppg-space-1);
+  padding: var(--ppg-space-2) var(--ppg-space-3);
+  background-color: var(--ppg-pink-100);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-pink-300);
+  border-radius: var(--ppg-radius-pill);
+  box-shadow: var(--ppg-shadow-pixel-1);
+  color: var(--ppg-fg-heading);
+  font-family: var(--font-ppg-body);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.ppg-chapter-test-action:hover {
+  background-color: var(--ppg-pink-200);
+}
+
+.ppg-chapter-test-action:active {
+  transform: translateY(1px);
+}
+
+.ppg-chapter-test-action:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ppg-chapter-test-action {
+    transition: none;
+  }
+}
+
+/* ── Lesson header: breadcrumb + title + lesson position ────────────────── */
+
+.ppg-lesson-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-2);
+}
+
+.ppg-lesson-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--ppg-space-2);
+  font-family: var(--font-ppg-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ppg-muted);
+}
+
+.ppg-lesson-breadcrumb-link {
+  color: var(--ppg-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ppg-lesson-breadcrumb-link:hover {
+  color: var(--ppg-fg-heading);
+}
+
+.ppg-lesson-breadcrumb-link:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+.ppg-lesson-breadcrumb-sep {
+  color: var(--ppg-muted);
+}
+
+.ppg-lesson-breadcrumb-current {
+  color: var(--ppg-fg-heading);
+  overflow-wrap: anywhere;
+}
+
+.ppg-lesson-title {
+  margin: 0;
+}
+
+.ppg-lesson-meta {
+  margin: 0;
+  font-family: var(--font-ppg-body);
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--ppg-muted);
+}
+
 /* ── CAI lesson player (#75) ────────────────────────────────────────────── */
 
 .ppg-lesson-player {
@@ -2011,6 +2372,180 @@ a.ppg-cta {
   flex-direction: column;
   gap: var(--ppg-space-3);
   min-width: 0;
+}
+
+/* Mobile first: the step index is a horizontally scrollable chip row above
+ * the reading column. It never widens the page (the list owns the scroll). */
+.ppg-lesson-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ppg-space-3);
+  min-width: 0;
+}
+
+.ppg-lesson-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-2);
+  min-width: 0;
+}
+
+.ppg-step-index {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ppg-step-index-list {
+  display: flex;
+  gap: var(--ppg-space-2);
+  margin: 0;
+  padding: 0 0 var(--ppg-space-1);
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+.ppg-step-index-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ppg-space-2);
+  flex: 0 0 auto;
+  white-space: nowrap;
+  cursor: pointer;
+  padding: var(--ppg-space-2) var(--ppg-space-3);
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-1);
+  box-shadow: var(--ppg-shadow-pixel-1);
+  color: var(--ppg-muted);
+  font-family: var(--font-ppg-body);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.ppg-step-index-item:hover {
+  background-color: var(--ppg-gray-100);
+}
+
+.ppg-step-index-item[aria-current='step'] {
+  background-color: var(--ppg-pink-100);
+  border-color: var(--ppg-pink-300);
+  color: var(--ppg-fg-heading);
+  box-shadow: var(--ppg-shadow-pixel-2);
+}
+
+.ppg-step-index-item:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+.ppg-step-index-num {
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 0.7rem;
+  color: var(--ppg-fg-heading);
+}
+
+.ppg-step-index-kind {
+  line-height: 1.4;
+}
+
+.ppg-step-index-icon {
+  display: inline-flex;
+  align-items: center;
+  font-size: 1rem;
+  color: var(--ppg-muted);
+}
+
+.ppg-step-index-item[aria-current='step'] .ppg-step-index-icon {
+  color: var(--ppg-pink-500);
+}
+
+/* The small per-kind accent: decoration only, always beside the kind text. */
+.ppg-step-kind-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  flex: 0 0 auto;
+  border-width: var(--ppg-border-1);
+  border-style: solid;
+  border-radius: var(--ppg-radius-1);
+  background-color: var(--ppg-gray-100);
+  font-size: 1rem;
+}
+
+.ppg-step-kind-badge[data-ppg-kind='objective'] {
+  color: var(--ppg-pink-500);
+  background-color: var(--ppg-pink-100);
+  border-color: var(--ppg-pink-300);
+}
+
+.ppg-step-kind-badge[data-ppg-kind='explanation'] {
+  color: var(--ppg-blue-300);
+  background-color: var(--ppg-blue-100);
+  border-color: var(--ppg-blue-300);
+}
+
+.ppg-step-kind-badge[data-ppg-kind='example'] {
+  color: var(--ppg-purple);
+  background-color: var(--ppg-purple-tint);
+  border-color: var(--ppg-purple);
+}
+
+.ppg-step-kind-badge[data-ppg-kind='check'] {
+  color: var(--ppg-gold-deep);
+  background-color: var(--ppg-cream);
+  border-color: var(--ppg-gold);
+}
+
+.ppg-step-kind-badge[data-ppg-kind='summary'] {
+  color: var(--ppg-status-success);
+  background-color: var(--ppg-mint-tint);
+  border-color: var(--ppg-status-success);
+}
+
+.ppg-step-index-icon[data-ppg-kind='objective'] { color: var(--ppg-pink-500); }
+.ppg-step-index-icon[data-ppg-kind='explanation'] { color: var(--ppg-blue-300); }
+.ppg-step-index-icon[data-ppg-kind='example'] { color: var(--ppg-purple); }
+.ppg-step-index-icon[data-ppg-kind='check'] { color: var(--ppg-gold-deep); }
+.ppg-step-index-icon[data-ppg-kind='summary'] { color: var(--ppg-status-success); }
+
+/* Wide screens: sticky index beside the reading card. */
+@media (min-width: 1024px) {
+  .ppg-lesson-layout {
+    grid-template-columns: 250px minmax(0, 1fr);
+    gap: var(--ppg-space-5);
+    align-items: start;
+  }
+
+  .ppg-step-index {
+    position: sticky;
+    top: 96px;
+    max-height: calc(100vh - 112px);
+    overflow-y: auto;
+    padding-right: var(--ppg-space-1);
+  }
+
+  .ppg-step-index-list {
+    flex-direction: column;
+    overflow: visible;
+    padding: 0;
+  }
+
+  .ppg-step-index-item {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .ppg-step-index-icon {
+    margin-left: auto;
+  }
 }
 
 /* The step content is the reader's ONE card surface. Scoped to the player so
@@ -2037,13 +2572,24 @@ a.ppg-cta {
   }
 }
 
+/* The reader's card gets a comfortable desktop gutter so the prose sits in
+ * the page rather than floating in a thin strip. */
+@media (min-width: 1024px) {
+  .ppg-lesson-player .ppg-card {
+    padding: var(--ppg-space-5);
+  }
+}
+
 /* The kind stays a visible, focusable `<h2>` for the focus move and the
  * screen-reader announcement, but reads as a compact overline: small, muted,
  * letter-spaced, and no longer competing with the body headings. */
 .ppg-lesson-kicker {
+  display: flex;
+  align-items: center;
+  gap: var(--ppg-space-2);
   margin: 0;
   font-family: var(--font-ppg-body);
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 700;
   line-height: 1.4;
   letter-spacing: 0.08em;
@@ -2065,12 +2611,13 @@ a.ppg-cta {
   color: var(--ppg-muted);
 }
 
-/* Back / Next: one centered row that wraps instead of overflowing at 390.
- * Scoped to DIRECT children so the mini-check CTA inside the card is not
+/* Back / Next: one row that wraps instead of overflowing at 390. Scoped to
+ * the reader's own nav row so the mini-check CTA inside the card is not
  * touched. */
-.ppg-lesson-player > .ppg-sc-cta-row {
+.ppg-lesson-nav {
   flex-wrap: wrap;
   gap: var(--ppg-space-2);
+  margin-top: var(--ppg-space-1);
 }
 
 /* The two learning-path links (module + course map) are one compact footer
@@ -2173,13 +2720,19 @@ a.ppg-cta {
  * margin 0 so an adjacent sibling never doubles a gap). Token-only colours;
  * `overflow-wrap` keeps a long Thai word or URL inside the card at 390. */
 .ppg-lesson-prose {
-  max-width: 68ch;
+  max-width: 70ch;
   min-width: 0;
   color: var(--ppg-fg-body);
   font-family: var(--font-ppg-body);
-  font-size: 1rem;
-  line-height: 1.75;
+  font-size: 1.0625rem;
+  line-height: 1.8;
   overflow-wrap: anywhere;
+}
+
+@media (min-width: 1024px) {
+  .ppg-lesson-prose {
+    font-size: 1.125rem;
+  }
 }
 
 .ppg-prose-heading {
@@ -2192,11 +2745,13 @@ a.ppg-cta {
 }
 
 .ppg-prose-heading-2 {
-  font-size: 1.15rem;
+  font-size: 1.35rem;
+  font-weight: 800;
 }
 
 .ppg-prose-heading-3 {
-  font-size: 1.02rem;
+  font-size: 1.12rem;
+  font-weight: 700;
 }
 
 .ppg-prose-paragraph {
@@ -2223,11 +2778,15 @@ a.ppg-cta {
  * (same specificity, later wins). Paragraph-to-paragraph gets a small gap;
  * a heading gets a clear section break above it. */
 .ppg-lesson-prose > * + * {
-  margin-top: var(--ppg-space-2);
+  margin-top: 0.9em;
 }
 
 .ppg-lesson-prose > .ppg-prose-heading:not(:first-child) {
-  margin-top: var(--ppg-space-4);
+  margin-top: 1.5em;
+}
+
+.ppg-lesson-prose .ppg-prose-list > li + li {
+  margin-top: 0.5em;
 }
 
 @media (prefers-reduced-motion: reduce) {

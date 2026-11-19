@@ -443,6 +443,7 @@
   "lesson": {
     "list": "บทเรียน",
     "viewTitle": "บทเรียน",
+    "lessonOf": "บทเรียน {current} / {total}",
     "whatHeading": "สิ่งที่คุณจะได้เรียนรู้",
     "whyHeading": "ทำไมจึงสำคัญ",
     "bodyHeading": "เนื้อหาบทเรียน",

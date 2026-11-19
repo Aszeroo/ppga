@@ -130,72 +130,113 @@ async function ChapterOverview({ chapterKey }: { chapterKey: string }) {
   const lessons = await readLessonsViaRpc(chapterKey)
   const pickText = (th: string | undefined, en: string | undefined) =>
     locale === 'th' ? (th ?? en ?? '') : (en ?? th ?? '')
+  const preAttempts = state.pre?.attempts ?? 0
+  const postAttempts = state.post?.attempts ?? 0
   return (
     <section aria-label={t('label')} className="ppg-page-wrap">
-      <h1 className="ppg-heading ppg-heading-text">
-        {state.status === 'ok' ? pickText(state.title_th, state.title_en) : t('overviewTitle')}
-      </h1>
-      <p className="ppg-card-text">{t('overviewIntro')}</p>
+      <header className="ppg-chapter-head">
+        <h1 className="ppg-heading ppg-heading-text">
+          {state.status === 'ok' ? pickText(state.title_th, state.title_en) : t('overviewTitle')}
+        </h1>
+        <p className="ppg-card-text ppg-chapter-intro">{t('overviewIntro')}</p>
+      </header>
       {lessons.status === 'ok' && lessons.lessons && lessons.lessons.length > 0
         ? (
-          <div>
-            <h2 className="ppg-list-title">{tL('list')}</h2>
-            <ul>
+          <section className="ppg-chapter-lessons" aria-labelledby="ppg-chapter-lessons-title">
+            <h2 id="ppg-chapter-lessons-title" className="ppg-list-title">{tL('list')}</h2>
+            <ul className="ppg-lesson-card-grid">
               {lessons.lessons
                 .slice()
                 .sort((a, b) => a.order_index - b.order_index)
                 .map((lesson) => (
-                  <li key={lesson.lesson_key}>
-                    <Link
-                      className="ppg-link"
-                      href={{
-                        pathname: '/course/[moduleKey]/[lessonKey]',
-                        params: { moduleKey: chapterKey, lessonKey: lesson.lesson_key },
-                      }}
-                    >
-                      {lesson.order_index}. {pickText(lesson.title_th, lesson.title_en)}
-                    </Link>
-                    {' — '}
-                    {pickText(lesson.what_learn_th, lesson.what_learn_en)}
+                  <li className="ppg-lesson-card-item" key={lesson.lesson_key}>
+                    <article className="ppg-lesson-card" data-ppg-lesson-card={lesson.lesson_key}>
+                      <span className="ppg-lesson-card-numeral" aria-hidden="true">
+                        {String(lesson.order_index).padStart(2, '0')}
+                      </span>
+                      <div className="ppg-lesson-card-main">
+                        <h3 className="ppg-lesson-card-title">
+                          <Link
+                            className="ppg-lesson-card-link"
+                            href={{
+                              pathname: '/course/[moduleKey]/[lessonKey]',
+                              params: { moduleKey: chapterKey, lessonKey: lesson.lesson_key },
+                            }}
+                          >
+                            {pickText(lesson.title_th, lesson.title_en)}
+                          </Link>
+                        </h3>
+                        <p className="ppg-lesson-card-summary">
+                          {pickText(lesson.what_learn_th, lesson.what_learn_en)}
+                        </p>
+                      </div>
+                      <span className="ppg-lesson-card-arrow" aria-hidden="true">→</span>
+                    </article>
                   </li>
                 ))}
             </ul>
-          </div>
+          </section>
         )
         : null}
       {state.status === 'ok' ? (
-        <div className="ppg-hub-grid">
-          <Card
-            heading={t('preTitle')}
-            body={`${t('attempts')}: ${state.pre?.attempts ?? 0} · ${t('bestScore')}: ${state.pre?.best_score ?? 0} / ${state.pre?.total ?? 0}`}
-            status="available"
-          />
-          <Card
-            heading={t('postTitle')}
-            body={`${t('attempts')}: ${state.post?.attempts ?? 0} · ${t('firstScore')}: ${state.post?.first_score ?? 0} / ${state.post?.total ?? 0}`}
-            status="available"
-          />
-        </div>
+        <section className="ppg-chapter-tests" aria-label={t('overviewTitle')}>
+          <article className="ppg-chapter-test-card" data-ppg-chapter-test="pre">
+            <div className="ppg-chapter-test-head">
+              <h2 className="ppg-chapter-test-title">{t('preTitle')}</h2>
+              <span className="ppg-chapter-test-status">
+                {preAttempts > 0 ? t('preDone') : t('notStarted')}
+              </span>
+            </div>
+            <dl className="ppg-chapter-test-metrics">
+              <div>
+                <dt>{t('attempts')}</dt>
+                <dd>{preAttempts}</dd>
+              </div>
+              <div>
+                <dt>{t('bestScore')}</dt>
+                <dd>{state.pre?.best_score ?? 0} / {state.pre?.total ?? 0}</dd>
+              </div>
+            </dl>
+            <Link
+              className="ppg-chapter-test-action"
+              href={{ pathname: '/course/[moduleKey]/chapter-test/[phase]' as const, params: { moduleKey: chapterKey, phase: 'pre' } }}
+            >
+              {t('openPre')} <span aria-hidden="true">→</span>
+            </Link>
+          </article>
+          <article className="ppg-chapter-test-card" data-ppg-chapter-test="post">
+            <div className="ppg-chapter-test-head">
+              <h2 className="ppg-chapter-test-title">{t('postTitle')}</h2>
+              <span className="ppg-chapter-test-status">
+                {postAttempts > 0 ? t('postDone') : t('notStarted')}
+              </span>
+            </div>
+            <dl className="ppg-chapter-test-metrics">
+              <div>
+                <dt>{t('attempts')}</dt>
+                <dd>{postAttempts}</dd>
+              </div>
+              <div>
+                <dt>{t('firstScore')}</dt>
+                <dd>{state.post?.first_score ?? 0} / {state.post?.total ?? 0}</dd>
+              </div>
+              <div>
+                <dt>{t('bestScore')}</dt>
+                <dd>{state.post?.best_score ?? 0} / {state.post?.total ?? 0}</dd>
+              </div>
+            </dl>
+            <Link
+              className="ppg-chapter-test-action"
+              href={{ pathname: '/course/[moduleKey]/chapter-test/[phase]' as const, params: { moduleKey: chapterKey, phase: 'post' } }}
+            >
+              {t('openPost')} <span aria-hidden="true">→</span>
+            </Link>
+          </article>
+        </section>
       ) : null}
-      <p>
-        <Link
-          className="ppg-cta"
-          href={{ pathname: '/course/[moduleKey]/chapter-test/[phase]' as const, params: { moduleKey: chapterKey, phase: 'pre' } }}
-        >
-          {t('openPre')}
-        </Link>
-      </p>
-      <p>
-        <Link
-          className="ppg-cta"
-          href={{ pathname: '/course/[moduleKey]/chapter-test/[phase]' as const, params: { moduleKey: chapterKey, phase: 'post' } }}
-        >
-          {t('openPost')}
-        </Link>
-      </p>
-      <p>
+      <footer className="ppg-lesson-footer">
         <Link className="ppg-link" href="/course">{t('linkMap')}</Link>
-      </p>
+      </footer>
     </section>
   )
 }
