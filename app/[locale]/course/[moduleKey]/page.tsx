@@ -179,7 +179,7 @@ async function ChapterOverview({ chapterKey }: { chapterKey: string }) {
         )
         : null}
       {state.status === 'ok' ? (
-        <section className="ppg-chapter-tests" aria-label={t('label')}>
+        <section className="ppg-chapter-tests" aria-label={t('overviewTitle')}>
           <article className="ppg-chapter-test-card" data-ppg-chapter-test="pre">
             <div className="ppg-chapter-test-head">
               <h2 className="ppg-chapter-test-title">{t('preTitle')}</h2>
