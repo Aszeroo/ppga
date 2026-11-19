@@ -9,15 +9,21 @@ import { LessonProse } from './LessonProse'
 import { nextStepIndex, previousStepIndex, stepProgress, type LessonStep } from '../lib/lessonSteps'
 
 /**
- * PPGA #75 CAI lesson player. The server page renders this Client Component
- * with the already-localized, client-safe step model (no answer keys, no
- * explanations). The first step is therefore in the server-rendered HTML;
- * the collapsed "read all steps" block is a static server-rendered fallback
- * for a no-JavaScript reader.
+ * PPGA #75 CAI lesson player, re-composed as a guided reader. The server page
+ * renders this Client Component with the already-localized, client-safe step
+ * model (no answer keys, no explanations). The first step is therefore in the
+ * server-rendered HTML; the collapsed "read all steps" block is a static
+ * server-rendered fallback for a no-JavaScript reader.
+ *
+ * Layout: on a wide screen the step index is a sticky left column and the
+ * reading card is the right column; below 1024px the index becomes a
+ * horizontally scrollable row of step chips. The index is a convenience, not
+ * a gate: every step is reachable at any time (mini-checks never gate).
  *
  * Interactions:
  * - Back / Next move through every step unconditionally: a mini-check never
  *   gates progress, and a wrong answer never blocks the next step.
+ * - Clicking a step in the index jumps straight to it, ungated.
  * - Keyboard: native buttons, plus ArrowLeft/ArrowRight on the player
  *   surface when the focus is not inside a control that owns those keys
  *   (the radio group keeps its own arrow-key semantics).
@@ -36,6 +42,59 @@ export interface LessonPlayerProps {
 interface Feedback {
   tone: 'correct' | 'incorrect'
   explanation: string | null
+}
+
+/** A small token-coloured glyph per step kind (decoration only). */
+function StepKindIcon({ kind }: { kind: LessonStep['kind'] }) {
+  const common = {
+    width: '1em',
+    height: '1em',
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 2,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    'aria-hidden': true,
+    focusable: 'false' as const,
+  }
+  if (kind === 'objective') {
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="8" />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+    )
+  }
+  if (kind === 'example') {
+    return (
+      <svg {...common}>
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+      </svg>
+    )
+  }
+  if (kind === 'check') {
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M9.2 9a3 3 0 1 1 4.3 2.7c-.9.6-1.5 1.2-1.5 2.3" />
+        <path d="M12 17h.01" />
+      </svg>
+    )
+  }
+  if (kind === 'summary') {
+    return (
+      <svg {...common}>
+        <path d="M20 6 9 17l-5-5" />
+      </svg>
+    )
+  }
+  return (
+    <svg {...common}>
+      <path d="M4 6h16M4 12h16M4 18h10" />
+    </svg>
+  )
 }
 
 export function LessonPlayer({ lessonKey, steps, locale }: LessonPlayerProps) {
@@ -153,103 +212,133 @@ export function LessonPlayer({ lessonKey, steps, locale }: LessonPlayerProps) {
       data-ppg-lesson={lessonKey}
       data-ppg-step-index={step.orderIndex}
     >
-      <ProgressBar value={progress.value} min={progress.min} max={progress.max} label={t('progressLabel')} />
-      <p role="status" aria-live="polite" className="ppg-card-text ppg-lesson-status" data-ppg-step-status={step.kind}>
-        {t('stepOf', { current: progress.value, total: steps.length })} · {kindLabel}
-      </p>
-
-      <div className="ppg-card" data-ppg-step-kind={step.kind}>
-        <h2 className="ppg-lesson-kicker" tabIndex={-1} ref={headingRef}>
-          {kindLabel}
-        </h2>
-        {step.body ? <LessonProse text={step.body} /> : null}
-
-        {step.check
-          ? (
-            <div className="ppg-sc-question-group">
-              <p className="ppg-sc-question">{step.check.prompt}</p>
-              <div className="ppg-sc-options" role="radiogroup" aria-label={step.check.prompt}>
-                {step.check.options.map((option) => {
-                  const state = currentFeedback && selectedKey === option.optionKey
-                    ? currentFeedback.tone
-                    : undefined
-                  return (
-                    <label
-                      className="ppg-sc-opt"
-                      key={option.optionKey}
-                      htmlFor={`mini_${step.orderIndex}_${option.optionKey}`}
-                      data-ppg-mini-state={state}
-                      data-ppg-mini-option={option.optionKey}
-                    >
-                      <input
-                        className="ppg-sc-opt-radio"
-                        type="radio"
-                        id={`mini_${step.orderIndex}_${option.optionKey}`}
-                        name={`mini_${step.orderIndex}`}
-                        value={option.optionKey}
-                        checked={selectedKey === option.optionKey}
-                        disabled={pending}
-                        onChange={() => choose(option.optionKey)}
-                      />
-                      <span className="ppg-sc-opt-letter" aria-hidden="true">{option.optionKey.toUpperCase()}</span>
-                      <span className="ppg-sc-opt-text">{option.label}</span>
-                    </label>
-                  )
-                })}
-              </div>
-              <div className="ppg-sc-cta-row">
+      <div className="ppg-lesson-layout">
+        <nav className="ppg-step-index" aria-label={t('stepsHeading')}>
+          <ol className="ppg-step-index-list">
+            {steps.map((entry, entryIndex) => (
+              <li key={entry.orderIndex}>
                 <button
                   type="button"
-                  className="ppg-cta"
-                  onClick={checkAnswer}
-                  disabled={!selectedKey || pending}
-                  data-ppg-cta="mini-check"
+                  className="ppg-step-index-item"
+                  aria-current={entryIndex === safeIndex ? 'step' : undefined}
+                  onClick={() => setIndex(entryIndex)}
                 >
-                  {pending ? t('checking') : t('check')}
+                  <span className="ppg-step-index-num" aria-hidden="true">
+                    {String(entryIndex + 1).padStart(2, '0')}
+                  </span>
+                  <span className="ppg-step-index-kind">{t(`kind.${entry.kind}`)}</span>
+                  <span className="ppg-step-index-icon" data-ppg-kind={entry.kind}>
+                    <StepKindIcon kind={entry.kind} />
+                  </span>
                 </button>
-              </div>
-              {currentFeedback
-                ? (
-                  <div
-                    className="ppg-mini-feedback"
-                    data-ppg-mini-result={currentFeedback.tone}
-                    role="status"
-                    aria-live="polite"
-                  >
-                    <p className="ppg-mini-feedback-title">
-                      {currentFeedback.tone === 'correct' ? t('correct') : t('incorrect')}
-                    </p>
-                    {currentFeedback.explanation
-                      ? (
-                        <p className="ppg-mini-feedback-explain">
-                          {t('explanation', { text: currentFeedback.explanation })}
-                        </p>
-                      )
-                      : null}
-                  </div>
-                )
-                : null}
-              {currentError
-                ? <p role="alert" className="ppg-mini-feedback-explain">{t('error')}</p>
-                : null}
-            </div>
-          )
-          : null}
-      </div>
+              </li>
+            ))}
+          </ol>
+        </nav>
 
-      <div className="ppg-sc-cta-row">
-        <button type="button" className="ppg-cta" onClick={goBack} disabled={safeIndex === 0} data-ppg-nav="back">
-          {t('back')}
-        </button>
-        <button
-          type="button"
-          className="ppg-cta"
-          onClick={goNext}
-          disabled={safeIndex >= steps.length - 1}
-          data-ppg-nav="next"
-        >
-          {t('next')}
-        </button>
+        <div className="ppg-lesson-main">
+          <ProgressBar value={progress.value} min={progress.min} max={progress.max} label={t('progressLabel')} />
+          <p role="status" aria-live="polite" className="ppg-card-text ppg-lesson-status" data-ppg-step-status={step.kind}>
+            {t('stepOf', { current: progress.value, total: steps.length })} · {kindLabel}
+          </p>
+
+          <div className="ppg-card" data-ppg-step-kind={step.kind}>
+            <h2 className="ppg-lesson-kicker" tabIndex={-1} ref={headingRef}>
+              <span className="ppg-step-kind-badge" data-ppg-kind={step.kind}>
+                <StepKindIcon kind={step.kind} />
+              </span>
+              {kindLabel}
+            </h2>
+            {step.body ? <LessonProse text={step.body} /> : null}
+
+            {step.check
+              ? (
+                <div className="ppg-sc-question-group">
+                  <p className="ppg-sc-question">{step.check.prompt}</p>
+                  <div className="ppg-sc-options" role="radiogroup" aria-label={step.check.prompt}>
+                    {step.check.options.map((option) => {
+                      const state = currentFeedback && selectedKey === option.optionKey
+                        ? currentFeedback.tone
+                        : undefined
+                      return (
+                        <label
+                          className="ppg-sc-opt"
+                          key={option.optionKey}
+                          htmlFor={`mini_${step.orderIndex}_${option.optionKey}`}
+                          data-ppg-mini-state={state}
+                          data-ppg-mini-option={option.optionKey}
+                        >
+                          <input
+                            className="ppg-sc-opt-radio"
+                            type="radio"
+                            id={`mini_${step.orderIndex}_${option.optionKey}`}
+                            name={`mini_${step.orderIndex}`}
+                            value={option.optionKey}
+                            checked={selectedKey === option.optionKey}
+                            disabled={pending}
+                            onChange={() => choose(option.optionKey)}
+                          />
+                          <span className="ppg-sc-opt-letter" aria-hidden="true">{option.optionKey.toUpperCase()}</span>
+                          <span className="ppg-sc-opt-text">{option.label}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                  <div className="ppg-sc-cta-row">
+                    <button
+                      type="button"
+                      className="ppg-cta"
+                      onClick={checkAnswer}
+                      disabled={!selectedKey || pending}
+                      data-ppg-cta="mini-check"
+                    >
+                      {pending ? t('checking') : t('check')}
+                    </button>
+                  </div>
+                  {currentFeedback
+                    ? (
+                      <div
+                        className="ppg-mini-feedback"
+                        data-ppg-mini-result={currentFeedback.tone}
+                        role="status"
+                        aria-live="polite"
+                      >
+                        <p className="ppg-mini-feedback-title">
+                          {currentFeedback.tone === 'correct' ? t('correct') : t('incorrect')}
+                        </p>
+                        {currentFeedback.explanation
+                          ? (
+                            <p className="ppg-mini-feedback-explain">
+                              {t('explanation', { text: currentFeedback.explanation })}
+                            </p>
+                          )
+                          : null}
+                      </div>
+                    )
+                    : null}
+                  {currentError
+                    ? <p role="alert" className="ppg-mini-feedback-explain">{t('error')}</p>
+                    : null}
+                </div>
+              )
+              : null}
+          </div>
+
+          <div className="ppg-sc-cta-row ppg-lesson-nav">
+            <button type="button" className="ppg-cta" onClick={goBack} disabled={safeIndex === 0} data-ppg-nav="back">
+              {t('back')}
+            </button>
+            <button
+              type="button"
+              className="ppg-cta"
+              onClick={goNext}
+              disabled={safeIndex >= steps.length - 1}
+              data-ppg-nav="next"
+            >
+              {t('next')}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Static server-rendered fallback: all step text + prompt + options,

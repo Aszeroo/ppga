@@ -7,15 +7,16 @@ import { readLessonsViaRpc } from '../../../../../lib/sup/curriculum'
 import { readLessonStepsViaRpc } from '../../../../../lib/sup/lessonSteps'
 import { readSelfCheckQuestionsViaRpc } from '../../../../../lib/sup/xp'
 import { readChallengeReads } from '../../../../../lib/sup/challenge'
+import { readChapterTestStateViaRpc } from '../../../../../lib/sup/chapterTest'
 import { resolveLessonSteps } from '../../../../../lib/lessonSteps'
-import { buildChallengeContext, challengeTrackSteps, ledgerEvent, ledgerEventAttr } from '../../../../../lib/challengeStages'
-import { ChallengeTrack } from '../../../../../components/ChallengeTrack'
+import { buildChallengeContext, ledgerEvent, ledgerEventAttr } from '../../../../../lib/challengeStages'
 import { LessonPlayer } from '../../../../../components/LessonPlayer'
 import { SelfCheckPanel } from '../../../../../components/SelfCheckPanel'
 
 /**
- * Ticket #9 + #10 lesson view (#45 stage-4 framing, #52 V3 dressing on top;
- * #75 turns the body into a CAI player): the #16 story's WHAT / WHY / BODY /
+ * Ticket #9 + #10 lesson view (#52 V3 dressing; #75 turns the body into a
+ * CAI player; the guided-reader redesign adds the compact breadcrumb header
+ * and moves the challenge track to the module page): the #16 story's WHAT / WHY / BODY /
  * WHAT-NEXT structure still comes from the DATABASE's own bilingual columns
  * (the `ppg_module_lessons` RPC filtered to the CALLER's lesson; a locked
  * module returns `[]` server-side so the page shows the unavailable state
@@ -49,12 +50,20 @@ export const dynamic = 'force-dynamic'
 // fallow-ignore-next-line complexity
 async function LessonView({ moduleKey, lessonKey }: { moduleKey: string; lessonKey: string }) {
   const t = await getTranslations('lesson')
+  const tNav = await getTranslations('nav')
   const tS = await getTranslations('selfcheck')
   const tC = await getTranslations('challenge')
   const locale: 'th' | 'en' = (await getLocale()) === 'th' ? 'th' : 'en'
-  const state = await readLessonsViaRpc(moduleKey)
+  const [state, chapter] = await Promise.all([
+    readLessonsViaRpc(moduleKey),
+    readChapterTestStateViaRpc(moduleKey),
+  ])
   const row = state.lessons?.find((l) => l.lesson_key === lessonKey)
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
+  const chapterTitle = chapter.status === 'ok'
+    ? pick(chapter.title_th ?? moduleKey, chapter.title_en ?? moduleKey)
+    : moduleKey
+  const lessonCount = state.lessons?.length ?? 0
 
   const stepState = await readLessonStepsViaRpc(lessonKey)
   const steps = resolveLessonSteps(row, stepState.status === 'ok' ? stepState.steps ?? [] : [], locale)
@@ -66,18 +75,32 @@ async function LessonView({ moduleKey, lessonKey }: { moduleKey: string; lessonK
 
   const ctx = buildChallengeContext(moduleKey, await readChallengeReads(moduleKey))
   const checkEvent = ledgerEvent(ctx.own, 'self_check_pass', lessonKey)
-  // the Lesson page walks the first three steps (the Result lives downstream).
-  const trackSteps = challengeTrackSteps(ctx, moduleKey, {
-    title: (key) => tC(`steps.${key}`),
-    state: (stateNow) => tC(`states.${stateNow}`),
-    current: tC('current'),
-  }, { limit: 3 })
   return (
     <section aria-label={t('viewTitle')} className="ppg-page-wrap">
-      <ChallengeTrack label={tC('trackLabel')} steps={trackSteps} />
       {row
         ? (
-          <h1 className="ppg-heading ppg-heading-text">{pick(row.title_th, row.title_en)}</h1>
+          <header className="ppg-lesson-head">
+            <nav className="ppg-lesson-breadcrumb" aria-label={t('viewTitle')}>
+              <Link className="ppg-lesson-breadcrumb-link" href="/course">{tNav('course')}</Link>
+              <span className="ppg-lesson-breadcrumb-sep" aria-hidden="true">/</span>
+              <Link
+                className="ppg-lesson-breadcrumb-link"
+                href={{ pathname: '/course/[moduleKey]', params: { moduleKey } }}
+              >
+                {chapterTitle}
+              </Link>
+              <span className="ppg-lesson-breadcrumb-sep" aria-hidden="true">/</span>
+              <span className="ppg-lesson-breadcrumb-current" aria-current="page">
+                {pick(row.title_th, row.title_en)}
+              </span>
+            </nav>
+            <h1 className="ppg-heading ppg-heading-text ppg-lesson-title">
+              {pick(row.title_th, row.title_en)}
+            </h1>
+            <p className="ppg-lesson-meta">
+              {t('lessonOf', { current: row.order_index, total: lessonCount })}
+            </p>
+          </header>
         )
         : null}
       {steps.length > 0

@@ -458,6 +458,7 @@
   "lesson": {
     "list": "Lessons",
     "viewTitle": "Lesson",
+    "lessonOf": "Lesson {current} of {total}",
     "whatHeading": "What you will learn",
     "whyHeading": "Why it matters",
     "bodyHeading": "The study material",
