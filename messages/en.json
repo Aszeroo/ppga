@@ -775,6 +775,17 @@
     "title": "Rewards you received",
     "dismiss": "Close"
   },
+  "slides": {
+    "title": "Lesson slides",
+    "intro": "Browse the slides for this chapter.",
+    "previous": "Previous slide",
+    "next": "Next slide",
+    "slideOf": "Slide {n} of {total}",
+    "thumbnailLabel": "Show slide {n}: {alt}",
+    "thumbnailsLabel": "Slide thumbnails",
+    "viewerLabel": "Slide viewer",
+    "lessonLink": "View this chapter's slides"
+  },
   "chapterTest": {
     "label": "Chapter tests",
     "preTitle": "Chapter pre-test",

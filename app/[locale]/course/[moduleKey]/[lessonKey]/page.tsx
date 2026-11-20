@@ -8,6 +8,7 @@ import { readLessonStepsViaRpc } from '../../../../../lib/sup/lessonSteps'
 import { readSelfCheckQuestionsViaRpc } from '../../../../../lib/sup/xp'
 import { readChallengeReads } from '../../../../../lib/sup/challenge'
 import { readChapterTestStateViaRpc } from '../../../../../lib/sup/chapterTest'
+import { readLessonSlidesViaTable } from '../../../../../lib/sup/slides'
 import { resolveLessonSteps } from '../../../../../lib/lessonSteps'
 import { buildChallengeContext, ledgerEvent, ledgerEventAttr } from '../../../../../lib/challengeStages'
 import { LessonPlayer } from '../../../../../components/LessonPlayer'
@@ -53,10 +54,12 @@ async function LessonView({ moduleKey, lessonKey }: { moduleKey: string; lessonK
   const tNav = await getTranslations('nav')
   const tS = await getTranslations('selfcheck')
   const tC = await getTranslations('challenge')
+  const tSlides = await getTranslations('slides')
   const locale: 'th' | 'en' = (await getLocale()) === 'th' ? 'th' : 'en'
-  const [state, chapter] = await Promise.all([
+  const [state, chapter, slides] = await Promise.all([
     readLessonsViaRpc(moduleKey),
     readChapterTestStateViaRpc(moduleKey),
+    readLessonSlidesViaTable(moduleKey),
   ])
   const row = state.lessons?.find((l) => l.lesson_key === lessonKey)
   const pick = (th: string, en: string) => (locale === 'th' ? th : en)
@@ -144,6 +147,13 @@ async function LessonView({ moduleKey, lessonKey }: { moduleKey: string; lessonK
       {questions && questions.status === 'unauthorized' ? <p>{tS('states.unauthorized')} {questions.detail}</p> : null}
       {questions && questions.status === 'not-configured' ? <p>{tS('states.notConfigured')} {questions.detail}</p> : null}
       <div className="ppg-lesson-footer">
+        {slides.status === 'ok' && slides.slides && slides.slides.length > 0
+          ? (
+            <a className="ppg-link" href={`/${locale}/course/${moduleKey}#slides`}>
+              {tSlides('lessonLink')}
+            </a>
+          )
+          : null}
         <Link className="ppg-link" href={{ pathname: '/course/[moduleKey]', params: { moduleKey } }}>{t('linkModule')}</Link>
         <Link className="ppg-link" href="/course">{t('linkMap')}</Link>
       </div>
