@@ -6,6 +6,7 @@ import { Link } from '../../../lib/i18n/routing'
 import { readGateViaTable, readItemsViaTable } from '../../../lib/sup/prettest'
 import { Badge } from '../../../components/Badge'
 import { PreTestItems } from '../../../components/PreTestItems'
+import { InstrumentProgress } from '../../../components/InstrumentProgress'
 import { StatusPill } from '../../../components/StatusPill'
 
 /**
@@ -109,6 +110,7 @@ async function PreTestForm({ locale, state }: { locale: string; state: Awaited<R
           method="POST"
           action="/api/prettest/submit"
         >
+          <InstrumentProgress total={items.length} template={t('answeredCount')} />
           <PreTestItems
             items={items}
             locale={locale}

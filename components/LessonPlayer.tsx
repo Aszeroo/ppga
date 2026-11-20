@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 
 import { ProgressBar } from './ProgressBar'
@@ -111,6 +112,7 @@ function StepKindIcon({ kind }: { kind: LessonStep['kind'] }) {
 
 export function LessonPlayer({ lessonKey, steps, locale, readAwarded, claimable }: LessonPlayerProps) {
   const t = useTranslations('lessonPlayer')
+  const router = useRouter()
   const [index, setIndex] = useState(0)
   const [selected, setSelected] = useState<Record<number, string>>({})
   const [feedback, setFeedback] = useState<Record<number, Feedback>>({})
@@ -227,7 +229,12 @@ export function LessonPlayer({ lessonKey, steps, locale, readAwarded, claimable 
         body: JSON.stringify({ lesson_key: lessonKey }),
       })
       const data = await response.json().catch(() => null)
-      setReadState(lessonReadStateFromResponse(response.ok, data))
+      const nextState = lessonReadStateFromResponse(response.ok, data)
+      setReadState(nextState)
+      // The award landed in the ledger; refresh the server shell so the
+      // header's XP chips read the new total without a full page reload.
+      // Client state (the awarded copy, the current step) survives refresh.
+      if (nextState === 'awarded') router.refresh()
     } catch {
       setReadState('error')
     }

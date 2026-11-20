@@ -11,6 +11,7 @@ import {
   sessionXpPreview,
   toAttendancePayload,
   updateDraftRow,
+  updateDraftRows,
   type AttendanceDraftRow,
   type AttendanceSessionRow,
 } from '../lib/attendance'
@@ -86,6 +87,7 @@ export function AttendanceBoard({
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
   const [savedLine, setSavedLine] = useState('')
+  const [search, setSearch] = useState('')
 
   // Sessions created in this visit render immediately; once the refreshed
   // server props carry them, the de-dupe drops the optimistic copy.
@@ -107,6 +109,26 @@ export function AttendanceBoard({
     [selected, draftOverrides, roster],
   )
 
+  const searchTerm = search.trim().toLowerCase()
+  const visibleLearners = useMemo(
+    () =>
+      searchTerm
+        ? roster.filter(
+            (entry) =>
+              entry.fullName.toLowerCase().includes(searchTerm) ||
+              entry.studentId.toLowerCase().includes(searchTerm),
+          )
+        : roster,
+    [roster, searchTerm],
+  )
+  const visibleDraft = useMemo(() => {
+    if (!searchTerm) return draft
+    const visibleIds = new Set(visibleLearners.map((entry) => entry.id))
+    return draft.filter((row) => visibleIds.has(row.learnerId))
+  }, [draft, searchTerm, visibleLearners])
+  const allVisiblePresent =
+    visibleDraft.length > 0 && visibleDraft.every((row) => row.present)
+
   const chapterTitle = (moduleKey: string) => {
     const chapter = chapters.find((entry) => entry.moduleKey === moduleKey)
     if (!chapter) return moduleKey
@@ -125,6 +147,18 @@ export function AttendanceBoard({
       const base = current[sessionId]
         ?? buildDraftRows(roster.map((entry) => entry.id), selected.records)
       return { ...current, [sessionId]: updateDraftRow(base, learnerId, patch) }
+    })
+    setSavedLine('')
+  }
+
+  function toggleAllVisiblePresent(present: boolean) {
+    if (!selected || visibleLearners.length === 0) return
+    const sessionId = selected.id
+    const visibleIds = visibleLearners.map((entry) => entry.id)
+    setDraftOverrides((current) => {
+      const base = current[sessionId]
+        ?? buildDraftRows(roster.map((entry) => entry.id), selected.records)
+      return { ...current, [sessionId]: updateDraftRows(base, visibleIds, { present }) }
     })
     setSavedLine('')
   }
@@ -346,8 +380,35 @@ export function AttendanceBoard({
             ? <p className="ppg-state-line">{t('emptyRoster')}</p>
             : (
               <>
-                <ul className="ppg-attendance-rows">
-                  {draft.map((row) => {
+                <div className="ppg-attendance-tools">
+                  <div className="ppg-work-form ppg-attendance-search">
+                    <label className="ppg-field-label" htmlFor="attendance_search">{t('searchLabel')}</label>
+                    <input
+                      className="ppg-input"
+                      id="attendance_search"
+                      type="search"
+                      value={search}
+                      placeholder={t('searchPlaceholder')}
+                      autoComplete="off"
+                      onChange={(event) => setSearch(event.target.value)}
+                      data-ppg-attendance-search="true"
+                    />
+                  </div>
+                  <label className="ppg-attendance-toggle" htmlFor="attendance_select_all">
+                    <input
+                      id="attendance_select_all"
+                      type="checkbox"
+                      checked={allVisiblePresent}
+                      disabled={visibleLearners.length === 0}
+                      onChange={(event) => toggleAllVisiblePresent(event.target.checked)}
+                      data-ppg-attendance-select-all="true"
+                    />
+                    <span>{t('selectAllPresent')}</span>
+                  </label>
+                </div>
+
+                <ul className="ppg-attendance-rows" data-ppg-attendance-visible={visibleDraft.length}>
+                  {visibleDraft.map((row) => {
                     const learner = roster.find((entry) => entry.id === row.learnerId)
                     if (!learner) return null
                     return (
@@ -406,6 +467,9 @@ export function AttendanceBoard({
                     )
                   })}
                 </ul>
+                {visibleDraft.length === 0
+                  ? <p className="ppg-state-line">{t('noMatches')}</p>
+                  : null}
 
                 <div className="ppg-attendance-save">
                   <button

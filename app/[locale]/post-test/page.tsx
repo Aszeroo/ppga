@@ -10,6 +10,7 @@ import {
 } from '../../../lib/sup/posttest'
 import { Badge } from '../../../components/Badge'
 import { InstrumentItems } from '../../../components/PreTestItems'
+import { InstrumentProgress } from '../../../components/InstrumentProgress'
 import { StatusPill } from '../../../components/StatusPill'
 
 /**
@@ -106,6 +107,7 @@ async function PosttestForm({ locale, itemsState }: { locale: string; itemsState
           method="POST"
           action="/api/posttest/submit"
         >
+          <InstrumentProgress total={items.length} template={t('answeredCount')} />
           <InstrumentItems
             items={items}
             locale={locale}

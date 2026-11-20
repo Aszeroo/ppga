@@ -79,6 +79,65 @@ test('the XP preview follows present, early and behaviour, and early only enable
   expect(preview()).toContain('10 XP')
 })
 
+test('search filters the roster by name or student id and restores every row when cleared', () => {
+  const { container } = renderBoard()
+  const search = container.querySelector('[data-ppg-attendance-search]') as HTMLInputElement
+  const rows = () => [...container.querySelectorAll('[data-ppg-attendance-row]')]
+  const names = () => rows().map((row) => row.getAttribute('data-ppg-attendance-row'))
+
+  expect(rows()).toHaveLength(2)
+
+  fireEvent.change(search, { target: { value: 'Learner Two' } })
+  expect(names()).toEqual([LEARNER_B])
+
+  fireEvent.change(search, { target: { value: '64110001' } })
+  expect(names()).toEqual([LEARNER_A])
+
+  fireEvent.change(search, { target: { value: 'no such learner' } })
+  expect(rows()).toHaveLength(0)
+
+  fireEvent.change(search, { target: { value: '' } })
+  expect(rows()).toHaveLength(2)
+})
+
+test('select-all marks only visible learners present, and unchecking clears present and early', () => {
+  const { container } = renderBoard()
+  const search = container.querySelector('[data-ppg-attendance-search]') as HTMLInputElement
+  const selectAll = container.querySelector('[data-ppg-attendance-select-all]') as HTMLInputElement
+  const preview = () => container.querySelector('[data-ppg-attendance-xp]')?.textContent ?? ''
+  const present = (id: string) =>
+    container.querySelector(`[data-ppg-attendance-present="${id}"]`) as HTMLInputElement
+  const early = (id: string) =>
+    container.querySelector(`[data-ppg-attendance-early="${id}"]`) as HTMLInputElement
+
+  // Select-all over the filtered view must not silently touch the hidden
+  // learner A; early-bird stays a manual per-learner choice.
+  fireEvent.change(search, { target: { value: 'Learner Two' } })
+  fireEvent.click(selectAll)
+  expect(present(LEARNER_B).checked).toBe(true)
+  expect(preview()).toContain('10 XP')
+
+  fireEvent.click(early(LEARNER_B))
+  expect(preview()).toContain('15 XP')
+
+  fireEvent.change(search, { target: { value: '' } })
+  expect(present(LEARNER_A).checked).toBe(false)
+  expect(present(LEARNER_B).checked).toBe(true)
+
+  // Select-all now sees both rows and marks both; unchecking clears both,
+  // including B's early-bird (never an early without present).
+  fireEvent.click(selectAll)
+  expect(present(LEARNER_A).checked).toBe(true)
+  expect(present(LEARNER_B).checked).toBe(true)
+  expect(preview()).toContain('25 XP')
+
+  fireEvent.click(selectAll)
+  expect(present(LEARNER_A).checked).toBe(false)
+  expect(present(LEARNER_B).checked).toBe(false)
+  expect(early(LEARNER_B).checked).toBe(false)
+  expect(preview()).toContain('0 XP')
+})
+
 test('the history table renders one row per saved session', () => {
   const { container } = renderBoard()
   expect(container.querySelectorAll('[data-ppg-attendance-history]')).toHaveLength(1)
