@@ -4,7 +4,6 @@ import { readOwnProfile } from '../../../../lib/sup/profile'
 import { readCourseMapViaRpc } from '../../../../lib/sup/curriculum'
 import { readAttendanceOverview } from '../../../../lib/sup/attendance'
 import { listLearners } from '../../../../lib/sup/studentAdmin'
-import { localIsoDate } from '../../../../lib/attendance'
 import { AttendanceBoard, type AttendanceChapter } from '../../../../components/AttendanceBoard'
 
 /**
@@ -70,7 +69,7 @@ export default async function TeacherAttendancePage() {
         fullName: row.full_name,
       }))}
       chapters={chapters}
-      today={localIsoDate()}
+      today={new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Bangkok' }).format(new Date())}
       locale={locale}
     />
   )
