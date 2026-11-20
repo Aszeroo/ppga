@@ -196,15 +196,15 @@ export function clearedStateCopy(locale: string): string {
  */
 const NAV_BY_ROLE = {
   learner: ['home', 'course', 'badges', 'leaderboard', 'profile'] as string[],
-  teacher: ['home', 'progress', 'profile'] as string[],
-  admin: ['home', 'progress', 'coursePublication', 'adminUsers', 'adminAudit', 'adminProvisioning', 'adminExport', 'health', 'profile'] as string[],
+  teacher: ['home', 'progress', 'students', 'attendance', 'profile'] as string[],
+  admin: ['home', 'progress', 'attendance', 'coursePublication', 'adminUsers', 'adminAudit', 'adminProvisioning', 'adminExport', 'health', 'profile'] as string[],
 }
 
 /** The Shell's nav shows EXACTLY the session role's destinations — asserted
  * on the NAV LANDMARK itself (never body text: a page's own copy may repeat a
  * label, the landmark cannot lie about which links the Shell renders). The
- * link count is the exactness gate: the learner's five, the teacher's three,
- * the admin's nine — nothing another-role's destination renders. */
+ * link count is the exactness gate: the learner's five, the teacher's five,
+ * the admin's ten — nothing another-role's destination renders. */
 export async function expectShellNav(page: Page, locale: string, role: 'learner' | 'teacher' | 'admin') {
   const nav = page.getByRole('navigation', { name: t(['shell', 'navLabel'], locale) })
   await expect(nav).toBeVisible()
