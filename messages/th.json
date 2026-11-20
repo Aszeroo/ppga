@@ -16,7 +16,8 @@
     "coursePublication": "เผยแพร่หลักสูตร",
     "adminExport": "ส่งออกข้อมูลวิจัย",
     "progress": "ความคืบหน้าบทเรียน",
-    "students": "ผู้เรียน"
+    "students": "ผู้เรียน",
+    "attendance": "เช็คชื่อ"
   },
   "admin": {
     "fallbackSuspense": "กำลังเตรียมหน้าจัดการ…",
@@ -851,7 +852,14 @@
     "explanation": "เพราะ: {text}",
     "error": "ตรวจคำตอบไม่ได้",
     "readAll": "อ่านทั้งหมด",
-    "stepsHeading": "ขั้นของบทเรียน"
+    "stepsHeading": "ขั้นของบทเรียน",
+    "readClaim": {
+      "button": "รับแต้มอ่านจบ +20 XP",
+      "pending": "กำลังบันทึกแต้ม...",
+      "awarded": "ได้รับ +20 XP แล้ว",
+      "already": "รับแล้ว",
+      "error": "รับแต้มไม่สำเร็จ ลองอีกครั้ง"
+    }
   },
   "teacherProgress": {
     "title": "ความคืบหน้าบทเรียนของผู้เรียน",
@@ -936,6 +944,43 @@
       "unauthorized": "กรุณาเข้าสู่ระบบก่อน",
       "notConfigured": "ระบบยังไม่ได้ตั้งค่า",
       "error": "เกิดข้อผิดพลาด"
+    }
+  },
+  "attendance": {
+    "title": "เช็คชื่อและพฤติกรรม",
+    "sub": "สร้างคาบเรียน เช็คชื่อผู้เรียน และให้แต้มพฤติกรรม",
+    "createTitle": "สร้างคาบเรียนใหม่",
+    "dateLabel": "วันที่",
+    "chapterLabel": "บทเรียน",
+    "createAction": "สร้างคาบเรียน",
+    "creating": "กำลังสร้าง...",
+    "createError": "สร้างคาบเรียนไม่สำเร็จ ลองอีกครั้ง",
+    "sessionsTitle": "คาบเรียนที่บันทึกไว้",
+    "noSessions": "ยังไม่มีคาบเรียน",
+    "selectSession": "เลือกคาบเรียนก่อนแก้ไขรายชื่อ",
+    "rosterTitle": "รายชื่อผู้เรียน",
+    "emptyRoster": "ยังไม่มีผู้เรียนในระบบ",
+    "xpPreview": "แต้มรวมของคาบนี้: {xp} XP",
+    "sessionSummary": "มา {present} คน · มาก่อน {early} คน · {xp} XP",
+    "savedLine": "บันทึกแล้ว มา {present} คน มาก่อน {early} คน ได้ {xp} XP",
+    "saveAction": "บันทึกคาบนี้",
+    "saving": "กำลังบันทึก...",
+    "saveError": "บันทึกไม่สำเร็จ ลองอีกครั้ง",
+    "historyTitle": "ประวัติคาบเรียน",
+    "colDate": "วันที่",
+    "colChapter": "บทเรียน",
+    "colPresent": "มา",
+    "colEarly": "มาก่อน",
+    "colXp": "XP",
+    "present": "มา",
+    "early": "มาก่อน",
+    "behavior": "พฤติกรรม",
+    "behaviorNone": "ไม่ให้",
+    "states": {
+      "notConfigured": "ระบบข้อมูลยังไม่พร้อมใช้งาน",
+      "unauthorized": "กรุณาเข้าสู่ระบบด้วยบัญชีครูหรือผู้ดูแล",
+      "denied": "หน้านี้สำหรับครูและผู้ดูแลเท่านั้น",
+      "error": "โหลดข้อมูลการเช็คชื่อไม่สำเร็จ"
     }
   }
 }

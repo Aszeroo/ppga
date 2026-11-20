@@ -7,6 +7,12 @@ import { useTranslations } from 'next-intl'
 import { ProgressBar } from './ProgressBar'
 import { LessonProse } from './LessonProse'
 import { nextStepIndex, previousStepIndex, stepProgress, type LessonStep } from '../lib/lessonSteps'
+import {
+  initialLessonReadState,
+  lessonReadCopyKey,
+  lessonReadStateFromResponse,
+  type LessonReadClaimState,
+} from '../lib/lessonRead'
 
 /**
  * PPGA #75 CAI lesson player, re-composed as a guided reader. The server page
@@ -37,6 +43,12 @@ export interface LessonPlayerProps {
   lessonKey: string
   steps: LessonStep[]
   locale: 'th' | 'en'
+  /** The caller's own `lesson_read` ledger row already exists (a revisit
+   * shows "already claimed" without a click). */
+  readAwarded: boolean
+  /** Only a learner may claim +20; staff can read the lesson but see no
+   * claim control. */
+  claimable: boolean
 }
 
 interface Feedback {
@@ -97,13 +109,14 @@ function StepKindIcon({ kind }: { kind: LessonStep['kind'] }) {
   )
 }
 
-export function LessonPlayer({ lessonKey, steps, locale }: LessonPlayerProps) {
+export function LessonPlayer({ lessonKey, steps, locale, readAwarded, claimable }: LessonPlayerProps) {
   const t = useTranslations('lessonPlayer')
   const [index, setIndex] = useState(0)
   const [selected, setSelected] = useState<Record<number, string>>({})
   const [feedback, setFeedback] = useState<Record<number, Feedback>>({})
   const [errors, setErrors] = useState<Record<number, boolean>>({})
   const [pending, setPending] = useState(false)
+  const [readState, setReadState] = useState<LessonReadClaimState>(() => initialLessonReadState(readAwarded))
   const headingRef = useRef<HTMLHeadingElement>(null)
   const mounted = useRef(false)
 
@@ -204,6 +217,22 @@ export function LessonPlayer({ lessonKey, steps, locale }: LessonPlayerProps) {
     }
   }
 
+  async function claimRead() {
+    if (readState === 'pending' || readState === 'awarded' || readState === 'already') return
+    setReadState('pending')
+    try {
+      const response = await fetch('/api/lesson/read', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ lesson_key: lessonKey }),
+      })
+      const data = await response.json().catch(() => null)
+      setReadState(lessonReadStateFromResponse(response.ok, data))
+    } catch {
+      setReadState('error')
+    }
+  }
+
   return (
     <section
       className="ppg-lesson-player"
@@ -250,6 +279,36 @@ export function LessonPlayer({ lessonKey, steps, locale }: LessonPlayerProps) {
               {kindLabel}
             </h2>
             {step.body ? <LessonProse text={step.body} /> : null}
+
+            {step.kind === 'summary' && claimable
+              ? (
+                <div className="ppg-read-claim" data-ppg-read-claim={readState}>
+                  {readState !== 'awarded' && readState !== 'already'
+                    ? (
+                      <>
+                        <button
+                          type="button"
+                          className="ppg-cta"
+                          onClick={claimRead}
+                          disabled={readState === 'pending'}
+                          data-ppg-cta="lesson-read"
+                          data-ppg-read-button="true"
+                        >
+                          {t(`readClaim.${lessonReadCopyKey(readState)}`)}
+                        </button>
+                        {readState === 'error'
+                          ? <p role="alert" className="ppg-mini-feedback-explain">{t('readClaim.error')}</p>
+                          : null}
+                      </>
+                    )
+                    : (
+                      <p role="status" aria-live="polite" className="ppg-read-claim-state" data-ppg-read-state={readState}>
+                        {t(`readClaim.${lessonReadCopyKey(readState)}`)}
+                      </p>
+                    )}
+                </div>
+              )
+              : null}
 
             {step.check
               ? (

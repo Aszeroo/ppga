@@ -1,0 +1,206 @@
+/**
+ * PPGA #141 attendance console surface.
+ *
+ * Every value rides the existing `--ppg-*` tokens. The layout is mobile
+ * first: one column of cards with 44px (2.75rem) touch targets; at the
+ * wide breakpoint the create form and each roster row spread into columns.
+ * Focus rings are the shared token ring on every interactive control.
+ */
+
+.ppg-attendance-create {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--ppg-space-3);
+}
+
+.ppg-attendance-create .ppg-work-form {
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.ppg-attendance-sessions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--ppg-space-2);
+}
+
+.ppg-attendance-session {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 2.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ppg-space-2);
+  padding: var(--ppg-space-2) var(--ppg-space-3);
+  text-align: left;
+  font-family: var(--font-ppg-body);
+  color: var(--ppg-fg-heading);
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  border-radius: var(--ppg-radius-2);
+  cursor: pointer;
+}
+
+.ppg-attendance-session-current {
+  border-color: var(--ppg-pink-300);
+  background-color: var(--ppg-cream);
+  box-shadow: var(--ppg-shadow-pixel-1);
+}
+
+.ppg-attendance-session-date {
+  font-family: var(--font-ppg-display), var(--font-ppg-body);
+  font-size: 0.8rem;
+  color: var(--ppg-pink-300);
+}
+
+.ppg-attendance-session-chapter {
+  font-weight: 700;
+  flex: 1 1 10rem;
+}
+
+.ppg-attendance-session-counts {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ppg-muted);
+}
+
+.ppg-attendance-roster-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ppg-space-2);
+}
+
+.ppg-attendance-xp-preview {
+  margin: 0;
+  font-weight: 700;
+  color: var(--ppg-ink);
+  background-color: var(--ppg-gold);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-gold-border);
+  border-radius: var(--ppg-radius-pill);
+  padding: var(--ppg-space-1) var(--ppg-space-3);
+}
+
+.ppg-attendance-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--ppg-space-2);
+}
+
+.ppg-attendance-row {
+  box-sizing: border-box;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ppg-space-2);
+  padding: var(--ppg-space-3);
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-2);
+}
+
+.ppg-attendance-identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-1);
+  min-width: 0;
+}
+
+.ppg-attendance-name {
+  font-weight: 700;
+  color: var(--ppg-fg-heading);
+  overflow-wrap: anywhere;
+}
+
+.ppg-attendance-handle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ppg-faint);
+}
+
+.ppg-attendance-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ppg-space-2);
+}
+
+.ppg-attendance-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ppg-space-2);
+  min-height: 2.75rem;
+  padding: var(--ppg-space-1) var(--ppg-space-3);
+  font-weight: 700;
+  color: var(--ppg-ink);
+  background-color: var(--ppg-blue-100);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  border-radius: var(--ppg-radius-pill);
+  cursor: pointer;
+}
+
+.ppg-attendance-toggle-disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ppg-attendance-toggle input[type='checkbox'] {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: var(--ppg-pink-500);
+}
+
+.ppg-attendance-behavior {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ppg-space-2);
+  min-height: 2.75rem;
+}
+
+.ppg-attendance-behavior-label {
+  font-weight: 700;
+  color: var(--ppg-ink);
+}
+
+.ppg-attendance-select {
+  width: auto;
+  min-height: 2.75rem;
+  padding: var(--ppg-space-1) var(--ppg-space-3);
+}
+
+.ppg-attendance-save {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ppg-space-3);
+}
+
+.ppg-attendance-session:focus-visible,
+.ppg-attendance-toggle:focus-within,
+.ppg-attendance-select:focus-visible,
+.ppg-attendance-save .ppg-cta:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+@media (min-width: 48rem) {
+  .ppg-attendance-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+}

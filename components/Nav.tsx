@@ -67,11 +67,13 @@ const NAV_ITEMS = {
     { href: '/', key: 'home' },
     { href: '/teacher/progress', key: 'progress' },
     { href: '/teacher/students', key: 'students' },
+    { href: '/teacher/attendance', key: 'attendance' },
     { href: '/profile', key: 'profile' },
   ] as NavItem[],
   admin: [
     { href: '/', key: 'home' },
     { href: '/teacher/progress', key: 'progress' },
+    { href: '/teacher/attendance', key: 'attendance' },
     { href: '/admin/publication', key: 'coursePublication' },
     { href: '/admin/users', key: 'adminUsers' },
     { href: '/admin/audit', key: 'adminAudit' },

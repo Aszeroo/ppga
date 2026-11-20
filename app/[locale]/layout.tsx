@@ -5,6 +5,8 @@ import { NextIntlClientProvider } from 'next-intl'
 
 import { cookies, headers } from 'next/headers'
 
+import '../attendance.css'
+
 import { type ReactNode } from 'react'
 
 import { readOwnProfile } from '../../lib/sup/profile'
@@ -73,6 +75,7 @@ const CLIENT_MESSAGE_NAMESPACES = [
   'challenge',
   'lessonPlayer',
   'slides',
+  'attendance',
 ] as const
 
 export default async function LocaleLayout({ children }: Readonly<{ children: ReactNode }>) {
