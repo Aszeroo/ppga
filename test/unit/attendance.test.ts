@@ -13,6 +13,7 @@ import {
   sessionXpPreview,
   toAttendancePayload,
   updateDraftRow,
+  updateDraftRows,
   type AttendanceDraftRow,
 } from '../../lib/attendance'
 
@@ -79,6 +80,22 @@ describe('attendance draft normalisation', () => {
     const after = updateDraftRow(before, LEARNER_A, { present: false })
     expect(after[0].present).toBe(false)
     expect(after[0].earlyBird).toBe(false)
+  })
+
+  test('bulk select-all touches only the given learners and clears early-bird when absent', () => {
+    const before = [
+      draft({ learnerId: LEARNER_A, present: true, earlyBird: true, behaviorPoints: 10 }),
+      draft({ learnerId: LEARNER_B, present: false, behaviorPoints: 5 }),
+    ]
+    const selected = updateDraftRows(before, [LEARNER_A], { present: false })
+    expect(selected[0]).toEqual(draft({ learnerId: LEARNER_A, present: false, behaviorPoints: 10 }))
+    expect(selected[1]).toEqual(before[1])
+
+    const all = updateDraftRows(before, [LEARNER_A, LEARNER_B], { present: true })
+    expect(all[0].present).toBe(true)
+    expect(all[0].earlyBird).toBe(true)
+    expect(all[1].present).toBe(true)
+    expect(all[1].behaviorPoints).toBe(5)
   })
 
   test('the payload normalises early-bird when absent', () => {

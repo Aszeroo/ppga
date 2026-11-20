@@ -3777,6 +3777,12 @@ a.ppg-cta {
   animation: ppg-floaty 2.6s ease-in-out infinite;
 }
 
+.ppg-instr-progress {
+  margin: 0;
+  font-weight: 700;
+  color: var(--ppg-fg-heading);
+}
+
 .ppg-instr-item {
   display: flex;
   flex-direction: column;

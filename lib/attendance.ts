@@ -159,6 +159,20 @@ export function updateDraftRow(
   })
 }
 
+/** Apply one patch to a set of rows (the roster's "select all present"
+ * toggle). Every touched row goes through `updateDraftRow`, so un-ticking
+ * present clears early-bird and behaviour values stay as they were. */
+export function updateDraftRows(
+  rows: readonly AttendanceDraftRow[],
+  learnerIds: readonly string[],
+  patch: Partial<Pick<AttendanceDraftRow, 'present' | 'earlyBird' | 'behaviorPoints'>>,
+): AttendanceDraftRow[] {
+  const targets = new Set(learnerIds)
+  return rows.map((row) =>
+    targets.has(row.learnerId) ? updateDraftRow([row], row.learnerId, patch)[0] : row,
+  )
+}
+
 /** Local YYYY-MM-DD (not UTC) for the create form's default date. */
 export function localIsoDate(now: Date = new Date()): string {
   const year = now.getFullYear()
