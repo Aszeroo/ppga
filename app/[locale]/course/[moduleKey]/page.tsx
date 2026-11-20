@@ -7,9 +7,11 @@ import { readLessonsViaRpc } from '../../../../lib/sup/curriculum'
 import { readChapterTestStateViaRpc } from '../../../../lib/sup/chapterTest'
 import { isChapterKey } from '../../../../lib/chapterTest'
 import { readChallengeReads } from '../../../../lib/sup/challenge'
+import { readLessonSlidesViaTable } from '../../../../lib/sup/slides'
 import { buildChallengeContext, buildUnlockBand, challengeCopyFrom, challengeTrackSteps, rewardChipProps } from '../../../../lib/challengeStages'
 import { Card } from '../../../../components/Card'
 import { ChallengeTrack } from '../../../../components/ChallengeTrack'
+import { SlideGallery } from '../../../../components/SlideGallery'
 import { XpRewardChip } from '../../../../components/XpRewardChip'
 
 /**
@@ -128,6 +130,7 @@ async function ChapterOverview({ chapterKey }: { chapterKey: string }) {
   // server-side visibility rule decides the rows (a locked chapter returns
   // `[]`, never a hidden link).
   const lessons = await readLessonsViaRpc(chapterKey)
+  const slides = await readLessonSlidesViaTable(chapterKey)
   const pickText = (th: string | undefined, en: string | undefined) =>
     locale === 'th' ? (th ?? en ?? '') : (en ?? th ?? '')
   const preAttempts = state.pre?.attempts ?? 0
@@ -234,6 +237,15 @@ async function ChapterOverview({ chapterKey }: { chapterKey: string }) {
           </article>
         </section>
       ) : null}
+      {slides.status === 'ok' && slides.slides && slides.slides.length > 0
+        ? (
+          <SlideGallery
+            moduleKey={chapterKey}
+            slides={slides.slides}
+            locale={locale === 'th' ? 'th' : 'en'}
+          />
+        )
+        : null}
       <footer className="ppg-lesson-footer">
         <Link className="ppg-link" href="/course">{t('linkMap')}</Link>
       </footer>

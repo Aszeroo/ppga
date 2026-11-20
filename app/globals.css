@@ -2310,6 +2310,215 @@ a.ppg-cta {
   }
 }
 
+/* ── Chapter slide gallery ──────────────────────────────────────────────── */
+
+/* The reader below the lesson/test cards: one large slide on the left (or on
+ * top under 1024px) and the controls + thumbnail strip beside it. The
+ * intrinsic 1600×893 ratio is repeated in CSS so every box is reserved
+ * before the WebP arrives; the image itself is `contain` inside that box. */
+.ppg-slide-gallery {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-3);
+  scroll-margin-top: 96px;
+}
+
+.ppg-slide-gallery-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-1);
+}
+
+.ppg-slide-gallery-intro {
+  margin: 0;
+  color: var(--ppg-muted);
+  font-family: var(--font-ppg-body);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.ppg-slide-gallery-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--ppg-space-4);
+  align-items: start;
+}
+
+.ppg-slide-viewer {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1600 / 893;
+  box-sizing: border-box;
+  overflow: hidden;
+  background-color: var(--ppg-bg-surface);
+  border-width: 3px;
+  border-style: solid;
+  border-color: var(--ppg-blue-300);
+  border-radius: var(--ppg-radius-2);
+  padding: var(--ppg-space-2);
+  box-shadow: var(--ppg-shadow-pixel-2);
+}
+
+.ppg-slide-viewer:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+.ppg-slide-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: var(--ppg-radius-1);
+}
+
+.ppg-slide-aside {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ppg-space-3);
+  min-width: 0;
+}
+
+.ppg-slide-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ppg-space-2);
+}
+
+.ppg-slide-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ppg-space-1);
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--ppg-space-2) var(--ppg-space-3);
+  box-sizing: border-box;
+  background-color: var(--ppg-pink-100);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-pink-300);
+  border-radius: var(--ppg-radius-pill);
+  box-shadow: var(--ppg-shadow-pixel-1);
+  color: var(--ppg-fg-heading);
+  font-family: var(--font-ppg-body);
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+
+.ppg-slide-step:hover:not(:disabled) {
+  background-color: var(--ppg-pink-200);
+}
+
+.ppg-slide-step:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.ppg-slide-step:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+.ppg-slide-step:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.ppg-slide-counter {
+  margin: 0;
+  color: var(--ppg-muted);
+  font-family: var(--font-ppg-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* Phones: a single scrolling row of thumbnails (the page itself never
+ * scrolls sideways — the strip owns its own overflow). */
+.ppg-slide-thumbs {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 var(--ppg-space-1);
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 96px;
+  gap: var(--ppg-space-2);
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+}
+
+.ppg-slide-thumb-item {
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.ppg-slide-thumb {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 3px;
+  box-sizing: border-box;
+  background-color: var(--ppg-bg-surface);
+  border-width: var(--ppg-border-2);
+  border-style: solid;
+  border-color: var(--ppg-line);
+  border-radius: var(--ppg-radius-1);
+  cursor: pointer;
+}
+
+.ppg-slide-thumb img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1600 / 893;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.ppg-slide-thumb:hover {
+  border-color: var(--ppg-blue-300);
+}
+
+.ppg-slide-thumb:focus-visible {
+  outline: var(--ppg-focus-ring);
+  outline-offset: var(--ppg-focus-offset);
+}
+
+.ppg-slide-thumb[aria-current='true'] {
+  border-color: var(--ppg-pink-300);
+  outline: var(--ppg-border-2) solid var(--ppg-pink-300);
+  outline-offset: 1px;
+  box-shadow: var(--ppg-shadow-pixel-2);
+}
+
+@media (min-width: 1024px) {
+  .ppg-slide-gallery-layout {
+    grid-template-columns: minmax(0, 1fr) 232px;
+  }
+
+  .ppg-slide-thumbs {
+    grid-auto-flow: row;
+    grid-auto-columns: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow-x: visible;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ppg-slide-step {
+    transition: none;
+  }
+}
+
 /* ── Lesson header: breadcrumb + title + lesson position ────────────────── */
 
 .ppg-lesson-head {
