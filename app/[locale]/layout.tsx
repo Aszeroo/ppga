@@ -72,6 +72,7 @@ const CLIENT_MESSAGE_NAMESPACES = [
   'course',
   'challenge',
   'lessonPlayer',
+  'slides',
 ] as const
 
 export default async function LocaleLayout({ children }: Readonly<{ children: ReactNode }>) {
