@@ -6,6 +6,8 @@ import { Link } from '../../../../../lib/i18n/routing'
 import { readLessonsViaRpc } from '../../../../../lib/sup/curriculum'
 import { readLessonStepsViaRpc } from '../../../../../lib/sup/lessonSteps'
 import { readSelfCheckQuestionsViaRpc } from '../../../../../lib/sup/xp'
+import { readOwnProfile } from '../../../../../lib/sup/profile'
+import { readOwnLessonReadAward } from '../../../../../lib/sup/lessonRead'
 import { readChallengeReads } from '../../../../../lib/sup/challenge'
 import { readChapterTestStateViaRpc } from '../../../../../lib/sup/chapterTest'
 import { readLessonSlidesViaTable } from '../../../../../lib/sup/slides'
@@ -78,6 +80,13 @@ async function LessonView({ moduleKey, lessonKey }: { moduleKey: string; lessonK
 
   const ctx = buildChallengeContext(moduleKey, await readChallengeReads(moduleKey))
   const checkEvent = ledgerEvent(ctx.own, 'self_check_pass', lessonKey)
+
+  // PPGA #141: only a learner may claim the once-per-lesson +20. The server
+  // reads the caller's OWN ledger row so a revisit shows "already claimed"
+  // without a click; nothing is awarded on render.
+  const profile = await readOwnProfile()
+  const claimable = profile.status === 'ok' && profile.row?.role === 'learner'
+  const readAwarded = claimable ? await readOwnLessonReadAward(lessonKey) : false
   return (
     <section aria-label={t('viewTitle')} className="ppg-page-wrap">
       {row
@@ -107,7 +116,7 @@ async function LessonView({ moduleKey, lessonKey }: { moduleKey: string; lessonK
         )
         : null}
       {steps.length > 0
-        ? <LessonPlayer lessonKey={lessonKey} steps={steps} locale={locale} />
+        ? <LessonPlayer lessonKey={lessonKey} steps={steps} locale={locale} readAwarded={readAwarded} claimable={claimable} />
         : null}
       {state.status === 'empty' ? <p>{t('states.empty')} {state.detail}</p> : null}
       {state.status === 'error' ? <p>{t('states.error')} {state.detail}</p> : null}

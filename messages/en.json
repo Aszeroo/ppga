@@ -16,7 +16,8 @@
     "adminAudit": "Audit stream",
     "adminProvisioning": "Provision roster",
     "progress": "Chapter progress",
-    "students": "Students"
+    "students": "Students",
+    "attendance": "Attendance"
   },
   "shell": {
     "identity": "PPGA — Gamified Presentation Program",
@@ -851,7 +852,14 @@
     "explanation": "Why: {text}",
     "error": "The answer could not be checked. You can still continue.",
     "readAll": "Read all steps",
-    "stepsHeading": "Lesson steps"
+    "stepsHeading": "Lesson steps",
+    "readClaim": {
+      "button": "Claim +20 XP for finishing",
+      "pending": "Claiming...",
+      "awarded": "+20 XP awarded",
+      "already": "Already claimed",
+      "error": "The XP could not be claimed. Try again."
+    }
   },
   "teacherProgress": {
     "title": "Learner chapter progress",
@@ -936,6 +944,43 @@
       "unauthorized": "Please sign in first.",
       "notConfigured": "The service is not configured.",
       "error": "Something went wrong."
+    }
+  },
+  "attendance": {
+    "title": "Attendance & behaviour",
+    "sub": "Create a class session, mark the roster, and award behaviour points.",
+    "createTitle": "New session",
+    "dateLabel": "Date",
+    "chapterLabel": "Chapter",
+    "createAction": "Create session",
+    "creating": "Creating...",
+    "createError": "The session could not be created. Try again.",
+    "sessionsTitle": "Saved sessions",
+    "noSessions": "No sessions yet.",
+    "selectSession": "Select a session to edit its roster.",
+    "rosterTitle": "Roster",
+    "emptyRoster": "No learners are provisioned yet.",
+    "xpPreview": "Session XP: {xp}",
+    "sessionSummary": "{present} present · {early} early · {xp} XP",
+    "savedLine": "Saved. {present} present, {early} early, {xp} XP this session.",
+    "saveAction": "Save this session",
+    "saving": "Saving...",
+    "saveError": "The session could not be saved. Try again.",
+    "historyTitle": "Session history",
+    "colDate": "Date",
+    "colChapter": "Chapter",
+    "colPresent": "Present",
+    "colEarly": "Early",
+    "colXp": "XP",
+    "present": "Present",
+    "early": "Early",
+    "behavior": "Behaviour",
+    "behaviorNone": "None",
+    "states": {
+      "notConfigured": "The data layer is not configured.",
+      "unauthorized": "Sign in as a teacher or admin.",
+      "denied": "Attendance is teacher/admin only.",
+      "error": "The attendance data could not be loaded."
     }
   }
 }
