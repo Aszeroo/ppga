@@ -8,17 +8,19 @@ import {
   readSurveyItemsViaTable,
 } from '../../../lib/sup/survey'
 import { Badge } from '../../../components/Badge'
+import { InstrumentItems } from '../../../components/PreTestItems'
+import { InstrumentProgress } from '../../../components/InstrumentProgress'
 import { StatusPill } from '../../../components/StatusPill'
 
 /**
- * Ticket #15 Satisfaction Survey, #54 V3 dressing (presentation only — the
- * reads, the unlock machine, the SHIPPED form fields/patterns/`data-ppg-*`
- * attrs and the submit route are UNCHANGED): the instrument wearing the
+ * Ticket #15 Satisfaction Survey, #54 V3 dressing, per-item radio controls
+ * (the reads, the unlock machine, the `item_<n>` field names, the shipped
+ * `data-ppg-*` attrs and the submit route are UNCHANGED): the instrument wearing the
  * gallery's card/tag idiom — the heading block (the 😊 title + the 1–5
  * satisfaction subline), the research/no-XP chips, each item a question card
- * with the real Question {n}/{total} progress chips + the seeded choice tiles
- * (the tiles PRESENT the choices; the answers still ride the shipped text
- * inputs — no new control), and the submitted receipt (the ✓ receipt heading,
+ * with the real Question {n}/{total} progress chips + the seeded choice rows
+ * as required per-item radio controls (`item_<n>`, the Pre-Test/Final-Test
+ * control system generalised in #83/#84), and the submitted receipt (the ✓ receipt heading,
  * the immutable-once-submitted note + the success pill; a second submit still
  * reaches `already_submitted_or_missing`, never a silent overwrite). The
  * survey carries NO answer key and NO score — satisfaction is not an
@@ -73,56 +75,23 @@ async function UnlockStatus() {
   )
 }
 
-async function Items({ locale }: { locale: string }) {
+// fallow-ignore-next-line complexity
+async function SurveyForm({ locale }: { locale: string }) {
   const t = await getTranslations('survey')
   const state = await readSurveyItemsViaTable()
   const items = state.status === 'ok' ? state.items ?? [] : []
-  const total = items.length
   return (
     <section aria-label={t('itemsLabel')} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ppg-space-3)' }}>
-      {state.status === 'ok'
-        ? items.map((item: { id: string; th: { prompt: string; choices: Record<string, string> }; en: { prompt: string; choices: Record<string, string> } }, i: number) => {
-          const pick = locale === 'th' ? item.th : item.en
-          return (
-            <div key={item.id} className="ppg-instr-item">
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--ppg-space-2)', flexWrap: 'wrap' }}>
-                <Badge text={t('questionTag', { n: String(i + 1) })} tone="neutral" />
-                <Badge text={t('itemProgress', { n: String(i + 1), total: String(total) })} tone="neutral" />
-              </div>
-              <p className="ppg-sc-question">{pick.prompt}</p>
-              <div className="ppg-sc-options">
-                {Object.entries(pick.choices ?? {}).map(([letter, text]) => (
-                  <div key={letter} className="ppg-instr-opt">
-                    <span className="ppg-sc-opt-letter" aria-hidden="true">{letter}</span>
-                    <span className="ppg-sc-opt-text">{text}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )
-        })
-        : null}
-      {state.status === 'empty' ? <p className="ppg-state-line">{t('states.itemsEmpty')} {state.detail}</p> : null}
-      {state.status === 'error' ? <p className="ppg-state-line">{t('states.itemsError')} {state.detail}</p> : null}
-      {state.status === 'denied' ? <p className="ppg-state-line">{t('states.denied')} {state.detail}</p> : null}
-      {state.status === 'unauthorized' ? <p className="ppg-state-line">{t('states.unauthorized')} {state.detail}</p> : null}
-      {state.status === 'not-configured' ? <p className="ppg-state-line">{t('states.notConfigured')} {state.detail}</p> : null}
-    </section>
-  )
-}
-
-async function SurveyForm({ locale }: { locale: string }) {
-  const t = await getTranslations('survey')
-  return (
-    <section>
       {/* The single submit posts the `ppg_survey_submit` RPC once (the submit
         function re-gates the unlock + stamps `submitted_at`; a second submit
         reaches `already_submitted_or_missing`, never a silent overwrite). The
         hidden language field records the taken language with the row
         (ADR-0002) — the DATABASE re-validates th|en. The row start rides the
-        submit route's gated, idempotent `ppg_survey_start` call. #54: ONLY
-        classes were added — fields, names, patterns and the `data-ppg-*`
-        attrs are byte-identical to the shipped form. */}
+        submit route's gated, idempotent `ppg_survey_start` call. The form
+        WRAPS the item list (the Pre-Test/Final-Test control system), so every
+        required `item_<n>` radio group is submitted; the route's `item_`
+        filter forwards them to the RPC. The shipped `data-ppg-*` attrs,
+        method, action and the single submit button are unchanged. */}
       <div className="ppg-sc-panel">
         <form
           data-ppg-survey-form="survey"
@@ -131,11 +100,21 @@ async function SurveyForm({ locale }: { locale: string }) {
           method="POST"
           action="/api/survey/submit"
         >
+          <InstrumentProgress total={items.length} template={t('answeredCount')} />
+          <InstrumentItems
+            items={items}
+            locale={locale}
+            answerIdPrefix="survey"
+            questionTag={(n) => t('questionTag', { n: String(n) })}
+            itemProgress={(n, total) => t('itemProgress', { n: String(n), total: String(total) })}
+            answerForQuestion={(n) => t('answerForQuestion', { n: String(n) })}
+          />
+          {state.status === 'empty' ? <p className="ppg-state-line">{t('states.itemsEmpty')} {state.detail}</p> : null}
+          {state.status === 'error' ? <p className="ppg-state-line">{t('states.itemsError')} {state.detail}</p> : null}
+          {state.status === 'denied' ? <p className="ppg-state-line">{t('states.denied')} {state.detail}</p> : null}
+          {state.status === 'unauthorized' ? <p className="ppg-state-line">{t('states.unauthorized')} {state.detail}</p> : null}
+          {state.status === 'not-configured' ? <p className="ppg-state-line">{t('states.notConfigured')} {state.detail}</p> : null}
           <input name="language" defaultValue={locale === 'th' ? 'th' : 'en'} hidden={true} />
-          <label className="ppg-field-label" htmlFor="survey_answer_item_1">{t('answerLabel')}</label>
-          <input className="ppg-input" id="survey_answer_item_1" name="item_1" required pattern="^[A-C]$" />
-          <label className="ppg-field-label" htmlFor="survey_answer_item_2">{t('answerLabel')}</label>
-          <input className="ppg-input" id="survey_answer_item_2" name="item_2" required pattern="^[A-C]$" />
           <div className="ppg-sc-cta-row">
             <button className="ppg-button" type="submit">{t('submitLabel')}</button>
           </div>
@@ -161,7 +140,6 @@ export default async function SurveyPage() {
     <Suspense fallback={<div>{t('fallbackSuspense')}</div>}>
       <div className="ppg-page-wrap">
         <UnlockStatus />
-        <Items locale={locale} />
         <SurveyForm locale={locale} />
       </div>
     </Suspense>
