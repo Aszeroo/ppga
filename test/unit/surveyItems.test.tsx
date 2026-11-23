@@ -17,8 +17,6 @@ import enMessages from '../../messages/en.json'
 
 afterEach(() => cleanup())
 
-const KEYS = ['A', 'B', 'C'] as const
-
 const makeItems = (count: number): PreTestItem[] =>
   Array.from({ length: count }, (_, i) => {
     const n = i + 1
