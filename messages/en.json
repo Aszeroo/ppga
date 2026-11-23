@@ -363,6 +363,7 @@
     "gateLabel": "Survey unlock",
     "itemsLabel": "Survey items",
     "answerLabel": "Choice",
+    "answerForQuestion": "Answer for question {n}",
     "autosaveLabel": "Autosave",
     "submitLabel": "Submit once",
     "linkPostTest": "Post-Test",

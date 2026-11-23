@@ -348,6 +348,7 @@
     "gateLabel": "สถานะการเปิดแบบสำรวจ",
     "itemsLabel": "ข้อคำถามแบบสำรวจ",
     "answerLabel": "ตัวเลือก",
+    "answerForQuestion": "คำตอบสำหรับข้อ {n}",
     "autosaveLabel": "บันทึกอัตโนมัติ",
     "submitLabel": "ส่งครั้งเดียว",
     "linkPostTest": "แบบทดสอบหลังเรียน",
