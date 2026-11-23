@@ -352,8 +352,10 @@ test.describe('PPGA #99 CAI critical journey', () => {
     // DONE: no primary CTA remains.
     await page.goto(`/${locale}/survey`)
     await expect(page.locator('body')).toContainText(t(['survey', 'states', 'unlocked'], locale))
-    await page.locator('#survey_answer_item_1').fill('B')
-    await page.locator('#survey_answer_item_2').fill('C')
+    // The survey now renders one required radiogroup per item (the same
+    // control system as the Pre-Test and Final Test); the seeded survey
+    // version still has two items.
+    await fillInstrument(page, 'survey', 2, { item_1: 'B', item_2: 'C' })
     await submitForm(page, '[data-ppg-survey-form=survey]', '/api/survey/submit', true)
     await page.goto(`/${locale}/survey`)
     await expect(page.locator('.ppg-instr-receipt')).toBeVisible()
